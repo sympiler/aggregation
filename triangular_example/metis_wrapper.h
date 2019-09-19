@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include "metis.h"
-#include "utils/initiate.h"
+#include "initiate.h"
 #include "Transpose.h"
 
 

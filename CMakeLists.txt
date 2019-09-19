@@ -1,21 +1,23 @@
 cmake_minimum_required(VERSION 2.8)
-project(LBCTest)
+set(CMAKE_CXX_STANDARD 11)
 
-message("is: ${METIS_LIB}")
-include_directories(${MKL_INC}  ${METIS_INC}
-        )
-link_directories(${MKL_LIB} ${METIS_LIB})
-add_executable(LBCTest lbc_test.cpp )
+set(METIS_INC "$ENV{METISROOT}/include")
+set(METIS_LIB "$ENV{METISROOT}/libmetis")
 
-target_link_libraries(LBCTest
-        #MKL BLAS
-        mkl_intel_lp64
-        mkl_sequential
-        mkl_core
-        mkl_intel_ilp64
-        #mkl_gnu_thread
-        pthread
-        m
-        dl
-        metis
-        )
+if (APPLE)
+    set(MKL_INC "$ENV{MKLROOT}/include")
+    set(MKL_LIB "$ENV{MKLROOT}/lib")
+    set(MKL_LIB2 "$ENV{MKLROOT}/../compiler/lib")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -O3 -g")
+endif ()
+if (UNIX AND NOT APPLE)
+    set(MKL_INC "$ENV{MKLROOT}/include")
+    set(MKL_LIB "$ENV{MKLROOT}/lib/intel64")
+    # for iomp lib
+    set(MKL_LIB2 "$ENV{MKLROOT}/../compiler/lib/intel64")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -std=c++11 -O3 -g")
+endif ()
+
+project(LBC)
+
+add_subdirectory(triangular_example)
