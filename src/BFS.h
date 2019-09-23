@@ -49,6 +49,8 @@ int modifiedBFS(int n,
    }
   }
  }
+
+ return 1;// TODO:
 }
 
 
@@ -87,6 +89,6 @@ int modifiedBFS_CSC(int n,
    }
   }
  }
-
+return 1; //TODO
 }
 #endif //PROJECT_BFS_H

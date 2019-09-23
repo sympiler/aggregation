@@ -469,6 +469,6 @@ int makeSlackedLevelSet(int n, int clusterCnt,
   assert(slackGroups[m].size()==0);
  }
 #endif
-
+return 1; // TODO: a better return value!
 }
 #endif //CHOLOPENMP_TREEUTILS_H

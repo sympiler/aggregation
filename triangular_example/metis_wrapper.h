@@ -59,8 +59,8 @@ int Metis_oredering
             AFulli[base + k] = (long int) A->i[j];
         }
     }
- std::cout<<"ddd->: "<<ncolIDXT<<";"<<AFullp[ncolIDXT]<<";"<<"\n";
-    int retMet = METIS_NodeND(&ncolIDXT, AFullp, AFulli, NULL, options1,
+
+ int retMet = METIS_NodeND(&ncolIDXT, AFullp, AFulli, NULL, options1,
                               LpermIDX, ILpermIDX);
     assert(retMet == METIS_OK);
     if (retMet != METIS_OK) {
