@@ -35,6 +35,7 @@ int Metis_oredering
     idx_t *weigt = new idx_t[ncol];
     idx_t *LpermIDX = new idx_t[ncol];
     idx_t *ILpermIDX = new idx_t[ncol];
+
     for (int i = 0; i < ncol; ++i) {
         LpermIDX[i] = 0;
         ILpermIDX[i] = 0;
@@ -58,7 +59,7 @@ int Metis_oredering
             AFulli[base + k] = (long int) A->i[j];
         }
     }
-
+ std::cout<<"ddd->: "<<ncolIDXT<<";"<<AFullp[ncolIDXT]<<";"<<"\n";
     int retMet = METIS_NodeND(&ncolIDXT, AFullp, AFulli, NULL, options1,
                               LpermIDX, ILpermIDX);
     assert(retMet == METIS_OK);

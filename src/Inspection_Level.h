@@ -9,7 +9,7 @@
 /*
  *
  */
-int buildLevelSet_CSC(size_t n, size_t nnz, int *Lp, int *Li, int *&levelPtr,
+int buildLevelSet_CSC(size_t n, int *Lp, int *Li, int *&levelPtr,
                       int *&levelSet){
  int begin=0,end=n-1;
  int curLevel=0, curLevelCol=0;

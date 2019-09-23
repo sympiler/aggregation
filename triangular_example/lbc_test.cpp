@@ -7,8 +7,6 @@
 #include <fstream>
 #include <chrono>
 #include <algorithm>
-#include <cholmod.h>
-#include <cholmod_function.h>
 #include <omp.h>
 #include "Transpose.h"
 
