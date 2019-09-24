@@ -136,26 +136,26 @@ int allocateLC(BCSC *L, int sw) {
     }
     return 0;
 }
-
-int allocateAC(CSC *A, int nrow, int nnz, int sytpe, int sw) {
-    if (sw) {
-        A->nrow = A->ncol = nrow;
-        A->nzmax = nnz;
-        A->stype = sytpe;
-        A->xtype = CHOLMOD_REAL;//TODO removed later
-        A->packed = TRUE; // Always
-        A->p = new int[nrow + 1]();
-        A->i = new int[nnz]();
-        A->x = new double[nnz]();
-        A->nz = nullptr;
-    } else {
-        delete[]A->p;
-        delete[]A->i;
-        delete[]A->x;
-    }
-
-    return 0;
-}
+//
+//int allocateAC(CSC *A, int nrow, int nnz, int sytpe, int sw) {
+//    if (sw) {
+//        A->nrow = A->ncol = nrow;
+//        A->nzmax = nnz;
+//        A->stype = sytpe;
+//        A->xtype = CHOLMOD_REAL;//TODO removed later
+//        A->packed = TRUE; // Always
+//        A->p = new int[nrow + 1]();
+//        A->i = new int[nnz]();
+//        A->x = new double[nnz]();
+//        A->nz = nullptr;
+//    } else {
+//        delete[]A->p;
+//        delete[]A->i;
+//        delete[]A->x;
+//    }
+//
+//    return 0;
+//}
 
 
 int transpose(CSC *L, CSC *U) {
