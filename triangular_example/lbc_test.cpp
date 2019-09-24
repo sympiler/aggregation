@@ -9,6 +9,8 @@
 #include <omp.h>
 #include "Transpose.h"
 
+#include "mergeGraph.h"
+
 #include "metis_wrapper.h"
 #include "Triangular_CSC.h"
 #include "Inspection_Level.h"
@@ -208,30 +210,37 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
      /**
      * Merge two L graphs here
      */
-     int *nLp = new int[2 * n + 1]();
-     int *nLi = new int[2 * nnz + n]();
-     int new_i_counter = 0;
-     size_t i = 0;
-     for(i = 0; i < n; i++) {
-         nLp[i] = int(Ap[i] + (i));
-         for(int j = Ap[i]; j < Ap[i+1]; j++) {
-             nLi[new_i_counter] = int(Ai[j]);
-             new_i_counter ++;
-         }
-         nLi[new_i_counter] = int(i + n);
-         new_i_counter++;
-     }
-     for(; i < 2 * n; i++) {
-         nLp[i] = int(Ap[i-n] + nnz + n);
-         for(int j = Ap[i-n]; j < Ap[i-n+1]; j++) {
-             nLi[new_i_counter] = int(Ai[j] + n);
-             new_i_counter++;
-         }
-     }
-     nLp[2*n] = int(2 *  nnz + n);
-     assert(new_i_counter == 2 * nnz + n);
+     int *nLp, *nLi;
+     int **Lps = new int*[2];
+     int **Lis = new int*[2];
+     Lps[0] = Lps[1] = Ap;
+     Lis[0] = Lis[1] = Ai;
 
+     merge_graph(2, n, Lps, Lis, nLp, nLi);
+//     int *nLp = new int[2 * n + 1]();
+//     int *nLi = new int[2 * nnz + n]();
+//     int new_i_counter = 0;
+//     size_t i = 0;
+//     for(i = 0; i < n; i++) {
+//         nLp[i] = int(Ap[i] + (i));
+//         for(int j = Ap[i]; j < Ap[i+1]; j++) {
+//             nLi[new_i_counter] = int(Ai[j]);
+//             new_i_counter ++;
+//         }
+//         nLi[new_i_counter] = int(i + n);
+//         new_i_counter++;
+//     }
+//     for(; i < 2 * n; i++) {
+//         nLp[i] = int(Ap[i-n] + nnz + n);
+//         for(int j = Ap[i-n]; j < Ap[i-n+1]; j++) {
+//             nLi[new_i_counter] = int(Ai[j] + n);
+//             new_i_counter++;
+//         }
+//     }
+//     nLp[2*n] = int(2 *  nnz + n);
+//     assert(new_i_counter == 2 * nnz + n);
 
+    int i;
     auto *x2 = new double[2 * n]();
 #ifdef CSC_SER
     std::cout << "SER2: ";
