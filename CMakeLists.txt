@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+project(LBC)
 set(CMAKE_CXX_STANDARD 11)
 
 set(METIS_INC "$ENV{METISROOT}/include")
@@ -18,6 +19,5 @@ if (UNIX AND NOT APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -std=c++11 -O3 -g")
 endif ()
 
-project(LBC)
-
+#add_subdirectory(src)
 add_subdirectory(triangular_example)

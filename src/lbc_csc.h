@@ -55,6 +55,10 @@ int getCoarseLevelSet_DAG_CSC03(size_t n,
     //COMPUTING NODE2lEVEL
     for (int i = 0; i < levelNo; ++i) {
         for (int j = levelPtr[i]; j < levelPtr[i + 1]; ++j) {
+            if(j >= n) {
+//                std::cerr << j << " " << i << "\n";
+                exit(1);
+            }
             int node = levelSet[j];
             node2Level[node] = i;
         }
@@ -204,7 +208,7 @@ int getCoarseLevelSet_DAG_CSC03(size_t n,
         levelParCostThresh += int(0.1 * levelParCostThresh);
         int outinnerParts = 0;
         averageCC += newLeveledParList.size();
-        mergedLeveledParList.resize(innerPartsSize[l]);//FIXME
+        mergedLeveledParList.resize(innerPartsSize[l]);//FIXME;
         if (newLeveledParList.size() > innerPartsSize[l]) {
             outinnerParts = worstFitBinPack(newLeveledParList, outCost,
                                             mergedLeveledParList, newOutCost,
