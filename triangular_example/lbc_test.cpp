@@ -30,7 +30,7 @@ void spmv_csc(int n, int *Ap, int *Ai, double *Ax, double *x, double *y) {
 }
 
 #define CPUTIME (SuiteSparse_time ( ))
-//#define CSC_SER
+#define CSC_SER
 #define CSC_LVL
 #define CSC_LBC
 #define NUM_TEST 9
@@ -156,7 +156,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     std::cout << "LVL1: ";
     int *levelPtr, *levelSet;
     int levels = buildLevelSet_CSC(n, Ap, Ai, levelPtr, levelSet);
-    std::cout << "\n" << levels << "\n";
+//    std::cout << "\n" << levels << "\n";
     for(int i = 0; i < NUM_TEST; i++) {
         std::memcpy(x1, b1, sizeof(double) * n);
         start = std::chrono::system_clock::now();
@@ -182,7 +182,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
         nodeCost[i] = 1;
     getCoarseLevelSet_DAG_CSC03(n, Ap, Ai, nLevels, HlevelPtr, HlevelSet, nPar, parPtr, partition,
             inner_part, level_param, div_rate, nodeCost);
-    std::cout << "\n" << nLevels << "\n";
+//    std::cout << "\n" << nLevels << "\n";
     delete[]nodeCost;
     for(int i = 0; i < NUM_TEST; i++) {
         std::memcpy(x1, b1, sizeof(double) * n);
@@ -198,7 +198,6 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     }
     std::cout << "\n";
     delete[]HlevelPtr;
-    delete[]HlevelSet;
     delete[]partition;
     delete[]parPtr;
 #endif
@@ -217,28 +216,6 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
      Lis[0] = Lis[1] = Ai;
 
      merge_graph(2, n, Lps, Lis, nLp, nLi);
-//     int *nLp = new int[2 * n + 1]();
-//     int *nLi = new int[2 * nnz + n]();
-//     int new_i_counter = 0;
-//     size_t i = 0;
-//     for(i = 0; i < n; i++) {
-//         nLp[i] = int(Ap[i] + (i));
-//         for(int j = Ap[i]; j < Ap[i+1]; j++) {
-//             nLi[new_i_counter] = int(Ai[j]);
-//             new_i_counter ++;
-//         }
-//         nLi[new_i_counter] = int(i + n);
-//         new_i_counter++;
-//     }
-//     for(; i < 2 * n; i++) {
-//         nLp[i] = int(Ap[i-n] + nnz + n);
-//         for(int j = Ap[i-n]; j < Ap[i-n+1]; j++) {
-//             nLi[new_i_counter] = int(Ai[j] + n);
-//             new_i_counter++;
-//         }
-//     }
-//     nLp[2*n] = int(2 *  nnz + n);
-//     assert(new_i_counter == 2 * nnz + n);
 
     int i;
     auto *x2 = new double[2 * n]();
@@ -263,7 +240,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     std::cout << "LVL2: ";
     int *nlevelPtr, *nlevelSet;
     int nlevels = buildLevelSet_CSC(2*n, nLp, nLi, nlevelPtr, nlevelSet);
-    std::cout << "\n" << nlevels << "\n";
+//    std::cout << "\n" << nlevels << "\n";
     for(i = 0; i < NUM_TEST; i++) {
         std::memcpy(x2, b2, sizeof(double) * n);
         std::memset(x2+n, 0, sizeof(double) * n);
@@ -291,7 +268,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
                                 inner_part, level_param, div_rate, nodeCost);
     delete[]nodeCost;
     std::cout << "LBC2: ";
-    std::cout << "\n" << nnLevels << "\n";
+    // std::cout << "\n" << nnLevels << "\n";
     for(i = 0; i < NUM_TEST; i++) {
         std::memcpy(x2, b2, sizeof(double) * n);
         std::memset(x2+n, 0, sizeof(double) * n);
@@ -307,7 +284,6 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     }
     std::cout << "\n";
     delete[]nHlevelPtr;
-    delete[]nHlevelSet;
     delete[]npartition;
     delete[]nparPtr;
 #endif

@@ -5,7 +5,7 @@ project(LBCTest)
 include_directories(${MKL_INC}  ${METIS_INC}
         "../src/")
 link_directories(${MKL_LIB} ${METIS_LIB})
-add_executable(LBCTest lbc_test.cpp initiate.cpp mmio.cpp)
+add_executable(LBCTest lbc_test.cpp initiate.cpp mmio.cpp ../src/mergeGraph.cpp)
 
 target_link_libraries(LBCTest
         #MKL BLAS
