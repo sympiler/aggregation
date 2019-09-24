@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 
     FILE *fp = fopen(file.c_str(), "r");
 
-    CSC *Amat;
+    CSC *Amat = nullptr;
     process_matrix(fp, Amat);
 
     int numThread = (int) strtol(argv[2], nullptr, 10);
@@ -126,6 +126,7 @@ int main(int argc, char *argv[]) {
 
 void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, int level_param, int div_rate) {
     int n = A->ncol;
+    int nnz = A->nzmax;
     int *Ap = A->p;
     int *Ai = A->i;
     double *Ax = A->x;
@@ -197,6 +198,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     delete[]HlevelPtr;
     delete[]HlevelSet;
     delete[]partition;
+    delete[]parPtr;
 #endif
     delete[]x1;
 
@@ -207,7 +209,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
      * Merge two L graphs here
      */
      int *nLp = new int[2 * n + 1]();
-     int *nLi = new int[2 * A->nzmax + n]();
+     int *nLi = new int[2 * nnz + n]();
      int new_i_counter = 0;
      size_t i = 0;
      for(i = 0; i < n; i++) {
@@ -220,14 +222,14 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
          new_i_counter++;
      }
      for(; i < 2 * n; i++) {
-         nLp[i] = int(Ap[i-n] + A->nzmax + n);
+         nLp[i] = int(Ap[i-n] + nnz + n);
          for(int j = Ap[i-n]; j < Ap[i-n+1]; j++) {
              nLi[new_i_counter] = int(Ai[j] + n);
              new_i_counter++;
          }
      }
-     nLp[2*n] = int(2 * A->nzmax + n);
-     assert(new_i_counter == 2 * A->nzmax + n);
+     nLp[2*n] = int(2 *  nnz + n);
+     assert(new_i_counter == 2 * nnz + n);
 
 
     auto *x2 = new double[2 * n]();
@@ -298,8 +300,11 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     delete[]nHlevelPtr;
     delete[]nHlevelSet;
     delete[]npartition;
+    delete[]nparPtr;
 #endif
     delete[]x2;
+    delete[]nLp;
+    delete[]nLi;
 }
 
 
