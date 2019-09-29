@@ -30,9 +30,12 @@ void spmv_csc(int n, int *Ap, int *Ai, double *Ax, double *x, double *y) {
 }
 
 #define CPUTIME (SuiteSparse_time ( ))
-//#define CSC_SER
-#define CSC_LVL
-#define CSC_LBC
+#define CSC_SER1
+#define CSC_LVL1
+#define CSC_LBC1
+//#define CSC_SER2
+//#define CSC_LVL2
+//#define CSC_LBC2
 #define NUM_TEST 9
 #undef DEBUG
 //#define FLOPCNT
@@ -136,7 +139,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     /** one kernel **/
     double duration;
     auto *x1 = new double[n]();
-#ifdef CSC_SER
+#ifdef CSC_SER1
     std::cout << "SER1: ";
     for(int i = 0; i < NUM_TEST; i++) {
         std::memcpy(x1, b1, sizeof(double) * n);
@@ -152,7 +155,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     }
     std::cout << "\n";
 #endif
-#ifdef CSC_LVL
+#ifdef CSC_LVL1
     std::cout << "LVL1: ";
     int *levelPtr, *levelSet;
     int levels = buildLevelSet_CSC(n, Ap, Ai, levelPtr, levelSet);
@@ -173,7 +176,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     delete[]levelPtr;
     delete[]levelSet;
 #endif
-#ifdef CSC_LBC
+#ifdef CSC_LBC1
     std::cout << "LBC1: ";
     int *HlevelPtr, *HlevelSet, *parPtr, *partition;
     int nLevels = 0, nPar = 0;
@@ -216,33 +219,11 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
      Lps[0] = Lps[1] = Ap;
      Lis[0] = Lis[1] = Ai;
 
-     merge_graph(2, n, Lps, Lis, nLp, nLi);
-//     int *nLp = new int[2 * n + 1]();
-//     int *nLi = new int[2 * nnz + n]();
-//     int new_i_counter = 0;
-//     size_t i = 0;
-//     for(i = 0; i < n; i++) {
-//         nLp[i] = int(Ap[i] + (i));
-//         for(int j = Ap[i]; j < Ap[i+1]; j++) {
-//             nLi[new_i_counter] = int(Ai[j]);
-//             new_i_counter ++;
-//         }
-//         nLi[new_i_counter] = int(i + n);
-//         new_i_counter++;
-//     }
-//     for(; i < 2 * n; i++) {
-//         nLp[i] = int(Ap[i-n] + nnz + n);
-//         for(int j = Ap[i-n]; j < Ap[i-n+1]; j++) {
-//             nLi[new_i_counter] = int(Ai[j] + n);
-//             new_i_counter++;
-//         }
-//     }
-//     nLp[2*n] = int(2 *  nnz + n);
-//     assert(new_i_counter == 2 * nnz + n);
+//     merge_graph(2, n, Lps, Lis, nLp, nLi);
 
     int i;
     auto *x2 = new double[2 * n]();
-#ifdef CSC_SER
+#ifdef CSC_SER2
     std::cout << "SER2: ";
     for(i = 0; i < NUM_TEST; i++) {
         std::memcpy(x2, b2, sizeof(double) * n);
@@ -259,7 +240,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     }
     std::cout << "\n";
 #endif
-#ifdef CSC_LVL
+#ifdef CSC_LVL2
     std::cout << "LVL2: ";
     int *nlevelPtr, *nlevelSet;
     int nlevels = buildLevelSet_CSC(2*n, nLp, nLi, nlevelPtr, nlevelSet);
@@ -281,15 +262,15 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     delete[]nlevelPtr;
     delete[]nlevelSet;
 #endif
-#ifdef CSC_LBC
+#ifdef CSC_LBC2
     int *nHlevelPtr, *nHlevelSet, *nparPtr, *npartition;
     int nnLevels = 0, nnPar = 0;
-    nodeCost = new double[2*n]();
+    auto *nodeCost1 = new double[2*n]();
     for(i = 0; i < 2*n; i++)
-        nodeCost[i] = 1;
+        nodeCost1[i] = 1;
     getCoarseLevelSet_DAG_CSC03(2*n, nLp, nLi, nnLevels, nHlevelPtr, nHlevelSet, nnPar, nparPtr, npartition,
-                                inner_part, level_param, div_rate, nodeCost);
-    delete[]nodeCost;
+                                inner_part, level_param, div_rate, nodeCost1);
+    delete[]nodeCost1;
     std::cout << "LBC2: ";
     std::cout << "\n" << nnLevels << "\n";
     for(i = 0; i < NUM_TEST; i++) {
@@ -306,10 +287,10 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
             std::cerr << "##LBC_ver, ";
     }
     std::cout << "\n";
-    delete[]nHlevelPtr;
-    delete[]nHlevelSet;
-    delete[]npartition;
-    delete[]nparPtr;
+//    delete[]nHlevelPtr;
+//    delete[]nHlevelSet;
+//    delete[]npartition;
+//    delete[]nparPtr;
 #endif
     delete[]x2;
     delete[]nLp;

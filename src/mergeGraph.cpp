@@ -2,7 +2,6 @@
 // Created by george on 2019-09-24.
 //
 
-#include <assert.h>
 #include <iostream>
 
 void merge_graph(int ngraphs, int n, int **Gps, int **Gis, int *&nGp, int *&nGi) {
@@ -12,7 +11,6 @@ void merge_graph(int ngraphs, int n, int **Gps, int **Gis, int *&nGp, int *&nGi)
     for(int i = 0; i < ngraphs; i++)
         nnz += Gps[i][n];
     nnz += (ngraphs-1) * n;
-std::cerr << nnz << "\n";
     /** allocate new graph space **/
     nGp = new int[ngraphs * n + 1]();
     nGi = new int[nnz]();
@@ -51,8 +49,4 @@ std::cerr << nnz << "\n";
             i_counter++;
         }
     }
-    assert(p_counter == ngraphs * n+2);
-    assert(nGp[ngraphs*n] == nnz);
-    assert(i_counter == nnz);
-    std::cerr << "okok\n";
 }
