@@ -30,12 +30,18 @@ void spmv_csc(int n, int *Ap, int *Ai, double *Ax, double *x, double *y) {
 }
 
 #define CPUTIME (SuiteSparse_time ( ))
+<<<<<<< HEAD
 #define CSC_SER1
 #define CSC_LVL1
 #define CSC_LBC1
 //#define CSC_SER2
 //#define CSC_LVL2
 //#define CSC_LBC2
+=======
+#define CSC_SER
+#define CSC_LVL
+#define CSC_LBC
+>>>>>>> 7210e411ec432a79c5cd16c742358af43d10e072
 #define NUM_TEST 9
 #undef DEBUG
 //#define FLOPCNT
@@ -159,7 +165,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     std::cout << "LVL1: ";
     int *levelPtr, *levelSet;
     int levels = buildLevelSet_CSC(n, Ap, Ai, levelPtr, levelSet);
-    std::cout << "\n" << levels << "\n";
+//    std::cout << "\n" << levels << "\n";
     for(int i = 0; i < NUM_TEST; i++) {
         std::memcpy(x1, b1, sizeof(double) * n);
         start = std::chrono::system_clock::now();
@@ -185,7 +191,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
         nodeCost[i] = 1;
     getCoarseLevelSet_DAG_CSC03(n, Ap, Ai, nLevels, HlevelPtr, HlevelSet, nPar, parPtr, partition,
             inner_part, level_param, div_rate, nodeCost);
-    std::cout << "\n" << nLevels << "\n";
+//    std::cout << "\n" << nLevels << "\n";
     delete[]nodeCost;
     for(int i = 0; i < NUM_TEST; i++) {
         std::memcpy(x1, b1, sizeof(double) * n);
@@ -201,7 +207,6 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     }
     std::cout << "\n";
     delete[]HlevelPtr;
-    delete[]HlevelSet;
     delete[]partition;
     delete[]parPtr;
 #endif
@@ -219,7 +224,11 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
      Lps[0] = Lps[1] = Ap;
      Lis[0] = Lis[1] = Ai;
 
+<<<<<<< HEAD
 //     merge_graph(2, n, Lps, Lis, nLp, nLi);
+=======
+     merge_graph(2, n, Lps, Lis, nLp, nLi);
+>>>>>>> 7210e411ec432a79c5cd16c742358af43d10e072
 
     int i;
     auto *x2 = new double[2 * n]();
@@ -244,7 +253,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     std::cout << "LVL2: ";
     int *nlevelPtr, *nlevelSet;
     int nlevels = buildLevelSet_CSC(2*n, nLp, nLi, nlevelPtr, nlevelSet);
-    std::cout << "\n" << nlevels << "\n";
+//    std::cout << "\n" << nlevels << "\n";
     for(i = 0; i < NUM_TEST; i++) {
         std::memcpy(x2, b2, sizeof(double) * n);
         std::memset(x2+n, 0, sizeof(double) * n);
@@ -272,7 +281,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
                                 inner_part, level_param, div_rate, nodeCost1);
     delete[]nodeCost1;
     std::cout << "LBC2: ";
-    std::cout << "\n" << nnLevels << "\n";
+    // std::cout << "\n" << nnLevels << "\n";
     for(i = 0; i < NUM_TEST; i++) {
         std::memcpy(x2, b2, sizeof(double) * n);
         std::memset(x2+n, 0, sizeof(double) * n);
@@ -287,10 +296,16 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
             std::cerr << "##LBC_ver, ";
     }
     std::cout << "\n";
+<<<<<<< HEAD
 //    delete[]nHlevelPtr;
 //    delete[]nHlevelSet;
 //    delete[]npartition;
 //    delete[]nparPtr;
+=======
+    delete[]nHlevelPtr;
+    delete[]npartition;
+    delete[]nparPtr;
+>>>>>>> 7210e411ec432a79c5cd16c742358af43d10e072
 #endif
     delete[]x2;
     delete[]nLp;
