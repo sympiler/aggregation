@@ -6,6 +6,8 @@ set(METIS_INC "$ENV{METISROOT}/include")
 set(METIS_LIB "$ENV{METISROOT}/libmetis")
 
 if (APPLE)
+    SET(CMAKE_C_COMPILER /usr/local/Cellar/gcc/9.1.0/bin/gcc-9)
+    SET(CMAKE_CXX_COMPILER /usr/local/Cellar/gcc/9.1.0/bin/g++-9)
     set(MKL_INC "$ENV{MKLROOT}/include")
     set(MKL_LIB "$ENV{MKLROOT}/lib")
     set(MKL_LIB2 "$ENV{MKLROOT}/../compiler/lib")

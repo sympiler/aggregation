@@ -30,18 +30,12 @@ void spmv_csc(int n, int *Ap, int *Ai, double *Ax, double *x, double *y) {
 }
 
 #define CPUTIME (SuiteSparse_time ( ))
-<<<<<<< HEAD
 #define CSC_SER1
 #define CSC_LVL1
 #define CSC_LBC1
 //#define CSC_SER2
 //#define CSC_LVL2
 //#define CSC_LBC2
-=======
-#define CSC_SER
-#define CSC_LVL
-#define CSC_LBC
->>>>>>> 7210e411ec432a79c5cd16c742358af43d10e072
 #define NUM_TEST 9
 #undef DEBUG
 //#define FLOPCNT
@@ -224,11 +218,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
      Lps[0] = Lps[1] = Ap;
      Lis[0] = Lis[1] = Ai;
 
-<<<<<<< HEAD
 //     merge_graph(2, n, Lps, Lis, nLp, nLi);
-=======
-     merge_graph(2, n, Lps, Lis, nLp, nLi);
->>>>>>> 7210e411ec432a79c5cd16c742358af43d10e072
 
     int i;
     auto *x2 = new double[2 * n]();
