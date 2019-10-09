@@ -33,10 +33,10 @@ void spmv_csc(int n, int *Ap, int *Ai, double *Ax, double *x, double *y) {
 #define CSC_SER1
 #define CSC_LVL1
 #define CSC_LBC1
-//#define CSC_SER2
-//#define CSC_LVL2
-//#define CSC_LBC2
-#define NUM_TEST 9
+#define CSC_SER2
+#define CSC_LVL2
+#define CSC_LBC2
+#define NUM_TEST 5
 #undef DEBUG
 //#define FLOPCNT
 #define METIS 1
@@ -89,7 +89,9 @@ int main(int argc, char *argv[]) {
     int levelParam =  (int) strtol(argv[5], nullptr, 10);// level distance
     int blasThreads = (int) strtol(argv[6], nullptr, 10); // not used
     int divRate =     (int) strtol(argv[7], nullptr, 10);
-
+ omp_set_num_threads(numThread);
+ int tt = omp_get_num_threads();
+    std::cout<<file<<","<<tt<<","<<innerPart<<","<<levelParam<<","<<divRate<<",";
     /**
      * METIS reordering of matrix
      */
@@ -98,14 +100,16 @@ int main(int argc, char *argv[]) {
     Metis_oredering(Amat, Perm);
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
-    std::cout << "METIS: " << elapsed_seconds.count() << "\n";
+    //std::cout << "METIS: " << elapsed_seconds.count() << "\n";
+    std::cout<< elapsed_seconds.count() <<",";
     start = std::chrono::system_clock::now();
     int status = 0;
     CSC *A1 = ptranspose(Amat, 2, Perm, nullptr, 0, status);
     CSC *A2 = ptranspose(A1, 2, nullptr, nullptr, 0, status);
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
-    std::cout << "Transpose: " << elapsed_seconds.count() << "\n";
+    //std::cout << "Transpose: " << elapsed_seconds.count() << "\n";
+ std::cout<< elapsed_seconds.count() <<",";
     delete[]Perm;
     allocateAC(Amat, 0, 0, 0, false);
     allocateAC(A1, 0, 0, 0, false);
@@ -119,7 +123,7 @@ int main(int argc, char *argv[]) {
     spmv_csc(A2->ncol, A2->p, A2->i, A2->x, b1, b2);
 
     /** Test LLx = b **/
-    omp_set_num_threads(numThread);
+
     test_LL(A2, b1, b2, innerPart, levelParam, divRate);
 
     allocateAC(A2, 0, 0, 0, false);
@@ -140,7 +144,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     double duration;
     auto *x1 = new double[n]();
 #ifdef CSC_SER1
-    std::cout << "SER1: ";
+    //std::cout << "SER1: ";
     for(int i = 0; i < NUM_TEST; i++) {
         std::memcpy(x1, b1, sizeof(double) * n);
         start = std::chrono::system_clock::now();
@@ -153,10 +157,10 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
         else
             std::cerr << "##Serial, ";
     }
-    std::cout << "\n";
+   // std::cout << "\n";
 #endif
 #ifdef CSC_LVL1
-    std::cout << "LVL1: ";
+  //  std::cout << "LVL1: ";
     int *levelPtr, *levelSet;
     int levels = buildLevelSet_CSC(n, Ap, Ai, levelPtr, levelSet);
 //    std::cout << "\n" << levels << "\n";
@@ -172,12 +176,12 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
         else
             std::cerr << "##Levelset, ";
     }
-    std::cout << "\n";
+//    std::cout << "\n";
     delete[]levelPtr;
     delete[]levelSet;
 #endif
 #ifdef CSC_LBC1
-    std::cout << "LBC1: ";
+//    std::cout << "LBC1: ";
     int *HlevelPtr, *HlevelSet, *parPtr, *partition;
     int nLevels = 0, nPar = 0;
     auto *nodeCost = new double[n]();
@@ -207,7 +211,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     delete[]x1;
 
     /** two kernels **/
-    std::cout << "============== LLx = b =============\n";
+//    std::cout << "============== LLx = b =============\n";
 
      /**
      * Merge two L graphs here
@@ -218,12 +222,12 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
      Lps[0] = Lps[1] = Ap;
      Lis[0] = Lis[1] = Ai;
 
-//     merge_graph(2, n, Lps, Lis, nLp, nLi);
+     merge_graph(2, n, Lps, Lis, nLp, nLi);
 
     int i;
     auto *x2 = new double[2 * n]();
 #ifdef CSC_SER2
-    std::cout << "SER2: ";
+//    std::cout << "SER2: ";
     for(i = 0; i < NUM_TEST; i++) {
         std::memcpy(x2, b2, sizeof(double) * n);
         start = std::chrono::system_clock::now();
@@ -237,10 +241,10 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
         else
             std::cerr << "##Serial, ";
     }
-    std::cout << "\n";
+   // std::cout << "\n";
 #endif
 #ifdef CSC_LVL2
-    std::cout << "LVL2: ";
+    //std::cout << "LVL2: ";
     int *nlevelPtr, *nlevelSet;
     int nlevels = buildLevelSet_CSC(2*n, nLp, nLi, nlevelPtr, nlevelSet);
 //    std::cout << "\n" << nlevels << "\n";
@@ -257,7 +261,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
         else
             std::cerr << "##Levelset, ";
     }
-    std::cout << "\n";
+   // std::cout << "\n";
     delete[]nlevelPtr;
     delete[]nlevelSet;
 #endif
@@ -270,7 +274,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
     getCoarseLevelSet_DAG_CSC03(2*n, nLp, nLi, nnLevels, nHlevelPtr, nHlevelSet, nnPar, nparPtr, npartition,
                                 inner_part, level_param, div_rate, nodeCost1);
     delete[]nodeCost1;
-    std::cout << "LBC2: ";
+//    std::cout << "LBC2: ";
     // std::cout << "\n" << nnLevels << "\n";
     for(i = 0; i < NUM_TEST; i++) {
         std::memcpy(x2, b2, sizeof(double) * n);
@@ -285,17 +289,10 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
         else
             std::cerr << "##LBC_ver, ";
     }
-    std::cout << "\n";
-<<<<<<< HEAD
-//    delete[]nHlevelPtr;
-//    delete[]nHlevelSet;
-//    delete[]npartition;
-//    delete[]nparPtr;
-=======
+//    std::cout << "\n";
     delete[]nHlevelPtr;
     delete[]npartition;
     delete[]nparPtr;
->>>>>>> 7210e411ec432a79c5cd16c742358af43d10e072
 #endif
     delete[]x2;
     delete[]nLp;
