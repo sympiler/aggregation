@@ -33,9 +33,9 @@ void spmv_csc(int n, int *Ap, int *Ai, double *Ax, double *x, double *y) {
 #define CSC_SER1
 #define CSC_LVL1
 #define CSC_LBC1
-#define CSC_SER2
-#define CSC_LVL2
-#define CSC_LBC2
+//#define CSC_SER2
+//#define CSC_LVL2
+//#define CSC_LBC2
 #define NUM_TEST 5
 #undef DEBUG
 //#define FLOPCNT
@@ -203,7 +203,7 @@ void test_LL(const CSC *A, const double *b1, const double *b2, int inner_part, i
         else
             std::cerr << "##LBC_ver, ";
     }
-    std::cout << "\n";
+  //  std::cout << "\n";
     delete[]HlevelPtr;
     delete[]partition;
     delete[]parPtr;
