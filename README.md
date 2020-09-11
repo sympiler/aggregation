@@ -2,7 +2,7 @@
 Load-balance Level Coarsening is a scheduling algorithm for 
 making sparse matrix loops parallel. It can be used within 
  code generators or libraries. For more information see 
-[Sympiler website](www.sympiler.com).
+[Sympiler website](http:://www.sympiler.com/).
 
 ## Install
 
