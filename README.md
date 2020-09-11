@@ -13,6 +13,10 @@ you need to install METIS. If METIS is installed in the system path,
 CMAKE will resolve the dpendency otherwise you need to set 
 `CMAKE_PREFIX_PATH` to the root directory of metis, i.e., 
 where the cmakelists file exists. 
+For installing METIS in Ubuntu you can also use
+```
+sudo apt install metis
+```
 
 
 Then install LBC by following commands:
