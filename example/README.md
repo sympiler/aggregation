@@ -1,4 +1,8 @@
 # Running Triangular Example
 
+Simply:
+```bash
+sptrsv_demo matrix_name.mtx level_param div_rate
+```
 
-LBCTest matrix_name.mtx num_threads num_chunk inner_part level_param blas_threads div_rate
+For the details of input, refer to the paper. 

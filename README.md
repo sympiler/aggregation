@@ -1,16 +1,21 @@
-# LBC
-Load-balance Level Coarsening
+# Load-balance Level Coarsening (LBC)
+Load-balance Level Coarsening is a scheduling algorithm for 
+making sparse matrix loops parallel. It can be used within 
+ code generators or libraries. For more information see 
+[Sympiler website](www.sympiler.com).
 
 ## Install
 
 ### Linux
-First export METIS and MKL library that are only required for the triangular example:
-```bash
-export MKLROOT <path to MKL>
-export METISROOT <path to METIS>
-```
+LBC library does not have any dependency.
+However, if you want to run the triangular solve example, 
+you need to install METIS. If METIS is installed in the system path,
+CMAKE will resolve the dpendency otherwise you need to set 
+`CMAKE_PREFIX_PATH` to the root directory of metis, i.e., 
+where the cmakelists file exists. 
 
-Then create a build directory and use camke to build the LBC code:
+
+Then install LBC by following commands:
 
 ```bash
 mkdir build
@@ -20,6 +25,11 @@ make
 ```
 
 ### Mac
-TODO: Setting the C and CXX compilers
+Setting the C and CXX compilers to GCC and then follow the Linux 
+instructions. 
+
+## Example
+As an example, sparse triangular solver example, CSR is turned into
+a parallel code using the LBC algorithm. 
 
 
