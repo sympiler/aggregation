@@ -5,6 +5,7 @@ include_directories(includes
         ${SPARSE_EXTN_INC}
         ${LBC_INC}
         ${METIS_INCLUDE_DIR} ${METIS_INCLUDES}
+        ${Group_INC}
         )
 
 project(sptrsv_demo)

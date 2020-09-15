@@ -10,6 +10,10 @@
 
 #include "FusionDemo.h"
 #include "sparse_blas_lib.h"
+#include <Group.h>
+#include <Utils.h>
+#include <executor.h>
+
 
 namespace sym_lib {
 
@@ -117,7 +121,91 @@ namespace sym_lib {
   };
  };
 
+}
+
+namespace group_cols{
+    using namespace sym_lib;
+
+    class SpTrsvCSR_Grouping : public sym_lib::SptrsvSerial{
+    protected:
+        int *groupSet, *groupPtr, *groupInv, ngroup, nlevels, nthreads;
+        int *levelPtr, *levelSet;
+        void build_set() override {
+            groupPtr = (int *)malloc(sizeof(int)*(L1_csc_->n+1));
+            memset(groupPtr, 0, sizeof(int)*(1+L1_csc_->n));
+            groupSet = (int *)malloc(sizeof(int)*L1_csc_->n);
+            memset(groupSet, 0, sizeof(int)*L1_csc_->n);
+            groupInv = (int *)malloc(sizeof(int)*L1_csc_->n);
+            memset(groupInv, 0, sizeof(int)*L1_csc_->n);
+
+            group g(L1_csr_->n, L1_csr_->p, L1_csr_->i);
+
+            g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
+
+            std::vector<std::vector<int>> DAG;
+            DAG.resize(ngroup);
+
+            fs_csr_inspector_dep(ngroup, groupPtr, groupSet, groupInv, L1_csr_->p, L1_csr_->i, DAG);
+
+            size_t count=0;
+            for (int j = 0; j < DAG.size(); ++j) {
+                DAG[j].erase(std::unique(DAG[j].begin(), DAG[j].end()), DAG[j].end());
+                count+=DAG[j].size();
+            }
+//   detectDAGCircle(DAG);
+
+            int *gv, *gedg;
+            gv = new int[L1_csc_->n+1]();
+            gedg = new int[count+L1_csc_->n]();
+            levelPtr = new int[L1_csc_->n+1]();
+            levelSet = new int[L1_csc_->n]();
+
+            long int cti,edges=0;
+            for(cti = 0, edges = 0; cti < ngroup; cti++){
+                gv[cti] = edges;
+                gedg[edges++] = cti;
+                for (int ctj = 0; ctj < DAG[cti].size(); ctj++) {
+                    gedg[edges++] = DAG[cti][ctj];
+//                if(DAG[cti][ctj]==0)printf("cti=%d, ctj=%d\n", cti, ctj);
+                }
+            }
+            gv[cti] = edges;
+
+            nlevels = buildLevelSet_CSC_Queue(ngroup, 0, gv, gedg, levelPtr, levelSet);
+
+            std::cout<<nlevels<<","<<ngroup*1.0/nlevels<<std::endl;
+
+        }
+
+        timing_measurement fused_code() override {
+            //sym_lib::rhs_init(L1_csc_->n, L1_csc_->p, L1_csc_->i, L1_csc_->x, x_); // x is b
+            timing_measurement t1;
+            t1.start_timer();
+            fs_csr_executor_sgroup(L1_csr_->n, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_, x_in_, groupPtr, groupSet, ngroup, nlevels, levelPtr, levelSet);
+            t1.measure_elapsed_time();
+            sym_lib::copy_vector(0,n_,x_in_,x_);
+            return t1;
+        }
+
+    public:
+        SpTrsvCSR_Grouping(CSR *L, CSC *L_csc,
+                           double *correct_x, std::string name, int nt):
+                SptrsvSerial(L, L_csc, correct_x, name){
+            L1_csr_ = L;
+            L1_csc_ = L_csc;
+            correct_x_ = correct_x;
+            nthreads = nt;
+        };
+
+        ~SpTrsvCSR_Grouping() override{};
+    };
+
+
 
 
 }
+
+
+
+
 #endif //FUSION_SPTRSV_DEMO_UTILS_H
