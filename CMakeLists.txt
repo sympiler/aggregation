@@ -29,6 +29,7 @@ set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/lbc/includes")
 set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/lbc")
 
 set(Group_INC "${CMAKE_CURRENT_SOURCE_DIR}/Group/includes/")
+set(Group_SRC "${CMAKE_CURRENT_SOURCE_DIR}/Group/")
 
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
@@ -41,7 +42,7 @@ if (APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp ")
 endif ()
 if (UNIX AND NOT APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -std=c++11 ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -std=c++11 -O3 ")
 endif ()
 
 add_subdirectory(lbc)

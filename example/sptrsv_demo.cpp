@@ -82,7 +82,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  double *y_serial, *y_correct = new double[n];
 
  timing_measurement t_ser, t_par, t_par2, t_blocked, t_blocked_mkl,
- t_blocked_levelset, t_levelset;
+ t_blocked_levelset, t_levelset, t_group;
 
  SptrsvSerial *ss = new SptrsvSerial(L2_csr, L1_csc, NULLPNTR, "serial");
  t_ser = ss->evaluate();
@@ -93,8 +93,16 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc");
  t_levelset = sls->evaluate();
 
+// printf("levelset done\n");
+
  auto *sl = new SptrsvLBC(L2_csr, L1_csc, y_serial, "lbc",num_threads, p2, p3);
  t_par = sl->evaluate();
+
+// printf("lbc done\n");
+
+    auto *sg = new group_cols::SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "grouping code", num_threads);
+ t_group = sg->evaluate();
+
 
 
  if(header)
@@ -113,6 +121,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  PRINT_CSV(t_ser.elapsed_time);
  PRINT_CSV(t_levelset.elapsed_time);
  PRINT_CSV(t_par.elapsed_time);
+ PRINT_CSV(t_group.elapsed_time);
 
  delete []y_correct;
  delete A;

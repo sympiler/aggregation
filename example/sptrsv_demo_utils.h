@@ -13,6 +13,7 @@
 #include <Group.h>
 #include <Utils.h>
 #include <executor.h>
+#include <StatSpMat.h>
 
 
 namespace sym_lib {
@@ -173,7 +174,7 @@ namespace group_cols{
 
             nlevels = buildLevelSet_CSC_Queue(ngroup, 0, gv, gedg, levelPtr, levelSet);
 
-            std::cout<<nlevels<<","<<ngroup*1.0/nlevels<<std::endl;
+//            std::cout<<nlevels<<","<<ngroup*1.0/nlevels<<std::endl;
 
         }
 

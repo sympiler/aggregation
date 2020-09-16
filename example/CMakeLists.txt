@@ -17,6 +17,7 @@ set(SPTRSVD_SOURCE_FILES
         ${SPARSE_UTIL_SRC}/test_utils.cpp
         ${SPARSE_UTIL_SRC}/utils.cpp
         ${SPARSE_EXTN_SRC}/mmio.cpp
+        ${Group_SRC}/StatSpMat.cpp
         ${METIS_SOURCE_FILES}
         FusionDemo.cpp
         )
