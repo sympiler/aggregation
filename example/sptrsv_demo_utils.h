@@ -53,7 +53,7 @@ namespace sym_lib {
   timing_measurement fused_code() override {
    timing_measurement t1;
    t1.start_timer();
-   sptrsv_csr_levelset(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+   sptrsv_csr_levelset_seq(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
                        level_no, level_ptr, level_set);
    t1.measure_elapsed_time();
    copy_vector(0,n_,x_in_,x_);
@@ -131,6 +131,7 @@ namespace group_cols{
     protected:
         int *groupSet, *groupPtr, *groupInv, ngroup, nlevels, nthreads;
         int *levelPtr, *levelSet;
+        int blksize=1;
         void build_set() override {
             groupPtr = (int *)malloc(sizeof(int)*(L1_csc_->n+1));
             memset(groupPtr, 0, sizeof(int)*(1+L1_csc_->n));
@@ -141,8 +142,8 @@ namespace group_cols{
 
             group g(L1_csr_->n, L1_csr_->p, L1_csr_->i);
 
-            g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
-
+//            g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
+            NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
             std::vector<std::vector<int>> DAG;
             DAG.resize(ngroup);
 
@@ -190,12 +191,13 @@ namespace group_cols{
 
     public:
         SpTrsvCSR_Grouping(CSR *L, CSC *L_csc,
-                           double *correct_x, std::string name, int nt):
+                           double *correct_x, std::string name, int nt, int blksize_):
                 SptrsvSerial(L, L_csc, correct_x, name){
             L1_csr_ = L;
             L1_csc_ = L_csc;
             correct_x_ = correct_x;
             nthreads = nt;
+            blksize = blksize_;
         };
 
         ~SpTrsvCSR_Grouping() override{};

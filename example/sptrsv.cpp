@@ -35,6 +35,20 @@ namespace sym_lib {
   }
  }
 
+    void sptrsv_csr_levelset_seq(int n, const int *Lp, const int *Li, const double *Lx,
+                             double *x,
+                             int levels, const int *levelPtr,
+                             const int *levelSet) {
+        for (int l = 0; l < levels; l++) {
+            for (int k = levelPtr[l]; k < levelPtr[l + 1]; ++k) {
+                int i = levelSet[k];
+                for (int j = Lp[i]; j < Lp[i + 1] - 1; j++) {
+                    x[i] -= Lx[j] * x[Li[j]];
+                }
+                x[i] /= Lx[Lp[i + 1] - 1];
+            }
+        }
+    }
 
  void sptrsv_csr_lbc(int n, int *Lp, int *Li, double *Lx, double *x,
                      int level_no, int *level_ptr,

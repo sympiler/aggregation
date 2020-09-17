@@ -26,6 +26,11 @@ namespace sym_lib {
                      double *x,
                      int levels, const int *levelPtr, const int *levelSet);
 
+ void sptrsv_csr_levelset_seq(int n, const int *Lp, const int *Li, const double *Lx,
+                              double *x,
+                              int levels, const int *levelPtr, const int *levelSet);
+
+
  void
  sptrsv_csr_lbc(int n, int *Lp, int *Li, double *Lx, double *x,
                 int level_no, int *level_ptr,

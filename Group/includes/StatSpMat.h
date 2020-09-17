@@ -6,16 +6,24 @@
 #define LBC_LIB_STATSPMAT_H
 
 #include <def.h>
+#include <Group.h>
+#include <Utils.h>
+#include <omp.h>
+#include <executor.h>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+
 
 namespace group_cols
 {
-#define CSV_LOG
-
-#ifdef CSV_LOG
-#define PRINT_CSV(x) std::cout <<(x)<<","
-#else
-#define PRINT_CSV(x)
-#endif
+//#define CSV_LOG
+//
+//#ifdef CSV_LOG
+//#define PRINT_CSV(x) std::cout <<(x)<<","
+//#else
+//#define PRINT_CSV(x)
+//#endif
 
     typedef enum
     {
@@ -32,11 +40,15 @@ namespace group_cols
         int nFlops; // Number of flops for one Sparse Kernel
         double AverageMaxDiff; // Maximal difference per (coarsened) level. (nnz cost)
         double VarianceMaxDiff; // Variance difference per (coarsened) level. (nnz cost)
-        int SumMaxDiff; // Sumimum of Maximal difference per (coarsened) level. (nnz cost)
+        long long int SumMaxDiff; // Sumimum of Maximal difference per (coarsened) level. (nnz cost)
         int numofcores;
+
+
         double t_serial;
         double t_level;
         double t_lbc;
+        double t_group_level;
+
         int nlevels;
         int num_sys;
         double NnzPerRows;
@@ -46,7 +58,7 @@ namespace group_cols
         SpKerType spkernel;
 
     public:
-        StatSpMat(CSR *L, SpKerType kerType, int num_threads);
+        StatSpMat(CSR *L, SpKerType kerType, int num_threads, int blksize);
 
         StatSpMat(CSC *L, SpKerType kerType, int num_threads);
 
@@ -62,6 +74,10 @@ namespace group_cols
 
         void set_lbc_time(double lbc_time){
             t_lbc=lbc_time;
+        }
+
+        void set_glevel_time(double glevel_time){
+            t_group_level=glevel_time;
         }
 
     };

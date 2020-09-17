@@ -100,7 +100,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
 // printf("lbc done\n");
 
-    auto *sg = new group_cols::SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "grouping code", num_threads);
+    auto *sg = new group_cols::SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "grouping code", num_threads, 1);
  t_group = sg->evaluate();
 
 

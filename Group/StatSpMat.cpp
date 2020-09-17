@@ -3,14 +3,12 @@
 //
 
 #include <StatSpMat.h>
-#include <Group.h>
-#include <Utils.h>
-#include <omp.h>
-#include <executor.h>
 
+#include "../example/sparse_blas_lib.h"
 
+using namespace sym_lib;
 namespace group_cols{
-    StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads)
+    StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads, int blksize)
     {
         omp_set_num_threads(num_threads);
 
@@ -20,7 +18,7 @@ namespace group_cols{
         this->n = L->n;
         this->nnz = L->nnz;
         this->spkernel = kerType;
-        this->NnzPerRows = L->nnz/L->n;
+        this->NnzPerRows = L->nnz*1.0/L->n;
         this->numofcores = omp_get_max_threads();
 
         fs_csr_stat(L->n, L->p, L->i, this->nFlops, this->nnz_access, this->nnz_reuse);
@@ -33,9 +31,14 @@ namespace group_cols{
         int *groupInv = (int *)malloc(sizeof(int)*L->n);
         memset(groupInv, 0, sizeof(int)*L->n);
 
+//        double *x = (double *)malloc(sizeof(double)*L->n);
+//        memset(x, 0, sizeof(double)*L->n);
+
         int ngroup;
         group g(L->n, L->p, L->i);
-        g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
+//        g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
+
+        NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
 
         this->ngroup = ngroup;
 
@@ -83,7 +86,18 @@ namespace group_cols{
 
         fs_csr_levelset_stat(L->p, L->i, groupPtr, groupSet, this->nlevels, levelPtr, levelSet, lcost.data());
 
-        this->SumMaxDiff = std::accumulate(lcost.begin(), lcost.end(), 0.0);
+
+//        rhsInit_csr(L->n, L->p, L->i, L->x, x);
+
+//        sptrsv_csr_levelset(L->n, L->p, L->i, L->x)
+
+
+        this->SumMaxDiff=0;
+        for (auto &cost: lcost) {
+            this->SumMaxDiff +=cost;
+        }
+
+//        this->SumMaxDiff = std::accumulate(lcost.begin(), lcost.end(), 0.0);
         this->AverageMaxDiff = this->SumMaxDiff * 1.0 / lcost.size();
 
         double accum=0.0;
@@ -112,6 +126,7 @@ namespace group_cols{
         PRINT_CSV(this->SumMaxDiff);
         PRINT_CSV(this->numofcores);
         PRINT_CSV(this->t_serial);
+        PRINT_CSV(this->t_group_level);
         PRINT_CSV(this->t_level);
 
     }
