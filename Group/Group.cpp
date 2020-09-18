@@ -350,60 +350,60 @@ namespace group_cols
                 visited[curIdx]= true;
 
                 if(status[curIdx]==0 && status[chIdx]==0){
-//                        next[chIdx]=curIdx;
-//                        pre[curIdx]=chIdx;
-//                        status[chIdx]=1;
-//
-//                        curIdx=chIdx;
-//                        visited[curIdx]= true;
+                        next[chIdx]=curIdx;
+                        pre[curIdx]=chIdx;
+                        status[chIdx]=1;
+
+                        curIdx=chIdx;
+                        visited[curIdx]= true;
                     chIdx = child[curIdx];
 
-                    while (chIdx!=-1 && (curIdx-chIdx)==1 && !visited[chIdx])
-                    {
-                        visited[chIdx]=true;
-
-                        next[chIdx] = curIdx;
-                        pre[curIdx]=chIdx;
-
-                        status[chIdx] = 3;
-                        curIdx=chIdx;
-                        chIdx=child[curIdx];
-                    }
-
-                    int tcurIdx = curIdx-1;
-                    int len=0;
-                    while (child[tcurIdx]==-1 && !visited[tcurIdx] && len<ncol/12)
-                    {
-                        visited[tcurIdx] = true;
-                        next[tcurIdx] = tcurIdx+1;
-                        pre[tcurIdx+1] = tcurIdx;
-                        status[tcurIdx]=3;
-                        --tcurIdx;
-                    }
-                }
-                else if (status[chIdx]==1 && status[curIdx]==0)
-                {
-                    visited[chIdx]=true;
+//                    while (chIdx!=-1 && (curIdx-chIdx)==1 && !visited[chIdx])
+//                    {
+//                        visited[chIdx]=true;
+//
 //                        next[chIdx] = curIdx;
-                    int tp = next[chIdx];
-                    next[chIdx]=curIdx;
-                    pre[curIdx]=chIdx;
-                    next[curIdx]=tp;
-                    pre[tp]=curIdx;
-                    status[curIdx]=2;
+//                        pre[curIdx]=chIdx;
+//
+//                        status[chIdx] = 3;
+//                        curIdx=chIdx;
+//                        chIdx=child[curIdx];
+//                    }
+//
+//                    int tcurIdx = curIdx-1;
+//                    int len=0;
+//                    while (child[tcurIdx]==-1 && !visited[tcurIdx] && len<ncol/12)
+//                    {
+//                        visited[tcurIdx] = true;
+//                        next[tcurIdx] = tcurIdx+1;
+//                        pre[tcurIdx+1] = tcurIdx;
+//                        status[tcurIdx]=3;
+//                        --tcurIdx;
+//                    }
                 }
-                else if(status[chIdx]==3 && status[curIdx]==0)
-                {
-                    visited[chIdx]=true;
-                    int tp = next[chIdx];
-
-                    next[chIdx]=curIdx;
-                    pre[curIdx]=chIdx;
-                    next[curIdx]=tp;
-                    pre[tp]=curIdx;
-
-                    status[curIdx]=2;
-                }
+//                else if (status[chIdx]==1 && status[curIdx]==0)
+//                {
+//                    visited[chIdx]=true;
+////                        next[chIdx] = curIdx;
+//                    int tp = next[chIdx];
+//                    next[chIdx]=curIdx;
+//                    pre[curIdx]=chIdx;
+//                    next[curIdx]=tp;
+//                    pre[tp]=curIdx;
+//                    status[curIdx]=2;
+//                }
+//                else if(status[chIdx]==3 && status[curIdx]==0)
+//                {
+//                    visited[chIdx]=true;
+//                    int tp = next[chIdx];
+//
+//                    next[chIdx]=curIdx;
+//                    pre[curIdx]=chIdx;
+//                    next[curIdx]=tp;
+//                    pre[tp]=curIdx;
+//
+//                    status[curIdx]=2;
+//                }
             }
         }
 

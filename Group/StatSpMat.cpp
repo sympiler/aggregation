@@ -36,9 +36,9 @@ namespace group_cols{
 
         int ngroup;
         group g(L->n, L->p, L->i);
-//        g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
+        g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
 
-        NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
+//        NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
 
         this->ngroup = ngroup;
 

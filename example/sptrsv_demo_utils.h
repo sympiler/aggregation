@@ -142,8 +142,8 @@ namespace group_cols{
 
             group g(L1_csr_->n, L1_csr_->p, L1_csr_->i);
 
-//            g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
-            NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
+            g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
+//            NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
             std::vector<std::vector<int>> DAG;
             DAG.resize(ngroup);
 
