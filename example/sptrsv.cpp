@@ -23,16 +23,23 @@ namespace sym_lib {
                           double *x,
                           int levels, const int *levelPtr,
                           const int *levelSet) {
-  for (int l = 0; l < levels; l++) {
-#pragma omp parallel for default(shared) schedule(auto)
-   for (int k = levelPtr[l]; k < levelPtr[l + 1]; ++k) {
-    int i = levelSet[k];
-    for (int j = Lp[i]; j < Lp[i + 1] - 1; j++) {
-     x[i] -= Lx[j] * x[Li[j]];
-    }
-    x[i] /= Lx[Lp[i + 1] - 1];
-   }
-  }
+#pragma omp parallel
+     {
+     for (int l = 0; l < levels; l++) {
+//#pragma omp parallel for default(shared) schedule(auto)
+#pragma omp for schedule(auto)
+        for (int k = levelPtr[l]; k < levelPtr[l + 1]; ++k) {
+             int i = levelSet[k];
+             for (int j = Lp[i]; j < Lp[i + 1] - 1; j++) {
+                 x[i] -= Lx[j] * x[Li[j]];
+             }
+             x[i] /= Lx[Lp[i + 1] - 1];
+         }
+     }
+
+
+ };
+
  }
 
     void sptrsv_csr_levelset_seq(int n, const int *Lp, const int *Li, const double *Lx,

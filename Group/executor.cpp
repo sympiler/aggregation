@@ -106,9 +106,6 @@ namespace group_cols
 
                 lcost[l]=temp_cost[0];
             }
-
-
-
         };
     }
 

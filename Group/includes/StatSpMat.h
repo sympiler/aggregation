@@ -60,6 +60,9 @@ namespace group_cols
     public:
         StatSpMat(CSR *L, SpKerType kerType, int num_threads, int blksize);
 
+        StatSpMat(CSR *L, SpKerType kerType, int num_threads, int lparm, int divrate);
+
+
         StatSpMat(CSC *L, SpKerType kerType, int num_threads);
 
         void PrintData();
