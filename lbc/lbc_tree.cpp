@@ -143,7 +143,7 @@ namespace sym_lib {
                                        levelPtr, NULL, originalHeight,
                                        innerParts, minLevelDist,
                                        divRate, innerPartsSize, slackGroups,
-                                       subTreeCost, partition2Level);
+                                       subTreeCost, partition2Level,true);
 
   //
 #if 0
