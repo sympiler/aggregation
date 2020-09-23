@@ -51,21 +51,11 @@ namespace sym_lib {
 
   timing_measurement fused_code() override {
    timing_measurement t1;
-   bool seq_flag=false;
-   if(omp_get_max_threads()==1){
-       seq_flag=true;
-   }
 
    t1.start_timer();
-   if (seq_flag){
-//       omp_set_num_threads(1);
-       sptrsv_csr_levelset_seq(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
-                               level_no, level_ptr, level_set);
-   }
-   else{
-       sptrsv_csr_levelset(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+
+   sptrsv_csr_levelset(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
                            level_no, level_ptr, level_set);
-   }
 
    t1.measure_elapsed_time();
    copy_vector(0,n_,x_in_,x_);
@@ -120,17 +110,8 @@ namespace sym_lib {
 
   timing_measurement fused_code() override {
    timing_measurement t1;
-   bool seq_flag=false;
-   if(omp_get_max_threads()==1)
-       seq_flag=true;
-   seq_flag=true;
-   t1.start_timer();
-   if(seq_flag)
-       sptrsv_csr_lbc_seq(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
-                      final_level_no, fina_level_ptr,
-                      final_part_ptr, final_node_ptr);
-   else
-        sptrsv_csr_lbc(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+   
+    sptrsv_csr_lbc(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
                   final_level_no, fina_level_ptr,
                   final_part_ptr, final_node_ptr);
    t1.measure_elapsed_time();
