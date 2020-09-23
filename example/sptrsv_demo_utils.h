@@ -55,11 +55,11 @@ namespace sym_lib {
    if(omp_get_max_threads()==1){
        seq_flag=true;
    }
-   seq_flag=true;
+
    t1.start_timer();
    if (seq_flag){
 //       omp_set_num_threads(1);
-       sptrsv_csr_levelset(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+       sptrsv_csr_levelset_seq(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
                                level_no, level_ptr, level_set);
    }
    else{
