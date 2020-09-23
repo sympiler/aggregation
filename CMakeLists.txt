@@ -47,3 +47,8 @@ if(EXISTS "${METIS_INCLUDES}")
     set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
     add_subdirectory(example)
 endif()
+
+if(TEST_CATCH)
+    add_subdirectory(Catch_tests)
+
+endif()
