@@ -15,23 +15,7 @@ using namespace std;
 
 TEST_CASE("Check small lower triangular cases", "[sptrsvCorrectnessChecks]") {
 
-/* SECTION("Small SPTRSV1") {
-  // CSC version
-  int n = 10;
-  int Lp[11] = {0, 3, 6, 9, 13, 16, 18, 20, 23, 25, 26};
-  int Li[26] = {0, 6, 9, 1, 2, 5, 2, 5, 8, 3, 4, 5, 8, 4, 5, 8, 5, 7, 6, 7, 7,
-                8, 9, 8, 9, 9};
-  double Lx[26];
-  for (auto &i : Lx)
-   i = 1.0;
-  double b0[10] = {1, 1, 2, 1, 2, 5, 2, 3, 5, 4};
-  double b1[10] = {1, 1, 2, 1, 2, 5, 2, 3, 5, 4};
-  sptrsv_csr(n, Lp, Li, Lx, b0);
-  for (int i = 0; i < n; ++i) {
-   CHECK(b0[i] == 1.0);
-  }
 
- }*/
 
  SECTION("Sptrsv CSR, parallel vs. serial") {
   vector<pair<int,double>> configs = {make_pair(10,0.2),
