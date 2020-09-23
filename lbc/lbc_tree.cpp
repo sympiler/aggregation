@@ -143,8 +143,7 @@ namespace sym_lib {
                                        levelPtr, NULL, originalHeight,
                                        innerParts, minLevelDist,
                                        divRate, innerPartsSize, slackGroups,
-                                       subTreeCost, partition2Level);
-
+                                       subTreeCost, partition2Level, true);
   //
 #if 0
   //Moving the slack nodes around and make a new level-set
@@ -203,6 +202,7 @@ namespace sym_lib {
   for (int l = 0; l < lClusterCnt; ++l) {//for each leveled partition
    int curLeveledParCost = 0;
    innerParts = innerPartsSize[l];
+//   printf("innerParts=%d\n", innerParts);
    //Create tmpTree for the partition l
    for (int i = partition2Level[l]; i < partition2Level[l + 1]; ++i) {
     curLeveledParCost += levelCost[i];
@@ -378,6 +378,7 @@ namespace sym_lib {
    delete[] checkExist;
   }
   partNo = finaLevelPtr[finaLevelNo];
+//  printf("partNo=%d\n", partNo);
   delete[] nodeHeight;
   delete[] slackNumber;
   delete [] node2Level;

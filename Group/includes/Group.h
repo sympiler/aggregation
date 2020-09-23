@@ -85,8 +85,16 @@ namespace group_cols
 
     };
 
-
-    void NaiveGrouping(int n, int *groupPtr, int *groupSet,  int &ngroup, int *ginv, int blksize=10);
+    /**
+     * @brief group every blksize rows/columns
+     * @param n  number of rows/cols
+     * @param groupPtr the pointer to the starting address of one group
+     * @param groupSet the pointer to index array
+     * @param ngroup number of columns
+     * @param ginv mapping column idx to group idx
+     * @param blksize  parameter for grouping
+     */
+    void NaiveGrouping(int n, int *groupPtr, int *groupSet,  int &ngroup, int *ginv, int blksize=1);
 
 }
 

@@ -3,6 +3,7 @@
 //
 
 #include <StatSpMat.h>
+#include <lbc.h>
 
 #include "../example/sparse_blas_lib.h"
 
@@ -12,16 +13,15 @@ namespace group_cols{
     {
         omp_set_num_threads(num_threads);
 
-        this->t_serial=0;
-        this->t_level=0;
-        this->t_lbc=0;
-        this->n = L->n;
-        this->nnz = L->nnz;
-        this->spkernel = kerType;
-        this->NnzPerRows = L->nnz*1.0/L->n;
-        this->numofcores = omp_get_max_threads();
+        Setup(L, kerType);
 
+        //profile the serial code
         fs_csr_stat(L->n, L->p, L->i, this->nFlops, this->nnz_access, this->nnz_reuse);
+
+        std::vector<std::vector<int>> DAG;
+        DAG.resize(L->n);
+
+        fs_csr_inspector_dep(L->n, L->p, L->i, DAG);
 
 
         int *groupPtr = (int *)malloc(sizeof(int)*(L->n+1));
@@ -31,29 +31,24 @@ namespace group_cols{
         int *groupInv = (int *)malloc(sizeof(int)*L->n);
         memset(groupInv, 0, sizeof(int)*L->n);
 
-//        double *x = (double *)malloc(sizeof(double)*L->n);
-//        memset(x, 0, sizeof(double)*L->n);
-
         int ngroup;
         group g(L->n, L->p, L->i);
-//        g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
-
         NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
-
         this->ngroup = ngroup;
 
+        /**
+         * apply grouping information to the DAG and generated a smaller DAG.
+         */
+        auto gDAG=Group_DAG(DAG, groupPtr, groupSet, groupInv, ngroup);
 
-        std::vector<std::vector<int>> DAG;
-        DAG.resize(ngroup);
-
-        fs_csr_inspector_dep(ngroup, groupPtr, groupSet, groupInv, L->p, L->i, DAG);
 
         size_t count=0;
-        for (int j = 0; j < DAG.size(); ++j) {
-            DAG[j].erase(std::unique(DAG[j].begin(), DAG[j].end()), DAG[j].end());
-            count+=DAG[j].size();
+        for (int j = 0; j < gDAG.size(); ++j) {
+//            DAG[j].erase(std::unique(DAG[j].begin(), DAG[j].end()), DAG[j].end());
+            count+=gDAG[j].size();
         }
-//   detectDAGCircle(DAG);
+
+//        detectDAGCircle(DAG);
 
         int *gv, *gedg;
         gv = new int[L->n+1]();
@@ -65,9 +60,8 @@ namespace group_cols{
         for(cti = 0, edges = 0; cti < ngroup; cti++){
             gv[cti] = edges;
             gedg[edges++] = cti;
-            for (int ctj = 0; ctj < DAG[cti].size(); ctj++) {
-                gedg[edges++] = DAG[cti][ctj];
-//                if(DAG[cti][ctj]==0)printf("cti=%d, ctj=%d\n", cti, ctj);
+            for (int ctj = 0; ctj < gDAG[cti].size(); ctj++) {
+                gedg[edges++] = gDAG[cti][ctj];
             }
         }
         gv[cti] = edges;
@@ -81,24 +75,16 @@ namespace group_cols{
         this->nnzPerLevels = this->nnz * 1.0 /this->nlevels;
         this->averParallelism = this->ngroup * 1.0 / this->nlevels;
 
-
         std::vector<int> lcost;
         lcost.resize(this->nlevels);
 
         fs_csr_levelset_stat(L->p, L->i, groupPtr, groupSet, this->nlevels, levelPtr, levelSet, lcost.data());
-
-
-//        rhsInit_csr(L->n, L->p, L->i, L->x, x);
-
-//        sptrsv_csr_levelset(L->n, L->p, L->i, L->x)
-
 
         this->SumMaxDiff=0;
         for (auto &cost: lcost) {
             this->SumMaxDiff +=cost;
         }
 
-//        this->SumMaxDiff = std::accumulate(lcost.begin(), lcost.end(), 0.0);
         this->AverageMaxDiff = this->SumMaxDiff * 1.0 / lcost.size();
 
         double accum=0.0;
@@ -106,107 +92,123 @@ namespace group_cols{
             accum += (d - this->AverageMaxDiff) * (d - this->AverageMaxDiff);
         });
         this->VarianceMaxDiff = std::sqrt(accum/(lcost.size()-1));
+
+        free(groupPtr);
+        free(groupSet);
+        free(groupInv);
+
+        delete [] gv;
+        delete [] gedg;
+        delete [] levelPtr;
+        delete [] levelSet;
     }
 
 
-    StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads, int lparm, int divrate)
+    StatSpMat::StatSpMat(CSR *L, std::vector<std::vector<int> > DAG, SpKerType kerType, int num_threads, int blksize) {
+        omp_set_num_threads(num_threads);
+
+        Setup(L, kerType);
+
+        //profile the serial code
+        fs_csr_stat(L->n, L->p, L->i, this->nFlops, this->nnz_access, this->nnz_reuse);
+
+
+        int *groupPtr = (int *)malloc(sizeof(int)*(L->n+1));
+        memset(groupPtr, 0, sizeof(int)*(1+L->n));
+        int *groupSet = (int *)malloc(sizeof(int)*L->n);
+        memset(groupSet, 0, sizeof(int)*L->n);
+        int *groupInv = (int *)malloc(sizeof(int)*L->n);
+        memset(groupInv, 0, sizeof(int)*L->n);
+
+        int ngroup;
+        group g(L->n, L->p, L->i);
+        NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
+        this->ngroup = ngroup;
+
+        /**
+ * apply grouping information to the DAG and generated a smaller DAG.
+ */
+        auto gDAG=Group_DAG(DAG, groupPtr, groupSet, groupInv, ngroup);
+
+
+        size_t count=0;
+        for (int j = 0; j < gDAG.size(); ++j) {
+//            DAG[j].erase(std::unique(DAG[j].begin(), DAG[j].end()), DAG[j].end());
+            count+=gDAG[j].size();
+        }
+
+        int *gv, *gedg;
+        gv = new int[L->n+1]();
+        gedg = new int[count+L->n]();
+        int *levelPtr = new int[L->n+1]();
+        int *levelSet = new int[L->n]();
+
+        long int cti,edges=0;
+        for(cti = 0, edges = 0; cti < ngroup; cti++){
+            gv[cti] = edges;
+            gedg[edges++] = cti;
+            for (int ctj = 0; ctj < gDAG[cti].size(); ctj++) {
+                gedg[edges++] = gDAG[cti][ctj];
+            }
+        }
+        gv[cti] = edges;
+
+
+        this->nlevels = buildLevelSet_CSC_Queue(ngroup, 0, gv, gedg, levelPtr, levelSet);
+
+        this->num_sys = this->nlevels;
+
+
+        this->nnzPerLevels = this->nnz * 1.0 /this->nlevels;
+        this->averParallelism = this->ngroup * 1.0 / this->nlevels;
+
+        std::vector<int> lcost;
+        lcost.resize(this->nlevels);
+
+        fs_csr_levelset_stat(L->p, L->i, groupPtr, groupSet, this->nlevels, levelPtr, levelSet, lcost.data());
+
+        this->SumMaxDiff=0;
+        for (auto &cost: lcost) {
+            this->SumMaxDiff +=cost;
+        }
+
+        this->AverageMaxDiff = this->SumMaxDiff * 1.0 / lcost.size();
+
+        double accum=0.0;
+        std::for_each (std::begin(lcost), std::end(lcost), [&](const double d) {
+            accum += (d - this->AverageMaxDiff) * (d - this->AverageMaxDiff);
+        });
+        this->VarianceMaxDiff = std::sqrt(accum/(lcost.size()-1));
+
+    }
+
+
+    StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads, int *levelPtr, int *partPtr, int *nodePtr, int levelNo, int partNo,
+     int levelSetNo)
     {
         omp_set_num_threads(num_threads);
 
-        this->t_serial=0;
-        this->t_level=0;
-        this->t_lbc=0;
-        this->n = L->n;
-        this->nnz = L->nnz;
-        this->spkernel = kerType;
-        this->NnzPerRows = L->nnz*1.0/L->n;
-        this->numofcores = omp_get_max_threads();
+        Setup(L, kerType);
+
+        this->ngroup=partNo;
 
         fs_csr_stat(L->n, L->p, L->i, this->nFlops, this->nnz_access, this->nnz_reuse);
 
-
-        int *groupPtr = (int *)malloc(sizeof(int)*(L->n+1));
-        memset(groupPtr, 0, sizeof(int)*(1+L->n));
-        int *groupSet = (int *)malloc(sizeof(int)*L->n);
-        memset(groupSet, 0, sizeof(int)*L->n);
-        int *groupInv = (int *)malloc(sizeof(int)*L->n);
-        memset(groupInv, 0, sizeof(int)*L->n);
-
-//        double *x = (double *)malloc(sizeof(double)*L->n);
-//        memset(x, 0, sizeof(double)*L->n);
-
-        int ngroup;
-        group g(L->n, L->p, L->i);
-//        g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
-
-        NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, 1);
-
-        this->ngroup = ngroup;
+        this->nlevels = levelSetNo;
+        this->num_sys = levelNo;
 
 
-        std::vector<std::vector<int>> DAG;
-        DAG.resize(ngroup);
-
-        fs_csr_inspector_dep(ngroup, groupPtr, groupSet, groupInv, L->p, L->i, DAG);
-
-        size_t count=0;
-        for (int j = 0; j < DAG.size(); ++j) {
-            DAG[j].erase(std::unique(DAG[j].begin(), DAG[j].end()), DAG[j].end());
-            count+=DAG[j].size();
-        }
-//   detectDAGCircle(DAG);
-
-        int *gv, *gedg;
-        gv = new int[L->n+1]();
-        gedg = new int[count+L->n]();
-        int *levelPtr = new int[L->n+1]();
-        int *levelSet = new int[L->n]();
-
-        long int cti,edges=0;
-        for(cti = 0, edges = 0; cti < ngroup; cti++){
-            gv[cti] = edges;
-            gedg[edges++] = cti;
-            for (int ctj = 0; ctj < DAG[cti].size(); ctj++) {
-                gedg[edges++] = DAG[cti][ctj];
-//                if(DAG[cti][ctj]==0)printf("cti=%d, ctj=%d\n", cti, ctj);
-            }
-        }
-        gv[cti] = edges;
-
-
-        this->nlevels = buildLevelSet_CSC_Queue(ngroup, 0, gv, gedg, levelPtr, levelSet);
-
-
-
-
-
-
-
-
-
-        this->num_sys = this->nlevels;
-
-
-        this->nnzPerLevels = this->nnz * 1.0 /this->nlevels;
-        this->averParallelism = this->ngroup * 1.0 / this->nlevels;
-
-
-
-
-
-
+        this->nnzPerLevels = this->nnz * 1.0 /this->num_sys;
+        this->averParallelism = partNo* 1.0 / this->num_sys;
 
 
         std::vector<int> lcost;
-        lcost.resize(this->nlevels);
+        lcost.resize(this->num_sys);
 
-        fs_csr_levelset_stat(L->p, L->i, groupPtr, groupSet, this->nlevels, levelPtr, levelSet, lcost.data());
-
-
-//        rhsInit_csr(L->n, L->p, L->i, L->x, x);
-
-//        sptrsv_csr_levelset(L->n, L->p, L->i, L->x)
-
+        sptrsv_csr_lbc_stat(L->n, L->p, L->i,
+                       levelNo, levelPtr,
+                       partPtr, nodePtr, lcost.data());
+//        printf("done\n");
 
         this->SumMaxDiff=0;
         for (auto &cost: lcost) {
@@ -221,10 +223,21 @@ namespace group_cols{
             accum += (d - this->AverageMaxDiff) * (d - this->AverageMaxDiff);
         });
         this->VarianceMaxDiff = std::sqrt(accum/(lcost.size()-1));
+
+        lcost.clear();
     }
 
 
-
+    void StatSpMat::Setup(CSR *L, SpKerType kerType) {
+        this->t_serial=0;
+        this->t_level=0;
+        this->t_lbc=0;
+        this->n = L->n;
+        this->nnz = L->nnz;
+        this->spkernel = kerType;
+        this->NnzPerRows = L->nnz*1.0/L->n;
+        this->numofcores = omp_get_max_threads();
+    }
 
 
     void StatSpMat::PrintData() {
@@ -246,6 +259,7 @@ namespace group_cols{
         PRINT_CSV(this->numofcores);
         PRINT_CSV(this->t_serial);
         PRINT_CSV(this->t_group_level);
+        PRINT_CSV(this->t_lbc);
         PRINT_CSV(this->t_level);
 
     }

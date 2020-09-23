@@ -55,11 +55,16 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
         n = L1_csc->n;
     }
 
+    int option=0;
     if(argc >= 3)
-        p2 = atoi(argv[2]);
-    omp_set_num_threads(num_threads);
+        num_threads=atoi(argv[2]);
+//    omp_set_num_threads(num_threads);
     if(argc >= 4)
-        p3 = atoi(argv[3]);
+        option=atoi(argv[3]);
+    if(argc >= 5)
+        p2 = atoi(argv[4]);
+    if(argc >= 6)
+        p3 = atoi(argv[5]);
     /// Re-ordering L matrix
 #ifdef METIS
     //We only reorder L since dependency matters more in l-solve.
@@ -84,7 +89,7 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
     double *y_serial, *y_correct = new double[n];
 
 
-    timing_measurement t_ser, t_levelset, t_group;
+    timing_measurement t_ser, t_levelset, t_group, t_lbc;
 
     SptrsvSerial *ss = new SptrsvSerial(L2_csr, L1_csc, NULLPNTR, "serial");
     t_ser = ss->evaluate();
@@ -94,24 +99,67 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
     auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc");
     t_levelset = sls->evaluate();
 
-    auto *sg = new group_cols::SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "grouping code", num_threads, p2);
-    t_group = sg->evaluate();
+    auto LevelSetNo = sls->getLevelNo();
+
+    if (option==0){
+        /**
+         * profiling for levelset method, in which grouping can be enabled by setting p2 > 1
+         * **/
+        auto *sg = new group_cols::SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "grouping code", num_threads, p2);
+        t_group = sg->evaluate();
+        SpKerType ktype = SpTrsv_CSR;
+//        if(num_threads==1)num_threads=16;
+        StatSpMat profiler(L2_csr, ktype, num_threads, p2);
+        profiler.set_seq_time(t_ser.elapsed_time);
+        profiler.set_level_time(t_levelset.elapsed_time);
+        profiler.set_lbc_time(t_lbc.elapsed_time);
+        profiler.set_glevel_time(t_group.elapsed_time);
+
+        size_t pos = matrix_name.find_last_of("/\\");
+        matrix_name = matrix_name.substr(pos+1);
+        PRINT_CSV(matrix_name);
+        PRINT_CSV(p2);
+        profiler.PrintData();
+        std::cout<<"\n";
+
+        delete sg;
+    }
+    else{
+        /**
+         * profling for lbc method
+         * */
+        auto *slbc = new SptrsvLBC(L2_csr, L1_csc, y_serial, "lbc",num_threads, p2, p3);
+        t_lbc = slbc->evaluate();
+
+        auto levelPtr = slbc->getLevelPtr();
+        auto partPtr = slbc->getPartPtr();
+        auto nodePtr = slbc->getNodePtr();
+        auto levelNo = slbc->getLevelNo();
+        auto partNo = slbc->getPartNo();
+
+        SpKerType ktype = SpTrsv_CSR;
+        StatSpMat profiler(L2_csr, ktype, num_threads, levelPtr, partPtr, nodePtr, levelNo, partNo, LevelSetNo);
+        profiler.set_seq_time(t_ser.elapsed_time);
+        profiler.set_level_time(t_levelset.elapsed_time);
+        profiler.set_lbc_time(t_lbc.elapsed_time);
+        profiler.set_glevel_time(t_group.elapsed_time);
+        size_t pos = matrix_name.find_last_of("/\\");
+        matrix_name = matrix_name.substr(pos+1);
+        PRINT_CSV(matrix_name);
+        PRINT_CSV(p2);
+        profiler.PrintData();
+        std::cout<<"\n";
+        delete  slbc;
+    }
 
 
-    SpKerType ktype = SpTrsv_CSR;
-    StatSpMat profiler(L2_csr, ktype, num_threads, p2);
+    delete []y_correct;
+    delete A;
+    delete L1_csc;
+    delete L2_csr;
 
-    profiler.set_seq_time(t_ser.elapsed_time);
-    profiler.set_level_time(t_levelset.elapsed_time);
-    profiler.set_glevel_time(t_group.elapsed_time);
-
-    profiler.set_lbc_time(-1);
-
-    size_t pos = matrix_name.find_last_of("/\\");
-    matrix_name = matrix_name.substr(pos+1);
-
-    PRINT_CSV(matrix_name);
-    PRINT_CSV(p2);
-    profiler.PrintData();
-    std::cout<<"\n";
+    delete ss;
+//    delete sl;
+    delete sls;
+    return 0;
 }

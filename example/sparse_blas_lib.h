@@ -36,6 +36,9 @@ namespace sym_lib {
                 int level_no, int *level_ptr,
                 int *par_ptr, int *partition);
 
+ void sptrsv_csr_lbc_seq(int n, int *Lp, int *Li, double *Lx, double *x,
+                            int level_no, int *level_ptr,
+                            int *par_ptr, int *partition);
 
 }
 

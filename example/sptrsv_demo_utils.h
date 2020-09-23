@@ -15,7 +15,6 @@
 #include <executor.h>
 #include <StatSpMat.h>
 
-
 namespace sym_lib {
 
  class SptrsvSerial : public FusionDemo {
@@ -52,9 +51,22 @@ namespace sym_lib {
 
   timing_measurement fused_code() override {
    timing_measurement t1;
+   bool seq_flag=false;
+   if(omp_get_max_threads()==1){
+       seq_flag=true;
+   }
+   seq_flag=true;
    t1.start_timer();
-   sptrsv_csr_levelset_seq(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
-                       level_no, level_ptr, level_set);
+   if (seq_flag){
+//       omp_set_num_threads(1);
+       sptrsv_csr_levelset(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+                               level_no, level_ptr, level_set);
+   }
+   else{
+       sptrsv_csr_levelset(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+                           level_no, level_ptr, level_set);
+   }
+
    t1.measure_elapsed_time();
    copy_vector(0,n_,x_in_,x_);
    return t1;
@@ -68,6 +80,19 @@ namespace sym_lib {
    L1_csc_ = L_csc;
    correct_x_ = correct_x;
   };
+
+  int *getLeveSet(){
+      return level_set;
+  }
+
+  int *getLevelPtr(){
+      return level_ptr;
+  }
+
+  int getLevelNo(){
+      return level_no;
+  }
+
 
   ~SptrsvLevelSet () override {
    delete []level_ptr;
@@ -95,8 +120,17 @@ namespace sym_lib {
 
   timing_measurement fused_code() override {
    timing_measurement t1;
+   bool seq_flag=false;
+   if(omp_get_max_threads()==1)
+       seq_flag=true;
+   seq_flag=true;
    t1.start_timer();
-   sptrsv_csr_lbc(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+   if(seq_flag)
+       sptrsv_csr_lbc_seq(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+                      final_level_no, fina_level_ptr,
+                      final_part_ptr, final_node_ptr);
+   else
+        sptrsv_csr_lbc(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
                   final_level_no, fina_level_ptr,
                   final_part_ptr, final_node_ptr);
    t1.measure_elapsed_time();
@@ -115,12 +149,34 @@ namespace sym_lib {
    lp_=lp; cp_=cp; ic_=ic;
   };
 
+  int *getLevelPtr(){
+      return fina_level_ptr;
+  }
+
+  int *getPartPtr(){
+      return final_part_ptr;
+  }
+
+  int * getNodePtr(){
+      return final_node_ptr;
+  }
+
+  int getLevelNo(){
+      return final_level_no;
+  }
+
+  int getPartNo(){
+      return part_no;
+  }
+
   ~SptrsvLBC () override {
    delete []fina_level_ptr;
    delete []final_part_ptr;
    delete []final_node_ptr;
   };
  };
+
+
 
 }
 
@@ -142,8 +198,8 @@ namespace group_cols{
 
             group g(L1_csr_->n, L1_csr_->p, L1_csr_->i);
 
-            g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
-//            NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
+//            g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
+            NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
             std::vector<std::vector<int>> DAG;
             DAG.resize(ngroup);
 
@@ -207,8 +263,5 @@ namespace group_cols{
 
 
 }
-
-
-
 
 #endif //FUSION_SPTRSV_DEMO_UTILS_H

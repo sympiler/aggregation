@@ -10,10 +10,10 @@ namespace group_cols
     int fs_csr_executor_sgroup(int n, int *Lp, int *Li, double *Lx, double *b, double *x, int *groupPtr, int *groupSet,  int ngroup,
                                int levels, int *levelPtr, int *levelSet) {
         if (!Lp || !Li || !x) return (0);
-//#pragma omp parallel
+#pragma omp parallel
         {
             for (int l = 0; l < levels; ++l) {
-//#pragma omp for schedule(auto)
+#pragma omp for schedule(auto)
                 for (int li = levelPtr[l]; li < levelPtr[l + 1]; ++li) {
                     int lidx = levelSet[li];
                     for (int k1 = groupPtr[lidx]; k1 < groupPtr[lidx + 1]; ++k1) {
@@ -94,6 +94,7 @@ namespace group_cols
                     }
                 }
 
+
                 std::vector<int> temp_cost;
                 for (int i = 0; i < len; ++i) {
                     for (int j = i+1; j < len; ++j) {
@@ -103,11 +104,65 @@ namespace group_cols
                     }
                 }
                 std::sort(temp_cost.begin(), temp_cost.end(), std::greater<int>());
+                if(temp_cost.size()==0)
+                    lcost[l]=0;
+                else
+                    lcost[l]=temp_cost[0];
 
-                lcost[l]=temp_cost[0];
+
+                temp_cost.clear();
+                memset(cost, 0, len*sizeof(int));
             }
         };
     }
+
+    void sptrsv_csr_lbc_stat(int n, int *Lp, int *Li,
+                        int level_no, int *level_ptr,
+                        int *par_ptr, int *partition, int *lcost) {
+        int *cost = (int *)malloc(sizeof(int)*omp_get_max_threads());
+        memset(cost, 0, sizeof(int)*omp_get_max_threads());
+
+        int len = omp_get_max_threads();
+
+        for (int i1 = 0; i1 < level_no; ++i1) {
+            {
+#pragma omp  parallel for schedule(auto)
+                for (int j1 = level_ptr[i1]; j1 < level_ptr[i1 + 1]; ++j1) {
+                    int tidx = omp_get_thread_num();
+
+                    for (int k1 = par_ptr[j1]; k1 < par_ptr[j1 + 1]; ++k1) {
+                        int i = partition[k1];
+                        cost[tidx] += (Lp[i+1] - Lp[i]);
+//                        for (int j = Lp[i]; j < Lp[i + 1] - 1; j++) {
+//                            x[i] -= Lx[j] * x[Li[j]];
+//                        }
+//                        x[i] /= Lx[Lp[i + 1] - 1];
+                    }
+                }
+            }
+
+
+            std::vector<int> temp_cost;
+            for (int i = 0; i < len; ++i) {
+                for (int j = i+1; j < len; ++j) {
+                    temp_cost.push_back(std::abs(cost[i]-cost[j]));
+                }
+            }
+
+            std::sort(temp_cost.begin(), temp_cost.end(), std::greater<int>());
+            if(temp_cost.size()==0)
+                lcost[i1]=0;
+            else
+                lcost[i1]=temp_cost[0];
+            temp_cost.clear();
+            memset(cost, 0, len*sizeof(int));
+        }
+
+        free(cost);
+    }
+
+
+
 
 
 }
