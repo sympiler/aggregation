@@ -23,6 +23,7 @@
 #define PRINT_LOG(x)
 #endif
 
+#define CSV_LOG
 #ifdef CSV_LOG
 #define PRINT_CSV(x) std::cout <<(x)<<","
 #else

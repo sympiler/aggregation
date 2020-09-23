@@ -282,7 +282,7 @@ namespace sym_lib{
    delete []accuSlackGroups;
    return lClusterCnt;
   }
-  //assigne the nodes_ in normal level set
+  //assigne the nodes_ in norm al level set
   for (int i = 0; i < levelNo; ++i) {
    /*accuSlackGroups[i] = levelPtr[i+1]-levelPtr[i] +
      slackGroups[i].size();*/
@@ -291,23 +291,30 @@ namespace sym_lib{
   }
   partition2Level[0] = 0;
   if (sw) {
+      bool f_spart=false;
    for (int i = minLevelDist; i < levelNo; i += minLevelDist) {
-    lClusterCnt++;
-    partition2Level[lClusterCnt] = i;
     //for leaves
     if (accuSlackGroups[i] >= divRate * innerPartsTmp) {
+        lClusterCnt++;
+        partition2Level[lClusterCnt] = i;
      innerPartsSize.push_back(innerPartsTmp);
     } else { //otherwise a divisor of divRate
      int tmp = accuSlackGroups[i] / 2;
-     if (tmp > 1)
-      innerPartsSize.push_back(tmp);
-     else
-      break;
+     if (tmp > 1){
+         lClusterCnt++;
+         partition2Level[lClusterCnt] = i;
+         innerPartsSize.push_back(tmp);
+     }
+     else{
+         f_spart= true;
+         break;
+     }
     }
    }
-   partition2Level[++lClusterCnt] = originalHeight + 1;
-   innerPartsSize.push_back(1);//The last partition has one element
-
+   if (f_spart){
+       partition2Level[++lClusterCnt] = originalHeight + 1;
+       innerPartsSize.push_back(1);//The last partition has one element
+   }
   } else {
    /*if(minLevelDist<=0)
     minLevelDist=2;//default parameter*/
