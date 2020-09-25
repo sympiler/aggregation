@@ -10,29 +10,45 @@
 #include <deque>
 #include <cstring>
 
-namespace group_cols
+namespace sym_lib
 {
     // Makes an edge inside dependence graph
     inline void connect(int v, int w, std::vector<std::vector<int>> &DAG){
         DAG[v].push_back( w );
     }
 
+    /**
+     *
+     * @param n number of rows/columns
+     * @param nnz number of non-zeros
+     * @param Lp Row/Column pointer in the CSR/CSC format
+     * @param Li Index array in the CSR format
+     * @param levelPtr Pointer to the starting location of one level
+     * @param levelSet Pointer to index array of one level
+     * @return Number of levels
+     */
     int buildLevelSet_CSC_Queue(int n, int nnz, int *Lp, int *Li, int *&levelPtr,
                                 int *&levelSet);
 
     /**
-     * @brief dependence inspector
-     * @param n
-     * @param Lp
-     * @param Li
-     * @param DAG
+     * @brief dependence inspector for no-grouping version code by taking SpMat in CSR format as Input
+     * @param n Number of Rows
+     * @param Lp Row pointer in the CSR format
+     * @param Li Index array in the CSR format
+     * @param DAG In which, each node represents one rows, the edge represents the dependence between two rows
      */
     void fs_csr_inspector_dep(int n, int *Lp, int *Li, std::vector<std::vector<int>> &DAG);
-
+    /**
+     * @brief dependence inspector for grouping version code by taking SpMat in CSR format and Grouping Information as Input
+     * @param ngroup Number of groups
+     * @param groupPtr Pointer to the starting location of one group
+     * @param groupSet Pointer to the column indices in one group
+     * @param gInv mapping column idx to group idx
+     * @param Lp Row pointer in the CSR format
+     * @param Li Index array in the CSR format
+     * @param DAG In which, each node represents one group of rows, the edge represents the dependence between two groups
+     */
     void fs_csr_inspector_dep(int ngroup, int *groupPtr, int *groupSet, int *gInv, int *Lp, int *Li, std::vector<std::vector<int>> &DAG);
-
-
-    void rhsInit_csr(int n, int *Ap, int *Ai, double *Ax, double *b);
 
     /**
      * @brief Convert the input DAG to a group-version DAG by applying the group information(ngroup, groupPtr, groupSet, groupInv)
@@ -47,10 +63,10 @@ namespace group_cols
 
     /**
      * @brief used for verifying the correctness of the generated DAG. if circle exists (A->B, B->A), the DAG is wrong
-     * @param DAG
+     * @param DAG  the input DAG
      * @return
      */
-    bool detectDAGCircle(std::vector<std::vector<int>> DAG);
+    void detectDAGCircle(std::vector<std::vector<int>> DAG);
 
 
 }

@@ -5,7 +5,7 @@
 #include <Utils.h>
 #include <algorithm>
 
-namespace group_cols {
+namespace sym_lib {
 
     int buildLevelSet_CSC_Queue(int n, int nnz, int *Lp, int *Li, int *&levelPtr,
                                 int *&levelSet) {
@@ -124,20 +124,8 @@ namespace group_cols {
         return gDAG;
     }
 
-    void rhsInit_csr(int n, int *Ap, int *Ai, double *Ax, double *b)
-    {
-        /*generating a rhs that produces a result of all 1 vector*/
-        for (int j = 0; j < n; ++j) {
-            b[j]=0;
-        }
-        for (int c = 0; c < n ; ++c) {
-            for (int cc = Ap[c]; cc < Ap[c + 1]; ++cc) {
-                b[c]+=Ax[cc];
-            }
-        }
-    }
 
-    bool detectDAGCircle(std::vector<std::vector<int>> DAG)
+    void detectDAGCircle(std::vector<std::vector<int>> DAG)
     {
         for (int i = 0; i < DAG.size(); ++i) {
             for(int j=0; j < DAG[i].size(); ++j){

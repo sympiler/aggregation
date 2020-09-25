@@ -110,7 +110,7 @@ namespace sym_lib {
 
   timing_measurement fused_code() override {
    timing_measurement t1;
-   
+
     sptrsv_csr_lbc(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
                   final_level_no, fina_level_ptr,
                   final_part_ptr, final_node_ptr);
@@ -157,13 +157,6 @@ namespace sym_lib {
   };
  };
 
-
-
-}
-
-namespace group_cols{
-    using namespace sym_lib;
-
     class SpTrsvCSR_Grouping : public sym_lib::SptrsvSerial{
     protected:
         int *groupSet, *groupPtr, *groupInv, ngroup, nlevels, nthreads;
@@ -179,8 +172,8 @@ namespace group_cols{
 
             group g(L1_csr_->n, L1_csr_->p, L1_csr_->i);
 
-//            g.inspection_sptrsvcsr(groupPtr, groupSet, ngroup, groupInv);
-            NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
+            g.inspection_sptrsvcsr_v1(groupPtr, groupSet, ngroup, groupInv);
+//            NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
             std::vector<std::vector<int>> DAG;
             DAG.resize(ngroup);
 
@@ -244,5 +237,6 @@ namespace group_cols{
 
 
 }
+
 
 #endif //FUSION_SPTRSV_DEMO_UTILS_H

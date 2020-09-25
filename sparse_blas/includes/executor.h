@@ -9,7 +9,7 @@
 #include <cstring>
 #include <functional>
 
-namespace group_cols
+namespace sym_lib
 {
     int fs_csr_executor_sgroup(int n, int *Lp, int *Li, double *Lx, double *b, double *x, int *groupPtr, int *groupSet,  int ngroup,
                                int levels, int *levelPtr, int *levelSet);

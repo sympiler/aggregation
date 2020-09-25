@@ -15,7 +15,7 @@
 #include <cmath>
 
 
-namespace group_cols
+namespace sym_lib
 {
     typedef enum
     {

@@ -14,7 +14,6 @@
 #include "sptrsv_demo_utils.h"
 
 using namespace sym_lib;
-using namespace group_cols;
 
 
 int sptrsv_csr_profile_demo02(int argc, char *argv[]);
@@ -105,7 +104,7 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
         /**
          * profiling for levelset method, in which grouping can be enabled by setting p2 > 1
          * **/
-        auto *sg = new group_cols::SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "grouping code", num_threads, p2);
+        auto *sg = new SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "grouping code", num_threads, p2);
         t_group = sg->evaluate();
         SpKerType ktype = SpTrsv_CSR;
 //        if(num_threads==1)num_threads=16;
