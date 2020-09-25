@@ -6,7 +6,9 @@
 #include <lbc.h>
 
 #include "../example/sparse_blas_lib.h"
-
+// TODO why a new namespace? If this profiler is general you need to put it somewhere.
+// If you think the project has to be in a different repository, delete the group folder and
+// create a new one
 using namespace sym_lib;
 namespace group_cols{
     StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads, int blksize)

@@ -5,6 +5,7 @@
 #include <executor.h>
 
 
+// TODO why new nampespace? Why is executor here?
 namespace group_cols
 {
     int fs_csr_executor_sgroup(int n, int *Lp, int *Li, double *Lx, double *b, double *x, int *groupPtr, int *groupSet,  int ngroup,

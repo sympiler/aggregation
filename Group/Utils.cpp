@@ -6,7 +6,7 @@
 #include <algorithm>
 
 namespace sym_lib {
-
+// TODO we have levelset with Q, why a new one here? Aren't using that? what is nes here?
     int buildLevelSet_CSC_Queue(int n, int nnz, int *Lp, int *Li, int *&levelPtr,
                                 int *&levelSet) {
         int begin = 0, end = n - 1;
