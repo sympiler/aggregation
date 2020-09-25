@@ -67,6 +67,7 @@ TEST_CASE("Check lower triangular cases", "[sptrsvCorrectnessChecks]") {
   }
  }
 
+ // For running this test, you need to set the data path
  SECTION("Sptrsv CSR, parallel vs serial ( using datapath )") {
   DIR *dataDir = opendir(dataPath.c_str());
   if (dataDir) {
