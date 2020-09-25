@@ -21,6 +21,32 @@ using namespace std;
 
 static string dataPath;
 
+bool testSptrsvCsr(CSC *L) {
+ int *level_set, *level_ptr, level_no;
+
+ level_no = build_levelSet_CSC(L->n, L->p, L->i, level_ptr, level_set);
+ CSR *L_csr = csc_to_csr(L);
+
+ auto *y_serial = new double[L->n]();
+ auto *y_parallel = new double[L->n]();
+ std::fill_n(y_serial, L->n, 1.0);
+ sptrsv_csr(L_csr->n, L_csr->p, L_csr->i, L_csr->x, y_serial);
+
+ std::fill_n(y_parallel, L->n, 1.0);
+ sptrsv_csr_levelset(L_csr->n, L_csr->p, L_csr->i, L_csr->x, y_parallel,
+                     level_no, level_ptr, level_set);
+
+ bool is_correct = is_equal(0, L->n, y_serial, y_parallel);
+
+ delete[] y_serial;
+ delete[] y_parallel;
+ delete[] level_ptr;
+ delete[] level_set;
+ delete L_csr;
+
+ return is_correct;
+}
+
 TEST_CASE("Check lower triangular cases", "[sptrsvCorrectnessChecks]") {
  SECTION("Sptrsv CSR, parallel vs. serial (random matrices)") {
   vector<pair<int, double>> configs = {
@@ -30,32 +56,14 @@ TEST_CASE("Check lower triangular cases", "[sptrsvCorrectnessChecks]") {
   for (auto i : configs) {
    size_t n = i.first;
    double density = i.second;
-   int *level_set, *level_ptr, level_no;
 
    CSC *A = random_square_sparse(n, density);
    CSC *L = make_half(A->n, A->p, A->i, A->x);
 
-   level_no = build_levelSet_CSC(L->n, L->p, L->i, level_ptr, level_set);
-   CSR *L_csr = csc_to_csr(L);
+   CHECK(testSptrsvCsr(L));
 
-   auto *y_serial = new double[A->n]();
-   auto *y_parallel = new double[A->n]();
-   std::fill_n(y_serial, A->n, 1.0);
-   sptrsv_csr(L_csr->n, L_csr->p, L_csr->i, L_csr->x, y_serial);
-
-   std::fill_n(y_parallel, A->n, 1.0);
-   sptrsv_csr_levelset(L_csr->n, L_csr->p, L_csr->i, L_csr->x, y_parallel,
-                       level_no, level_ptr, level_set);
-
-   CHECK(is_equal(0, A->n, y_serial, y_parallel));
-
-   delete[] y_serial;
-   delete[] y_parallel;
-   delete[] level_ptr;
-   delete[] level_set;
    delete A;
    delete L;
-   delete L_csr;
   }
  }
 
@@ -81,24 +89,12 @@ TEST_CASE("Check lower triangular cases", "[sptrsvCorrectnessChecks]") {
     if (!L) {
      cout << "Error in reading matrix file: " << matrixFile << endl;
     } else {
-     int *level_set, *level_ptr, level_no;
-     CSR *L_csr = csc_to_csr(L);
-     level_no = build_levelSet_CSC(L->n, L->p, L->i, level_ptr, level_set);
-
-     auto *y_serial = new double[L->n]();
-     auto *y_parallel = new double[L->n]();
-     std::fill_n(y_serial, L->n, 1.0);
-     sptrsv_csr(L_csr->n, L_csr->p, L_csr->i, L_csr->x, y_serial);
-
-     std::fill_n(y_parallel, L->n, 1.0);
-     sptrsv_csr_levelset(L_csr->n, L_csr->p, L_csr->i, L_csr->x, y_parallel,
-                         level_no, level_ptr, level_set);
-
-     CHECK(is_equal(0, L->n, y_serial, y_parallel));
+     CHECK(testSptrsvCsr(L));
+     delete L;
     }
    }
   } else {
-    cout << "Data path not set, so [datapath] tests won't run." << endl;
+   cout << "Data path not set, so [datapath] tests won't run." << endl;
   }
  }
 }
