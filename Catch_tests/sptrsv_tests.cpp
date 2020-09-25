@@ -67,10 +67,14 @@ TEST_CASE("Check lower triangular cases", "[sptrsvCorrectnessChecks]") {
     // Don't check . and ..
     if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, "..")) {
      continue;
+    } else if (strcmp(dp->d_name + (strlen(dp->d_name) - 4), ".mtx")) {
+     continue;
     }
     char matrixFile[1024];
     const char *slash = dataPath.at(dataPath.length() - 1) == '/' ? "" : "/";
     sprintf(matrixFile, "%s%s%s", dataPath.c_str(), slash, dp->d_name);
+
+    cout << "Testing: " << matrixFile << endl;
 
     CSC *L = read_mtx(matrixFile);
 
@@ -93,6 +97,8 @@ TEST_CASE("Check lower triangular cases", "[sptrsvCorrectnessChecks]") {
      CHECK(is_equal(0, L->n, y_serial, y_parallel));
     }
    }
+  } else {
+    cout << "Data path not set, so [datapath] tests won't run." << endl;
   }
  }
 }
