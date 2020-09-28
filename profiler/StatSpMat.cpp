@@ -4,6 +4,7 @@
 
 #include <StatSpMat.h>
 #include <lbc.h>
+#include <sparse_inspector.h>
 
 #include "../example/sparse_blas_lib.h"
 

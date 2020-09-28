@@ -23,6 +23,20 @@ namespace sym_lib {
  int build_levelSet_CSC(size_t n, int *Lp, int *Li,
                         int *&levelPtr, int *&levelSet);
 
+    /**
+    *@brief a more efficient function to build levelset
+    * @param n number of rows/columns
+    * @param nnz number of non-zeros
+    * @param Lp Row/Column pointer in the CSR/CSC format
+    * @param Li Index array in the CSR format
+    * @param levelPtr Pointer to the starting location of one level
+    * @param levelSet Pointer to index array of one level
+    * @return Number of levels
+    */
+    int buildLevelSet_CSC_Queue(int n, int nnz, int *Lp, int *Li, int *&levelPtr,
+                                int *&levelSet);
+
+
  ///
  /// \param n
  /// \param nnz
