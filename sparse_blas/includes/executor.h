@@ -52,6 +52,22 @@ namespace sym_lib
                              int level_no, int *level_ptr,
                              int *par_ptr, int *partition, int *lcost);
 
+    /**
+     * @brief profiling executor code based on coarsening and grouping method
+     * @param n
+     * @param Lp
+     * @param Li
+     * @param level_no
+     * @param level_ptr
+     * @param par_ptr
+     * @param partition
+     * @param groupPtr
+     * @param groupSet
+     * @param lcost
+     */
+    void sptrsv_csr_group_lbc_stat(int n, int *Lp, int *Li,
+                                   int level_no, int *level_ptr,
+                                   int *par_ptr, int *partition, int *groupPtr, int *groupSet, int *lcost);
 }
 
 #endif //LBC_LIB_EXECUTOR_H

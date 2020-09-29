@@ -123,6 +123,35 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
 
         delete sg;
     }
+    else if (option==1){
+        /**
+         * profiling for lbc method combined with grouping method
+         * */
+        auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "grouping_lbc", num_threads, p2, p3);
+        t_lbc = sglbc->evaluate();
+        auto levelPtr = sglbc->getLevelPtr();
+        auto partPtr = sglbc->getPartPtr();
+        auto nodePtr = sglbc->getNodePtr();
+        auto levelNo = sglbc->getLevelNo();
+        auto partNo = sglbc->getPartNo();
+
+        SpKerType ktype = SpTrsv_CSR;
+        StatSpMat profiler(L2_csr, ktype, num_threads, levelPtr, partPtr, nodePtr, levelNo, partNo, LevelSetNo);
+
+
+        profiler.set_seq_time(t_ser.elapsed_time);
+        profiler.set_level_time(t_levelset.elapsed_time);
+        profiler.set_lbc_time(t_lbc.elapsed_time);
+        profiler.set_glevel_time(t_group.elapsed_time);
+
+        size_t pos = matrix_name.find_last_of("/\\");
+        matrix_name = matrix_name.substr(pos+1);
+        PRINT_CSV(matrix_name);
+        PRINT_CSV(p2);
+        profiler.PrintData();
+        std::cout<<"\n";
+        delete  sglbc;
+    }
     else{
         /**
          * profling for lbc method
