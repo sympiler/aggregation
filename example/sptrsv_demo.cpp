@@ -37,6 +37,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  int *perm;
  std::string matrix_name;
  std::vector<timing_measurement> time_array;
+
  if (argc < 2) {
   PRINT_LOG("Not enough input args, switching to random mode.\n");
   n = 16;
@@ -54,11 +55,15 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
    return -1;
   n = L1_csc->n;
  }
+
  if(argc >= 3)
   p2 = atoi(argv[2]);
- omp_set_num_threads(num_threads);
  if(argc >= 4)
   p3 = atoi(argv[3]);
+ if(argc >= 5)
+  num_threads = atoi(argv[4]);
+
+ omp_set_num_threads(num_threads);
  /// Re-ordering L matrix
 #ifdef METIS
  //We only reorder L since dependency matters more in l-solve.
