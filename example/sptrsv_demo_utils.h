@@ -31,7 +31,7 @@ namespace sym_lib {
 
  public:
   SptrsvSerial(CSR *L, CSC *L_csc,
-                           double *correct_x, std::string name) :
+               double *correct_x, std::string name) :
     FusionDemo(L->n, name) {
    L1_csr_ = L;
    L1_csc_ = L_csc;
@@ -57,7 +57,7 @@ namespace sym_lib {
    t1.start_timer();
 
    sptrsv_csr_levelset(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
-                           level_no, level_ptr, level_set);
+                       level_no, level_ptr, level_set);
 
    t1.measure_elapsed_time();
    copy_vector(0,n_,x_in_,x_);
@@ -74,15 +74,15 @@ namespace sym_lib {
   };
 
   int *getLeveSet(){
-      return level_set;
+   return level_set;
   }
 
   int *getLevelPtr(){
-      return level_ptr;
+   return level_ptr;
   }
 
   int getLevelNo(){
-      return level_no;
+   return level_no;
   }
 
 
@@ -103,10 +103,10 @@ namespace sym_lib {
     cost[i] = L1_csr_->p[i+1] - L1_csr_->p[i];
    }
    get_coarse_levelSet_DAG_CSC_tree(n_, L1_csr_->p, L1_csr_->i,
-     final_level_no,
-     fina_level_ptr,part_no,
-     final_part_ptr,final_node_ptr,
-     lp_,cp_, ic_, cost);
+                                    final_level_no,
+                                    fina_level_ptr,part_no,
+                                    final_part_ptr,final_node_ptr,
+                                    lp_,cp_, ic_, cost);
 
    delete []cost;
   }
@@ -115,7 +115,7 @@ namespace sym_lib {
    timing_measurement t1;
 
    t1.start_timer();
-    sptrsv_csr_lbc(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+   sptrsv_csr_lbc(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
                   final_level_no, fina_level_ptr,
                   final_part_ptr, final_node_ptr);
    t1.measure_elapsed_time();
@@ -125,8 +125,8 @@ namespace sym_lib {
 
  public:
   SptrsvLBC (CSR *L, CSC *L_csc,
-               double *correct_x, std::string name,
-               int lp, int cp, int ic) :
+             double *correct_x, std::string name,
+             int lp, int cp, int ic) :
     SptrsvSerial(L, L_csc, correct_x, name) {
    L1_csr_ = L;
    L1_csc_ = L_csc;
@@ -135,23 +135,23 @@ namespace sym_lib {
   };
 
   int *getLevelPtr(){
-      return fina_level_ptr;
+   return fina_level_ptr;
   }
 
   int *getPartPtr(){
-      return final_part_ptr;
+   return final_part_ptr;
   }
 
   int * getNodePtr(){
-      return final_node_ptr;
+   return final_node_ptr;
   }
 
   int getLevelNo(){
-      return final_level_no;
+   return final_level_no;
   }
 
   int getPartNo(){
-      return part_no;
+   return part_no;
   }
 
   ~SptrsvLBC () override {
@@ -175,15 +175,15 @@ namespace sym_lib {
    delete[] cost;
   }
 
-public:
+ public:
   SptrsvLBCDAG(CSR *L, CSC *L_csc, double *correct_x, std::string name, int lp,
                int cp, int ic)
-   : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic) {}
+    : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic) {}
   ~SptrsvLBCDAG() {}
  };
 
  class SptrsvLBC_W_Sorting : public SptrsvLBC {
-protected:
+ protected:
   void build_set() override {
 
    auto *cost = new double[n_]();
@@ -205,10 +205,10 @@ protected:
    delete[] cost;
   }
 
-public:
+ public:
   SptrsvLBC_W_Sorting(CSR *L, CSC *L_csc, double *correct_x, std::string name,
                       int lp, int cp, int ic)
-   : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic){};
+    : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic){};
 
   ~SptrsvLBC_W_Sorting() {};
  };

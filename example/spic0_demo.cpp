@@ -82,28 +82,23 @@ int spic0_demo01(int argc, char *argv[]) {
   B = diagonal(L1_csc->n,1.0);
   B_csr = csc_to_csr(B);
  }
- auto *x_correct = new double[n]();
- timing_measurement t_nonfused, t_fused, t_inner_serial, t_inner_lbc,
-   t_fused_lbc,
-   t_nonfused_lbc2, t_nonfused_lbc3, t_nonfused_lbc1, t_nonfused_lbc,
-   t_fused_lbc_br, t_fused_lbc_newclass, t_fused_lbc_newclass_red,
-   t_nonfused_lbc2c;
+ auto *factor_correct = new double[L2_csr->nnz]();
+ timing_measurement t_serial, t_lbc ;
 
  //print_csc(1,"CSR:\n",n,B_csr->p, B_csr->i, B_csr->x);
 
  auto *itsnf = new Spic0Serial(L2_csr, L1_csc,B_csr, B,
                                              NULLPNTR,
                                              "Serial");
- t_nonfused = itsnf->evaluate();
- copy_vector(0, L2_csr->n, itsnf->solution(), x_correct);
+ t_serial = itsnf->evaluate();
+ copy_vector(0, L2_csr->nnz, itsnf->Factor(), factor_correct);
  //print_vec("X: \n", 0, n, x_correct);
 
- int p2_def = 4;
  auto *itplnf = new Spic0ParallelLBC(L2_csr, L1_csc, B_csr, B,
-                                             x_correct,
+                                             factor_correct,
                                              "Parallel LBC",num_threads,
                                              p2, p3);
- t_nonfused_lbc = itplnf->evaluate();
+ t_lbc = itplnf->evaluate();
  //print_vec("Y: \n", 0, n, itplnf->solution());
 
 
@@ -127,9 +122,9 @@ int spic0_demo01(int argc, char *argv[]) {
  PRINT_CSV(p2);
  PRINT_CSV(p3);
 
- PRINT_CSV(t_nonfused.elapsed_time);
+ PRINT_CSV(t_serial.elapsed_time);
  PRINT_CSV(itplnf->analysisTime().elapsed_time);
- PRINT_CSV(t_nonfused_lbc.elapsed_time);
+ PRINT_CSV(t_lbc.elapsed_time);
 
 
  delete itsnf;
@@ -141,7 +136,7 @@ int spic0_demo01(int argc, char *argv[]) {
  delete L1_csc;
  delete L2_csr;
 
- delete []x_correct;
+ delete []factor_correct;
 
  return 1;
 }

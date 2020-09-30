@@ -38,6 +38,12 @@ namespace sym_lib {
    return t1;
   }
 
+  void testing() override {
+   if(correct_x_)
+    if (!is_equal(0, factor_->nnz, correct_x_, factor_->x,1e-6))
+      PRINT_LOG(name_ + " code != reference solution.\n");
+  }
+
  public:
   Spic0Serial(CSR *L, CSC *L_csc, CSR *A, CSC *A_csc,
                             double *correct_x, std::string name) :
@@ -53,6 +59,8 @@ namespace sym_lib {
   ~Spic0Serial() override {
    delete factor_;
   };
+
+  double *Factor(){ return factor_->x;}
  };
 
  class Spic0ParallelLBC : public Spic0Serial {
@@ -62,7 +70,7 @@ namespace sym_lib {
   int final_level_no, *fina_level_ptr, *final_part_ptr, *final_node_ptr;
   int part_no;
   void build_set() override {
-   //dag_array_.push_back(A_csc_);
+   Spic0Serial::build_set();
    auto *cost = new double[n_]();
    for (int i = 0; i < n_; ++i) {
     cost[i] = L1_csr_->p[i+1] - L1_csr_->p[i];
@@ -106,7 +114,11 @@ namespace sym_lib {
    num_threads_ = lp_;
   }
 #endif
-  ~Spic0ParallelLBC() override = default;
+  ~Spic0ParallelLBC(){
+   delete []fina_level_ptr;
+   delete []final_part_ptr;
+   delete []final_node_ptr;
+  }
  };
 
 
