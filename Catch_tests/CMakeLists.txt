@@ -2,6 +2,7 @@ include_directories(includes
         ${SPARSE_UTIL_INC}
         ${SPARSE_EXTN_INC}
         ${LBC_INC}
+        ${Sparse_BLAS_INC}
         ${METIS_INCLUDE_DIR} ${METIS_INCLUDES}
         )
 
@@ -15,7 +16,7 @@ link_directories(
         ${PAPI_LIB2})
 
 set(SOURCE_FILES
-        sptrsv.cpp
+        ${Sparse_BLAS_SRC}/sptrsv.cpp
         ${SPARSE_UTIL_SRC}/sparse_utilities.cpp
         ${SPARSE_UTIL_SRC}/sparse_inspector.cpp
         ${SPARSE_UTIL_SRC}/sparse_io.cpp
