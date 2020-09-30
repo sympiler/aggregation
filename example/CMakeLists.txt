@@ -12,7 +12,6 @@ include_directories(includes
 
 project(sptrsv_demo)
 set(SPTRSVD_SOURCE_FILES
-        sptrsv.cpp
         ${SPARSE_UTIL_SRC}/sparse_utilities.cpp
         ${SPARSE_UTIL_SRC}/sparse_inspector.cpp
         ${SPARSE_UTIL_SRC}/sparse_io.cpp
@@ -21,6 +20,7 @@ set(SPTRSVD_SOURCE_FILES
         ${SPARSE_EXTN_SRC}/mmio.cpp
         ${Profiler_SRC}/StatSpMat.cpp
         ${Sparse_BLAS_SRC}/executor.cpp
+        ${Sparse_BLAS_SRC}/sptrsv.cpp
         ${Group_SRC}/Group.cpp
         ${Group_SRC}/Utils.cpp
         ${METIS_SOURCE_FILES}
@@ -28,11 +28,11 @@ set(SPTRSVD_SOURCE_FILES
         )
 
 add_executable(sptrsv_demo ${SPTRSVD_SOURCE_FILES}
-        sptrsv_demo.cpp )
-
+        sptrsv_demo.cpp)
 target_link_libraries(sptrsv_demo
         lbc
         ${METIS_LIBRARY} ${METIS_LIBRARIES})
+
 
 add_executable(sptrsv_csr_profile ${SPTRSVD_SOURCE_FILES}
         sptrsv_csr_profile.cpp)
