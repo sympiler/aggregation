@@ -15,7 +15,7 @@
 #include <cmath>
 
 
-namespace group_cols
+namespace sym_lib
 {
     typedef enum
     {
@@ -27,6 +27,7 @@ namespace group_cols
     class StatSpMat{
         int nnz; // number of non-zeros in SpMat
         int n;  // number of row or columns
+        int npart; // number of partitions
         int ngroup; // number of groups when grouping is enabled
         int nnz_access; // total number of non-zeros which is accessed
         int nFlops; // Number of flops for one Sparse Kernel
@@ -73,12 +74,31 @@ namespace group_cols
          */
         StatSpMat(CSR *L, SpKerType kerType, int num_threads, int *levelPtr, int *partPtr, int *nodePtr, int levelNo, int partNo, int levelSetNo);
 
+
+        /**
+         * @brief do profiling for coarsening method combined with grouping by taking the matrix L in CSR format and output of coarsening and grouping method directly
+         * @param L  Triangular Sparse Matrix in CSR format
+         * @param kerType kerType specifies the sparse kernel
+         * @param num_threads
+         * @param levelPtr The pointer to levelset
+         * @param partPtr  The pointer to one partitions
+         * @param nodePtr The points to one node, which is one group
+         * @param groupPtr  Pointer to the starting location of one group
+         * @param groupSet  Pointer to the column indices in one group
+         * @param levelNo  Number of Coarsen Levels
+         * @param partNo Number of Partitioning
+         * @param levelSetNo  Number of Levels
+         * @param groupNo Number of groups
+         */
+        StatSpMat(CSR *L, SpKerType kerType, int num_threads, int *levelPtr, int *partPtr, int *nodePtr, int *groupPtr, int *groupSet,
+        int levelNo, int partNo, int levelSetNo, int groupNo);
+
         /**
          *
          * @param L SpMat in CSR format
          * @param DAG depdence information from L
          * @param kerType kerType specifies the sparse kernel
-         * @param num_threads number of
+         * @param num_threads number of threads
          * @param blksize parameters for grouping method, enble by setting blksize>1
          */
         StatSpMat(CSR *L, std::vector<std::vector<int>> DAG, SpKerType kerType, int num_threads, int blksize=1);

@@ -31,6 +31,12 @@ set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/lbc")
 set(Group_INC "${CMAKE_CURRENT_SOURCE_DIR}/Group/includes/")
 set(Group_SRC "${CMAKE_CURRENT_SOURCE_DIR}/Group/")
 
+set(Sparse_BLAS_INC "${CMAKE_CURRENT_SOURCE_DIR}/sparse_blas/includes/")
+set(Sparse_BLAS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/sparse_blas/")
+
+set(Profiler_INC "${CMAKE_CURRENT_SOURCE_DIR}/profiler/includes/")
+set(Profiler_SRC "${CMAKE_CURRENT_SOURCE_DIR}/profiler/")
+
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
 

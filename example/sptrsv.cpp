@@ -99,6 +99,29 @@ namespace sym_lib {
   };
  }
 
+    void sptrsv_csr_group_lbc(int n, int *Lp, int *Li, double *Lx, double *x,
+                        int level_no, int *level_ptr,
+                        int *par_ptr, int *partition,  int *groupPtr, int *groupSet) {
+#pragma omp parallel
+        {
+            for (int i1 = 0; i1 < level_no; ++i1) {
+#pragma omp  for schedule(auto)
+                for (int j1 = level_ptr[i1]; j1 < level_ptr[i1 + 1]; ++j1) {
+                    for (int k1 = par_ptr[j1]; k1 < par_ptr[j1 + 1]; ++k1) {
+                        int p = partition[k1];
+
+                        for (int k = groupPtr[p]; k < groupPtr[p+1]; ++k) {
+                            int i = groupSet[k];
+                            for (int j = Lp[i]; j < Lp[i + 1] - 1; j++) {
+                                x[i] -= Lx[j] * x[Li[j]];
+                            }
+                            x[i] /= Lx[Lp[i + 1] - 1];
+                        }
+                    }
+                }
+            }
+        };
+    }
 
 
 

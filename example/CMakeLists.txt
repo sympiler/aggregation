@@ -6,6 +6,8 @@ include_directories(includes
         ${LBC_INC}
         ${METIS_INCLUDE_DIR} ${METIS_INCLUDES}
         ${Group_INC}
+        ${Sparse_BLAS_INC}
+        ${Profiler_INC}
         )
 
 project(sptrsv_demo)
@@ -17,8 +19,8 @@ set(SPTRSVD_SOURCE_FILES
         ${SPARSE_UTIL_SRC}/test_utils.cpp
         ${SPARSE_UTIL_SRC}/utils.cpp
         ${SPARSE_EXTN_SRC}/mmio.cpp
-        ${Group_SRC}/StatSpMat.cpp
-        ${Group_SRC}/executor.cpp
+        ${Profiler_SRC}/StatSpMat.cpp
+        ${Sparse_BLAS_SRC}/executor.cpp
         ${Group_SRC}/Group.cpp
         ${Group_SRC}/Utils.cpp
         ${METIS_SOURCE_FILES}

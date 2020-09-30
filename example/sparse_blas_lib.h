@@ -36,6 +36,24 @@ namespace sym_lib {
                 int level_no, int *level_ptr,
                 int *par_ptr, int *partition);
 
+ /**
+  * @brief perform SpTrsv_CSR based on grouping and LBC
+  * @param n number of rows
+  * @param Lp Row pointer in the CSR format
+  * @param Li Index array in the CSR format
+  * @param Lx Val array in the CSR format
+  * @param x  right hand side
+  * @param level_no number of levels
+  * @param level_ptr  pointer to one coarsen level
+  * @param par_ptr  pointer to one partition
+  * @param partition pointer to array storing node Index
+  * @param groupPtr Pointer to the starting location of one group
+  * @param groupSet Pointer to the column indices in one group
+  */
+ void sptrsv_csr_group_lbc(int n, int *Lp, int *Li, double *Lx, double *x,
+                              int level_no, int *level_ptr,
+                              int *par_ptr, int *partition,  int *groupPtr, int *groupSet);
+
  void sptrsv_csr_lbc_seq(int n, int *Lp, int *Li, double *Lx, double *x,
                             int level_no, int *level_ptr,
                             int *par_ptr, int *partition);

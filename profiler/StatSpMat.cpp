@@ -4,11 +4,11 @@
 
 #include <StatSpMat.h>
 #include <lbc.h>
+#include <sparse_inspector.h>
 
 #include "../example/sparse_blas_lib.h"
 
-using namespace sym_lib;
-namespace group_cols{
+namespace sym_lib{
     StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads, int blksize)
     {
         omp_set_num_threads(num_threads);
@@ -33,8 +33,10 @@ namespace group_cols{
 
         int ngroup;
         group g(L->n, L->p, L->i);
-        NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
+        g.inspection_sptrsvcsr_v1(groupPtr, groupSet, ngroup, groupInv);
+//        NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
         this->ngroup = ngroup;
+        this->npart = ngroup;
 
         /**
          * apply grouping information to the DAG and generated a smaller DAG.
@@ -122,8 +124,10 @@ namespace group_cols{
 
         int ngroup;
         group g(L->n, L->p, L->i);
-        NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
+        g.inspection_sptrsvcsr_v1(groupPtr, groupSet, ngroup, groupInv);
+//        g.NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
         this->ngroup = ngroup;
+        this->npart = ngroup;
 
         /**
  * apply grouping information to the DAG and generated a smaller DAG.
@@ -228,6 +232,53 @@ namespace group_cols{
     }
 
 
+    StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads, int *levelPtr, int *partPtr, int *nodePtr, int *groupPtr, int *groupSet,
+                         int levelNo, int partNo, int levelSetNo, int groupNo)
+     {
+         omp_set_num_threads(num_threads);
+
+         Setup(L, kerType);
+
+         this->ngroup=groupNo;
+         this->npart=levelPtr[levelNo];
+
+
+         fs_csr_stat(L->n, L->p, L->i, this->nFlops, this->nnz_access, this->nnz_reuse);
+
+         this->nlevels = levelSetNo;
+         this->num_sys = levelNo;
+
+
+         this->nnzPerLevels = this->nnz * 1.0 /this->num_sys;
+         this->averParallelism = this->npart* 1.0 / this->num_sys;
+
+
+         std::vector<int> lcost;
+         lcost.resize(this->num_sys);
+
+         sptrsv_csr_group_lbc_stat(L->n, L->p, L->i,
+                             levelNo, levelPtr,
+                             partPtr, nodePtr, groupPtr, groupSet, lcost.data());
+//        printf("done\n");
+
+        this->SumMaxDiff=0;
+        for (auto &cost: lcost) {
+            this->SumMaxDiff +=cost;
+        }
+
+//        this->SumMaxDiff = std::accumulate(lcost.begin(), lcost.end(), 0.0);
+        this->AverageMaxDiff = this->SumMaxDiff * 1.0 / lcost.size();
+
+        double accum=0.0;
+        std::for_each (std::begin(lcost), std::end(lcost), [&](const double d) {
+            accum += (d - this->AverageMaxDiff) * (d - this->AverageMaxDiff);
+        });
+        this->VarianceMaxDiff = std::sqrt(accum/(lcost.size()-1));
+
+        lcost.clear();
+    }
+
+
     void StatSpMat::Setup(CSR *L, SpKerType kerType) {
         this->t_serial=0;
         this->t_level=0;
@@ -241,11 +292,11 @@ namespace group_cols{
 
 
     void StatSpMat::PrintData() {
-
         PRINT_CSV(this->n);
         PRINT_CSV(this->nnz);
         PRINT_CSV(this->NnzPerRows);
         PRINT_CSV(this->ngroup);
+        PRINT_CSV(this->npart);
         PRINT_CSV(this->nnz_access);
         PRINT_CSV(this->nnz_reuse);
         PRINT_CSV(this->nFlops);
