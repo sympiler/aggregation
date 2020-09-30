@@ -3,6 +3,7 @@
 //
 
 #include <executor.h>
+#include <vector>
 
 
 namespace sym_lib

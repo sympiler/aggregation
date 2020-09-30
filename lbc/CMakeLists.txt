@@ -9,6 +9,7 @@ add_library (lbc STATIC
         lbc_csc.cpp
         lbc_utils.cpp
         lbc_tree.cpp
+        lbc_csc_dag.cpp
         ${SPARSE_UTIL_SRC}/sparse_utilities.cpp
         ${SPARSE_UTIL_SRC}/etree.cpp
         ${SPARSE_UTIL_SRC}/utils.cpp)

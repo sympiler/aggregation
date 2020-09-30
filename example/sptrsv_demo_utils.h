@@ -5,6 +5,7 @@
 #ifndef FUSION_SPTRSV_DEMO_UTILS_H
 #define FUSION_SPTRSV_DEMO_UTILS_H
 
+#include <algorithm>
 #include <sparse_inspector.h>
 #include <lbc.h>
 
@@ -47,6 +48,7 @@ namespace sym_lib {
 
    level_no = build_levelSet_CSC(L1_csc_->n, L1_csc_->p, L1_csc_->i,
                                  level_ptr, level_set);
+//   std::cout<<"=>"<<level_no<<"\n";
   }
 
   timing_measurement fused_code() override {
@@ -105,12 +107,14 @@ namespace sym_lib {
      fina_level_ptr,part_no,
      final_part_ptr,final_node_ptr,
      lp_,cp_, ic_, cost);
+
    delete []cost;
   }
 
   timing_measurement fused_code() override {
    timing_measurement t1;
 
+   t1.start_timer();
     sptrsv_csr_lbc(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
                   final_level_no, fina_level_ptr,
                   final_part_ptr, final_node_ptr);
@@ -156,6 +160,59 @@ namespace sym_lib {
    delete []final_node_ptr;
   };
  };
+
+
+ class SptrsvLBCDAG : public SptrsvLBC {
+
+  void build_set() override {
+   auto *cost = new double[n_]();
+   for (int i = 0; i < n_; ++i) {
+    cost[i] = L1_csr_->p[i + 1] - L1_csr_->p[i];
+   }
+   get_coarse_Level_set_DAG_CSC03(n_, L1_csc_->p, L1_csc_->i, final_level_no,
+                                  fina_level_ptr, part_no, final_part_ptr,
+                                  final_node_ptr, lp_, cp_, ic_, cost);
+   delete[] cost;
+  }
+
+public:
+  SptrsvLBCDAG(CSR *L, CSC *L_csc, double *correct_x, std::string name, int lp,
+               int cp, int ic)
+   : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic) {}
+  ~SptrsvLBCDAG() {}
+ };
+
+ class SptrsvLBC_W_Sorting : public SptrsvLBC {
+protected:
+  void build_set() override {
+
+   auto *cost = new double[n_]();
+   for (int i = 0; i < n_; ++i) {
+    cost[i] = L1_csr_->p[i + 1] - L1_csr_->p[i];
+   }
+
+   get_coarse_levelSet_DAG_CSC_tree(n_, L1_csr_->p, L1_csr_->i, final_level_no,
+                                    fina_level_ptr, part_no, final_part_ptr,
+                                    final_node_ptr, lp_, cp_, ic_, cost);
+
+
+   // Sorting the w partitions
+   for (int i = 0; i < part_no; ++i) {
+    std::sort(final_node_ptr + final_part_ptr[i],
+              final_node_ptr + final_part_ptr[i + 1]);
+   }
+
+   delete[] cost;
+  }
+
+public:
+  SptrsvLBC_W_Sorting(CSR *L, CSC *L_csc, double *correct_x, std::string name,
+                      int lp, int cp, int ic)
+   : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic){};
+
+  ~SptrsvLBC_W_Sorting() {};
+ };
+
 
     class SpTrsvCSR_Grouping : public sym_lib::SptrsvSerial{
     protected:
@@ -302,7 +359,7 @@ namespace sym_lib {
                                         part_no,
                                         final_part_ptr,final_node_ptr,
                                         lp_,cp_, ic_, cost
-                                        );
+            );
             nlevels = final_level_no;
 
             delete []cost;
@@ -312,16 +369,16 @@ namespace sym_lib {
             timing_measurement t1;
             t1.start_timer();
             sptrsv_csr_group_lbc(L1_csr_->n, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
-                    final_level_no, fina_level_ptr, final_part_ptr, final_node_ptr, groupPtr, groupSet);
+                                 final_level_no, fina_level_ptr, final_part_ptr, final_node_ptr, groupPtr, groupSet);
             t1.measure_elapsed_time();
             sym_lib::copy_vector(0,n_,x_in_,x_);
             return t1;
         }
     public:
         SpTrsvCSR_Grouping_H2(CSR *L, CSC *L_csc,
-        double *correct_x, std::string name,
-        int lp, int cp, int ic) :
-        SptrsvSerial(L, L_csc, correct_x, name) {
+                              double *correct_x, std::string name,
+                              int lp, int cp, int ic) :
+                SptrsvSerial(L, L_csc, correct_x, name) {
             L1_csr_ = L;
             L1_csc_ = L_csc;
             correct_x_ = correct_x;
@@ -371,7 +428,11 @@ namespace sym_lib {
 
 
     };
-}
+
+
+ } // namespace sym_lib
+
+
 
 
 #endif //FUSION_SPTRSV_DEMO_UTILS_H

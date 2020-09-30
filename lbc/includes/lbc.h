@@ -48,6 +48,19 @@ namespace sym_lib{
                                  int minLevelDist,
                                  int divRate,
                                  double *nodeCost);
+ /// Computes coarsened level set by working on the DAG directly.
+ int get_coarse_Level_set_DAG_CSC03(size_t n,
+                                    int *lC,
+                                    int *lR,
+                                    int &finaLevelNo,
+                                    int *&finaLevelPtr,
+                                    int &partNo,
+                                    int *&finalPartPtr,
+                                    int *&finalNodePtr,
+                                    int innerParts,
+                                    int minLevelDist,
+                                    int divRate,
+                                    double *nodeCost);
 
  int getCoarseLevelSet_DAG_BCSC02(size_t n,
                                   size_t *lC,

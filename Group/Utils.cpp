@@ -4,6 +4,7 @@
 
 #include <Utils.h>
 #include <algorithm>
+#include <cstdio>
 
 namespace sym_lib {
 

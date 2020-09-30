@@ -34,6 +34,12 @@ instructions.
 
 ## Example
 As an example, sparse triangular solver example, CSR is turned into
-a parallel code using the LBC algorithm. 
+a parallel code using the LBC algorithm.
+
+## Testing
+If you want to build unit tests, you need to pass the following to Cmake
+```
+cmake -DotheroptionXX -DTEST_CATCH=true ..
+``` 
 
 

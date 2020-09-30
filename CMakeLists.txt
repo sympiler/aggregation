@@ -48,7 +48,7 @@ if (APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp ")
 endif ()
 if (UNIX AND NOT APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -std=c++11 -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -std=c++11 ")
 endif ()
 
 add_subdirectory(lbc)
@@ -56,4 +56,9 @@ if(EXISTS "${METIS_INCLUDES}")
     add_definitions(-DMETIS)
     set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
     add_subdirectory(example)
+endif()
+
+if(TEST_CATCH)
+    add_subdirectory(Catch_tests)
+
 endif()

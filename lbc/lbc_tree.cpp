@@ -143,7 +143,8 @@ namespace sym_lib {
                                        levelPtr, NULL, originalHeight,
                                        innerParts, minLevelDist,
                                        divRate, innerPartsSize, slackGroups,
-                                       subTreeCost, partition2Level, true);
+                                       subTreeCost, partition2Level,true);
+
   //
 #if 0
   //Moving the slack nodes around and make a new level-set

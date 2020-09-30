@@ -1,57 +1,52 @@
 //
-// Created by kazem on 9/18/19.
+// Created by kazem on 9/25/20.
 //
-
-#ifndef CROSSKERNEL_LBC_CSC_H
-#define CROSSKERNEL_LBC_CSC_H
 
 #include <sparse_utilities.h>
 #include <sparse_inspector.h>
-#include <lbc.h>
-#include <sparse_io.h>
 #include "includes/lbc_utils.h"
-
 namespace sym_lib {
- int get_coarse_levelSet_DAG_CSC(size_t n,
-                                 int *lC,
-                                 int *lR,
-                                 int &finaLevelNo,
-                                 int *&finaLevelPtr,
-                                 int &partNo,
-                                 int *&finalPartPtr,
-                                 int *&finalNodePtr,
-                                 int innerParts,
-                                 int minLevelDist,
-                                 int divRate,
-                                 double *nodeCost) {
-  auto *node2partition = new int[n];
-  auto *outCost = new double[n];
-  auto *newOutCost = new double[n];
-  auto *isChanged = new bool[n]();
-  auto *visited = new bool[n]();
-  auto *isMarked = new int[n]();
-  auto *xi = new int[2 * n];
+ int get_coarse_Level_set_DAG_CSC03(size_t n,
+                                    int *lC,
+                                    int *lR,
+                                    int &finaLevelNo,
+                                    int *&finaLevelPtr,
+                                    int &partNo,
+                                    int *&finalPartPtr,
+                                    int *&finalNodePtr,
+                                    int innerParts,
+                                    int minLevelDist,
+                                    int divRate,
+                                    double *nodeCost) {
+  int *node2partition = new int[n];
+  double *outCost = new double[n];
+  double *newOutCost = new double[n];
+  int *node2Level = new int[n];
+  int *levelPtr; //= new int[n+1]();
+  bool *isChanged = new bool[n]();
+  bool *visited = new bool[n]();
+  int *isMarked = new int[n]();
+  int *levelSet; //= new size_t[n]();
+  int *xi = new int[2 * n];
   int curNumOfPart = 0;
   std::vector<int> remainingNodes, remainingTmp;
   std::vector<std::vector<int>> newLeveledParList, mergedLeveledParList;
+  int clusterCnt = 0;
   int originalHeight = 0;
   finaLevelPtr = new int[n + 1];
   finalPartPtr = new int[n]();
   finalNodePtr = new int[n];
-
+  int *inDegree = new int[n];
   finaLevelPtr[0] = 0;
   for (int i = 0; i < n; ++i) {
    node2partition[i] = -1;
    outCost[i] = 0.0;
    newOutCost[i] = 0.0;
+   inDegree[i] = 0;
   }
   int averageCC = 0;
   //making levelset
-  int *levelPtr, *levelSet;;
-  auto *node2Level = new int[n];
-//  int levelNo = build_levelSet_CSC(n, lC, lR, levelPtr, levelSet);
-  int levelNo = level_set_multi_graphs(n, lC, lR, levelPtr, levelSet, 1);
-
+  int levelNo = build_levelSet_CSC(n, lC, lR, levelPtr, levelSet);
   //COMPUTING NODE2lEVEL
   for (int i = 0; i < levelNo; ++i) {
    for (int j = levelPtr[i]; j < levelPtr[i + 1]; ++j) {
@@ -59,7 +54,6 @@ namespace sym_lib {
     node2Level[node] = i;
    }
   }
-
 #if 0
   for (int i = 0; i < levelNo; ++i) {
    std::cout<<i<<"::";
@@ -70,33 +64,30 @@ namespace sym_lib {
   }
 #endif
   //Filling indegree array with incoming edges
-  auto *inDegree = new int[n]();
   for (int s = 0; s < n; ++s) {
    for (int r = lC[s]; r < lC[s + 1]; ++r) {
     int cn = lR[r];
     inDegree[cn]++;
    }
   }
-  /** l-partitioning of height **/
+  //H-partitioning
   int *partition2Level = new int[levelNo + 1]();
   std::vector<int> innerPartsSize;
   originalHeight = levelNo;
   std::vector<std::vector<int>> slackGroups(originalHeight + 1);
   std::vector<std::vector<int>> slackedLevelSet(originalHeight + 1);
   int lClusterCnt = height_partitioning_DAG_trng(levelNo, levelPtr,
-                                                 nullptr, originalHeight, innerParts,
-                                                 minLevelDist, divRate,
-                                                 innerPartsSize, slackGroups,
-                                                 nullptr, partition2Level);
+                                                NULL, originalHeight, innerParts,
+                                                minLevelDist, divRate,
+                                                innerPartsSize, slackGroups,
+                                                NULL, partition2Level);
 
-  /** w-partitioning of each chunk of level **/
   for (int l = 0; l < lClusterCnt; ++l) {//for each leveled partition
    int lbLevel = partition2Level[l] - 1;
    int ubLevel = partition2Level[l + 1];
    int dfsLevel = partition2Level[l];
    int curLeveledParCost = 0;
    //Marking lower bound
-
    // FIXME: we might need to do all levels below for general DAG
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0];
         j < levelPtr[lbLevel + 1]; ++j) {
@@ -110,7 +101,7 @@ namespace sym_lib {
      isMarked[curNode] = true;
     }
    }
-   //Iterating over non-visited leaf nodes_ to compute CCs
+   //Iterating over non-visited leaf nodes to compute CCs
    //CC:connected component
    int stackStart = 0, cc = 0;
    std::vector<int> needAliased;
@@ -120,46 +111,49 @@ namespace sym_lib {
     bool isCC = true;
     int minAliasedPar = INT32_MAX;
     if (!isMarked[curLeaf]) {
-     /**
-      * find clusters within the vertical section. Label overlapped nodes and put them into partition
-      * with minimum number of nodes
-      **/
-     stackStart = dfs_CSC_CC(n, curLeaf, lC, lR, isMarked, n, xi, xi + n, needAliased, nullptr);
+     stackStart = dfs_CSC_CC(n, curLeaf, lC, lR,
+                             isMarked,
+                             n, xi, xi + n, needAliased, NULL);
      //Finding unique clusters from needAliased
      minAliasedPar = make_unique(node2partition, needAliased, n, isUniq);
 
-     isCC = needAliased.empty();
+     isCC = needAliased.size() == 0;
      if (!isCC) {//There are some intersection between found CCs.
-      for (int j : needAliased) {//the first is min
-       int tn = node2partition[j];
+      for (int j = 0; j < needAliased.size(); ++j) {//the first is min
+       int tn = node2partition[needAliased[j]];
        if (tn != minAliasedPar) {
         cc--;
         for (int i = 0; i < n; ++i) {
-         // Replace all needAliased node with their min part number.
+         //Replace all needAliased node with their min part number.
          if (node2partition[i] == tn) {
           node2partition[i] = minAliasedPar;
          }
         }
        }
       }
-      needAliased.clear();
-
-      //Set the nodes_ in the current cluster
+      needAliased.erase(needAliased.begin(), needAliased.end());
+      //Set the nodes in the current cluster
       for (int i = stackStart; i < n; ++i) {
        int node = xi[i];
        node2partition[node] = minAliasedPar;
+       //Compute the cost of each CC
        outCost[minAliasedPar] += nodeCost[node];
+       //The cost of cur h-partition
        curLeveledParCost += nodeCost[node];
+       //reseting all nodes but leaf node
+       //marke it with -1
        if (node2Level[node] != dfsLevel)
         isMarked[node] = -1;
       }
      } else {
-      // reset all nodes_ but leaves to -1
       for (int i = stackStart; i < n; ++i) {
        int node = xi[i];
        node2partition[node] = cc;
+       //Compute the cost of each CC
        outCost[cc] += nodeCost[node];
        curLeveledParCost += nodeCost[node];
+       //reseting all nodes but leaf node
+       //marke it with -1
        if (node2Level[node] != dfsLevel)
         isMarked[node] = -1;
       }
@@ -169,12 +163,11 @@ namespace sym_lib {
    }
    //Reset all marked node in the DAG
    //std::cout<<cc<<"\n";
-   int lb = lbLevel > 0 ? lbLevel : 0;
-   for (int j = levelPtr[lb]; j < levelPtr[lbLevel + 1]; ++j) {
+   for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0];
+        j < levelPtr[lbLevel + 1]; ++j) {
     int curNode = levelSet[j];
     isMarked[curNode] = false;
    }
-   delete[]isUniq;
    //Marking upper bound
    for (int ii = ubLevel; ii < originalHeight; ++ii) {
     for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
@@ -190,8 +183,15 @@ namespace sym_lib {
     newLeveledParList.push_back(extraDim);
    }
    modified_BFS_CSC(n, lC, lR, inDegree, visited,
-                    node2partition, levelPtr, levelSet, dfsLevel,
-                    newLeveledParList);
+                   node2partition, levelPtr, levelSet, dfsLevel,
+                   newLeveledParList);
+   /*for (int ll = dfsLevel; ll < ubLevel; ++ll) {
+    for (int ii = levelPtr[ll]; ii < levelPtr[ll+1]; ++ii) {
+     int curNode=levelSet[ii];
+     assert(node2partition[curNode]>=0);
+     newLeveledParList[node2partition[curNode]].push_back(curNode);
+    }
+   }*/
    //Marking upper bound
    for (int ii = ubLevel; ii < originalHeight; ++ii) {
     for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
@@ -201,17 +201,17 @@ namespace sym_lib {
    }
    //Bin packing and form W-partitions
    int levelParCostThresh = curLeveledParCost / innerParts;
-   levelParCostThresh += int(0.1 * levelParCostThresh);
+   levelParCostThresh += (0.1 * levelParCostThresh);
    int outinnerParts = 0;
    averageCC += newLeveledParList.size();
-   mergedLeveledParList.resize(innerPartsSize[l]);//FIXME;
+   mergedLeveledParList.resize(innerPartsSize[l]);//FIXME
    if (newLeveledParList.size() > innerPartsSize[l]) {
     outinnerParts = worst_fit_bin_pack(newLeveledParList, outCost,
-                                       mergedLeveledParList, newOutCost,
-                                       levelParCostThresh, innerPartsSize[l]);
+                                    mergedLeveledParList, newOutCost,
+                                    levelParCostThresh, innerPartsSize[l]);
     //assert(outinnerParts<=innerParts);
    } else {
-    mergedLeveledParList.clear();
+    mergedLeveledParList.erase(mergedLeveledParList.begin(), mergedLeveledParList.end());
     mergedLeveledParList = newLeveledParList;
     outinnerParts = newLeveledParList.size();
 #if 0
@@ -232,10 +232,10 @@ namespace sym_lib {
    for (int i = 0; i < outinnerParts; ++i) {
     int curPartElem = 0;
     curPartCost = 0;
-    for (int j : mergedLeveledParList[i]) {
-     curPartCost += nodeCost[j];
-     finalNodePtr[finalPartPtr[curNumOfPart] + curPartElem] = j;
-     node2partition[j] = curNumOfPart;
+    for (int j = 0; j < mergedLeveledParList[i].size(); ++j) {
+     curPartCost += nodeCost[mergedLeveledParList[i][j]];
+     finalNodePtr[finalPartPtr[curNumOfPart] + curPartElem] = mergedLeveledParList[i][j];
+     node2partition[mergedLeveledParList[i][j]] = curNumOfPart;
      curPartElem++;
     }
 #if 0
@@ -247,39 +247,39 @@ namespace sym_lib {
    }
 
    //Cleaning the current sets.
-   for (auto &i : mergedLeveledParList)
-    i.clear();
-   mergedLeveledParList.clear();
-   for (auto &i : newLeveledParList)
-    i.clear();
-   newLeveledParList.clear();
+   for (int i = 0; i < mergedLeveledParList.size(); ++i) {
+    mergedLeveledParList[i].erase(mergedLeveledParList[i].begin(), mergedLeveledParList[i].end());
+   }
+   mergedLeveledParList.erase(mergedLeveledParList.begin(), mergedLeveledParList.end());
+   for (int i = 0; i < newLeveledParList.size(); ++i) {
+    newLeveledParList[i].erase(newLeveledParList[i].begin(), newLeveledParList[i].end());
+   }
+   newLeveledParList.erase(newLeveledParList.begin(), newLeveledParList.end());
 
   }
 
   finaLevelNo = lClusterCnt;
-#ifdef CHECK
   if (true) {//Verification of the set.
-      bool *checkExist = new bool[n];
-      for (int i = 0; i < n; ++i) checkExist[i] = false;
-      for (int i = 0; i < lClusterCnt; ++i) {
-          for (int k = finaLevelPtr[i]; k < finaLevelPtr[i + 1]; ++k) {
-              for (int j = finalPartPtr[k]; j < finalPartPtr[k + 1]; ++j) {
-                  assert(checkExist[finalNodePtr[j]] == false);
-                  checkExist[finalNodePtr[j]] = true;
-              }
-          }
-      }
-      for (int i = 0; i < n; ++i) {
-          assert(checkExist[i] == true);
-      }
-      delete[] checkExist;
+   bool *checkExist = new bool[n];
+   for (int i = 0; i < n; ++i) checkExist[i] = false;
+   for (int i = 0; i < lClusterCnt; ++i) {
+    for (int k = finaLevelPtr[i]; k < finaLevelPtr[i + 1]; ++k) {
+     for (int j = finalPartPtr[k]; j < finalPartPtr[k + 1]; ++j) {
+      assert(checkExist[finalNodePtr[j]] == false);
+      checkExist[finalNodePtr[j]] = true;
+     }
+    }
+   }
+   for (int i = 0; i < n; ++i) {
+    assert(checkExist[i] == true);
+   }
+   delete[] checkExist;
   }
-#endif
-  delete[] levelPtr;
-  delete[] levelSet;
   delete[] outCost;
   delete[] newOutCost;
   delete[] partition2Level;
+  delete[] levelPtr;
+  delete[] levelSet;
   delete[] node2partition;
   delete[] node2Level;
   delete[] isChanged;
@@ -289,43 +289,7 @@ namespace sym_lib {
   delete[]inDegree;
 
   return averageCC / lClusterCnt;
+
  }
-
-
- int get_coarse_levelSet_DAG_CSC_tree(size_t n,
-                                 int *lC,
-                                 int *lR,
-                                 int &finaLevelNo,
-                                 int *&finaLevelPtr,
-                                 int &partNo,
-                                 int *&finalPartPtr,
-                                 int *&finalNodePtr,
-                                 int innerParts,
-                                 int minLevelDist,
-                                 int divRate,
-                                 double *nodeCost){
-  CSC *A = new CSC(n,n,lC[n],lC,lR, 0);
-  // make it symmetric and upper triangular
-  CSC* A_sym =make_symmetric(A, false);
-  int *etree = new int[n]();
-  int ret = compute_etree(A_sym, etree);
-#if 0
-  print_csc(1, "merged \n", A);
-  print_vec("ETREE\n",0,n,etree);
-  CSC *tmp = tree_to_csc(n, etree);
-  print_csc(1,"Tree\n",n,tmp->p, tmp->i, NULLPNTR);
-  delete tmp;
-#endif
-  ret = get_coarse_levelSet_tree(n,etree,finaLevelNo,finaLevelPtr,partNo,
-    finalPartPtr, finalNodePtr, innerParts, minLevelDist, divRate,
-     nodeCost);
-  delete []etree;
-  delete A_sym;
-  delete A;
-  return ret;
- }
-
-
 
 }
-#endif //CROSSKERNEL_LBC_CSC_H
