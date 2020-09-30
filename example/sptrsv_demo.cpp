@@ -37,6 +37,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  int *perm;
  std::string matrix_name;
  std::vector<timing_measurement> time_array;
+
  if (argc < 2) {
   PRINT_LOG("Not enough input args, switching to random mode.\n");
   n = 16;
@@ -54,11 +55,15 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
    return -1;
   n = L1_csc->n;
  }
+
  if(argc >= 3)
   p2 = atoi(argv[2]);
- omp_set_num_threads(num_threads);
  if(argc >= 4)
   p3 = atoi(argv[3]);
+ if(argc >= 5)
+  num_threads = atoi(argv[4]);
+
+ omp_set_num_threads(num_threads);
  /// Re-ordering L matrix
 #ifdef METIS
  //We only reorder L since dependency matters more in l-solve.
@@ -81,7 +86,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  double *y_serial, *y_correct = new double[n];
 
- timing_measurement t_ser, t_par, t_par2, t_blocked, t_blocked_mkl,
+ timing_measurement t_ser, t_par, t_lbc_w_sort, t_blocked, t_blocked_mkl,
  t_blocked_levelset, t_levelset, t_lbc_dag;
 
  SptrsvSerial *ss = new SptrsvSerial(L2_csr, L1_csc, NULLPNTR, "serial");
@@ -98,6 +103,9 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "lbc DAG",num_threads, p2, p3);
  t_lbc_dag = sld->evaluate();
+
+ auto *slwg = new SptrsvLBC_W_Sorting(L2_csr, L1_csc, y_serial, "lbc with w sorting", num_threads, p2, p3);
+ t_lbc_w_sort = slwg->evaluate();
 
  if(header)
   std::cout<<"Matrix Name,Metis Enabled,"
@@ -116,6 +124,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  PRINT_CSV(t_levelset.elapsed_time);
  PRINT_CSV(t_par.elapsed_time);
  PRINT_CSV(t_lbc_dag.elapsed_time);
+ PRINT_CSV(t_lbc_w_sort.elapsed_time);
 
  delete []y_correct;
  delete A;

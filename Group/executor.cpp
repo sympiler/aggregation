@@ -3,6 +3,7 @@
 //
 
 #include <executor.h>
+#include <vector>
 
 
 namespace group_cols
