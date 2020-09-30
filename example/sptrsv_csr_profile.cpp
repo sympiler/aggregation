@@ -57,7 +57,7 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
     int option=0;
     if(argc >= 3)
         num_threads=atoi(argv[2]);
-//    omp_set_num_threads(num_threads);
+    omp_set_num_threads(num_threads);
     if(argc >= 4)
         option=atoi(argv[3]);
     if(argc >= 5)
@@ -94,7 +94,8 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
     t_ser = ss->evaluate();
     y_serial = ss->solution();
     copy_vector(0,n,y_serial,y_correct);
-
+    int nthread=omp_get_max_threads();
+    std::cout<<nthread;
     auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc");
     t_levelset = sls->evaluate();
 
@@ -127,16 +128,21 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
         /**
          * profiling for lbc method combined with grouping method
          * */
-        auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "grouping_lbc", num_threads, p2, p3);
+
+         auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "grouping_lbc", num_threads, p2, p3);
         t_lbc = sglbc->evaluate();
         auto levelPtr = sglbc->getLevelPtr();
         auto partPtr = sglbc->getPartPtr();
         auto nodePtr = sglbc->getNodePtr();
         auto levelNo = sglbc->getLevelNo();
         auto partNo = sglbc->getPartNo();
+        auto ngroup = sglbc->getGroupNo();
+        auto groupPtr = sglbc->getGroupPtr();
+        auto groupSet = sglbc->getGroupSetPtr();
 
         SpKerType ktype = SpTrsv_CSR;
-        StatSpMat profiler(L2_csr, ktype, num_threads, levelPtr, partPtr, nodePtr, levelNo, partNo, LevelSetNo);
+        StatSpMat profiler(L2_csr, ktype, num_threads, levelPtr, partPtr, nodePtr, groupPtr, groupSet,
+                levelNo, partNo, LevelSetNo, ngroup);
 
 
         profiler.set_seq_time(t_ser.elapsed_time);
@@ -148,6 +154,7 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
         matrix_name = matrix_name.substr(pos+1);
         PRINT_CSV(matrix_name);
         PRINT_CSV(p2);
+        PRINT_CSV(p3);
         profiler.PrintData();
         std::cout<<"\n";
         delete  sglbc;

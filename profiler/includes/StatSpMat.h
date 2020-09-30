@@ -27,6 +27,7 @@ namespace sym_lib
     class StatSpMat{
         int nnz; // number of non-zeros in SpMat
         int n;  // number of row or columns
+        int npart; // number of partitions
         int ngroup; // number of groups when grouping is enabled
         int nnz_access; // total number of non-zeros which is accessed
         int nFlops; // Number of flops for one Sparse Kernel
@@ -87,9 +88,10 @@ namespace sym_lib
          * @param levelNo  Number of Coarsen Levels
          * @param partNo Number of Partitioning
          * @param levelSetNo  Number of Levels
+         * @param groupNo Number of groups
          */
         StatSpMat(CSR *L, SpKerType kerType, int num_threads, int *levelPtr, int *partPtr, int *nodePtr, int *groupPtr, int *groupSet,
-        int levelNo, int partNo, int levelSetNo);
+        int levelNo, int partNo, int levelSetNo, int groupNo);
 
         /**
          *

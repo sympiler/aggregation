@@ -36,6 +36,7 @@ namespace sym_lib{
         g.inspection_sptrsvcsr_v1(groupPtr, groupSet, ngroup, groupInv);
 //        NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
         this->ngroup = ngroup;
+        this->npart = ngroup;
 
         /**
          * apply grouping information to the DAG and generated a smaller DAG.
@@ -126,6 +127,7 @@ namespace sym_lib{
         g.inspection_sptrsvcsr_v1(groupPtr, groupSet, ngroup, groupInv);
 //        g.NaiveGrouping(L->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
         this->ngroup = ngroup;
+        this->npart = ngroup;
 
         /**
  * apply grouping information to the DAG and generated a smaller DAG.
@@ -231,13 +233,15 @@ namespace sym_lib{
 
 
     StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads, int *levelPtr, int *partPtr, int *nodePtr, int *groupPtr, int *groupSet,
-                         int levelNo, int partNo, int levelSetNo)
+                         int levelNo, int partNo, int levelSetNo, int groupNo)
      {
          omp_set_num_threads(num_threads);
 
          Setup(L, kerType);
 
-         this->ngroup=partNo;
+         this->ngroup=groupNo;
+         this->npart=levelPtr[levelNo];
+
 
          fs_csr_stat(L->n, L->p, L->i, this->nFlops, this->nnz_access, this->nnz_reuse);
 
@@ -246,15 +250,15 @@ namespace sym_lib{
 
 
          this->nnzPerLevels = this->nnz * 1.0 /this->num_sys;
-         this->averParallelism = partNo* 1.0 / this->num_sys;
+         this->averParallelism = this->npart* 1.0 / this->num_sys;
 
 
          std::vector<int> lcost;
          lcost.resize(this->num_sys);
 
-         sptrsv_csr_lbc_stat(L->n, L->p, L->i,
+         sptrsv_csr_group_lbc_stat(L->n, L->p, L->i,
                              levelNo, levelPtr,
-                             partPtr, nodePtr, lcost.data());
+                             partPtr, nodePtr, groupPtr, groupSet, lcost.data());
 //        printf("done\n");
 
         this->SumMaxDiff=0;
@@ -288,11 +292,11 @@ namespace sym_lib{
 
 
     void StatSpMat::PrintData() {
-
         PRINT_CSV(this->n);
         PRINT_CSV(this->nnz);
         PRINT_CSV(this->NnzPerRows);
         PRINT_CSV(this->ngroup);
+        PRINT_CSV(this->npart);
         PRINT_CSV(this->nnz_access);
         PRINT_CSV(this->nnz_reuse);
         PRINT_CSV(this->nFlops);

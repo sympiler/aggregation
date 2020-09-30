@@ -257,7 +257,7 @@ namespace sym_lib {
             group g(L1_csr_->n, L1_csr_->p, L1_csr_->i);
 
             g.inspection_sptrsvcsr_v1(groupPtr, groupSet, ngroup, groupInv);
-//            NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
+//            g.NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, 1);
             std::vector<std::vector<int>> DAG;
             DAG.resize(ngroup);
 
@@ -294,7 +294,7 @@ namespace sym_lib {
             }
 
 
-            nlevels=get_coarse_levelSet_DAG_CSC(ngroup,
+            get_coarse_levelSet_DAG_CSC(ngroup,
                                         gv,
                                         gedg,
                                         final_level_no,
@@ -303,6 +303,8 @@ namespace sym_lib {
                                         final_part_ptr,final_node_ptr,
                                         lp_,cp_, ic_, cost
                                         );
+            nlevels = final_level_no;
+
             delete []cost;
         }
 
@@ -338,12 +340,24 @@ namespace sym_lib {
             return final_node_ptr;
         }
 
+        int * getGroupPtr(){
+            return groupPtr;
+        }
+
+        int * getGroupSetPtr(){
+            return groupSet;
+        }
+
         int getLevelNo(){
             return final_level_no;
         }
 
         int getPartNo(){
             return part_no;
+        }
+
+        int getGroupNo(){
+            return ngroup;
         }
 
         ~SpTrsvCSR_Grouping_H2 () override {
