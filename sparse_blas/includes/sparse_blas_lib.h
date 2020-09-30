@@ -58,6 +58,20 @@ namespace sym_lib {
                             int level_no, int *level_ptr,
                             int *par_ptr, int *partition);
 
+
+ /////////////////////////// ICholesky0
+
+ /// Takes the lower part of a SPD matrix and factorize it with incomplete Cholesky0
+ /// \param n
+ /// \param val
+ /// \param rowPtr
+ /// \param rowIdx
+ void spic0_csr(int n, double *val, int *rowPtr, int *rowIdx);
+ void spic0_csr_lbc(int n, double *val, int *rowPtr, int *colIdx,
+                    int level_no, int *level_ptr,
+                    int *par_ptr, int *partition);
+
+
 }
 
 
