@@ -38,3 +38,24 @@ add_executable(sptrsv_csr_profile ${SPTRSVD_SOURCE_FILES}
         sptrsv_csr_profile.cpp)
 target_link_libraries( sptrsv_csr_profile lbc
         ${METIS_LIBRARY} ${METIS_LIBRARIES})
+
+
+
+project(spic0_demo)
+set(SPTRSVD_SOURCE_FILES
+        ${SPARSE_UTIL_SRC}/sparse_utilities.cpp
+        ${SPARSE_UTIL_SRC}/sparse_inspector.cpp
+        ${SPARSE_UTIL_SRC}/sparse_io.cpp
+        ${SPARSE_UTIL_SRC}/test_utils.cpp
+        ${SPARSE_UTIL_SRC}/utils.cpp
+        ${SPARSE_EXTN_SRC}/mmio.cpp
+        ${Sparse_BLAS_SRC}/spic0.cpp
+        ${METIS_SOURCE_FILES}
+        FusionDemo.cpp
+        )
+
+add_executable(spic0_demo ${SPTRSVD_SOURCE_FILES}
+        spic0_demo.cpp)
+target_link_libraries(spic0_demo
+        lbc
+        ${METIS_LIBRARY} ${METIS_LIBRARIES})
