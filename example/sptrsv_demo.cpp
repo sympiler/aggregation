@@ -87,7 +87,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  double *y_serial, *y_correct = new double[n];
 
  timing_measurement t_ser, t_par, t_lbc_w_sort, t_blocked, t_blocked_mkl,
- t_blocked_levelset, t_levelset, t_lbc_dag;
+ t_blocked_levelset, t_levelset, t_lbc_dag, t_levelset_group, t_lbc_group;
 
  SptrsvSerial *ss = new SptrsvSerial(L2_csr, L1_csc, NULLPNTR, "serial");
  t_ser = ss->evaluate();
@@ -107,6 +107,12 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  auto *slwg = new SptrsvLBC_W_Sorting(L2_csr, L1_csc, y_serial, "lbc with w sorting", num_threads, p2, p3);
  t_lbc_w_sort = slwg->evaluate();
 
+ auto *sg = new SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "levelset with grouping", num_threads);
+ t_levelset_group = sg->evaluate();
+
+ auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "lbc with grouping", num_threads, p2, p3);
+ t_lbc_group = sglbc->evaluate();
+
  if(header)
   std::cout<<"Matrix Name,Metis Enabled,"
              "Number of Threads,"
@@ -125,6 +131,8 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  PRINT_CSV(t_par.elapsed_time);
  PRINT_CSV(t_lbc_dag.elapsed_time);
  PRINT_CSV(t_lbc_w_sort.elapsed_time);
+ PRINT_CSV(t_levelset_group.elapsed_time);
+ PRINT_CSV(t_lbc_group.elapsed_time);
 
  delete []y_correct;
  delete A;
@@ -135,7 +143,8 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  delete sl;
  delete sls;
  delete sld;
-
+ delete sg;
+ delete sglbc;
 
  return 0;
 }

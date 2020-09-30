@@ -278,13 +278,13 @@ public:
 
     public:
         SpTrsvCSR_Grouping(CSR *L, CSC *L_csc,
-                           double *correct_x, std::string name, int nt, int blksize_):
+                           double *correct_x, std::string name, int nt):
                 SptrsvSerial(L, L_csc, correct_x, name){
             L1_csr_ = L;
             L1_csc_ = L_csc;
             correct_x_ = correct_x;
             nthreads = nt;
-            blksize = blksize_;
+            blksize = 1;
         };
 
         ~SpTrsvCSR_Grouping() override{};
