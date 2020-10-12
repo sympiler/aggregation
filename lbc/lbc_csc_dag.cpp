@@ -3,151 +3,178 @@
 //
 
 #include "includes/lbc_utils.h"
+#include <cstring>
+#include <ostream>
 #include <sparse_inspector.h>
 #include <sparse_utilities.h>
 namespace sym_lib {
 int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
                       int *finalNodePtr, int *finalPartPtr, int innerParts,
-                      int originalHeight, int *node2partition, double
-                      *nodeCost, int *node2Level, int *inDegree,
-                      std::vector<int> &innerPartsSize, int lClusterCnt,
-                      int *partition2Level, int *levelPtr, int *levelSet,
-                      double *outCost, double *newOutCost) {
+                      int originalHeight, double *nodeCost, int *node2Level,
+                      int *inDegree, std::vector<int> &innerPartsSize,
+                      int lClusterCnt, int *partition2Level, int *levelPtr,
+                      int *levelSet) {
  int totalCC = 0;
- std::vector<std::vector<int>> newLeveledParList, mergedLeveledParList;
- int curNumOfPart = 0;
- bool *visited = new bool[n]();
- int *isMarked = new int[n]();
- int xi[2 * n];
+ int outinnerPartsList[lClusterCnt];
+ std::vector<std::vector<std::vector<int>>> mergedLeveledParListByL;
+ mergedLeveledParListByL.resize(lClusterCnt);
 
- for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
-  int lbLevel = partition2Level[l] - 1;
-  int ubLevel = partition2Level[l + 1];
-  int dfsLevel = partition2Level[l];
-  int curLeveledParCost = 0;
-  // Marking lower bound
-  // FIXME: we might need to do all levels below for general DAG
-  for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel +
-  1];
-       ++j) {
-   int curNode = levelSet[j];
-   isMarked[curNode] = true;
-  }
-  // Marking upper bound
-  for (int ii = ubLevel; ii < originalHeight; ++ii) {
-   for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-    int curNode = levelSet[j];
-    isMarked[curNode] = true;
+// #pragma omp parallel reduction(+ : totalCC)
+ {
+  bool *visited = new bool[n]();
+  int *isMarked = new int[n]();
+  int *xi = new int[2 * n];
+  double *outCost = new double[n];
+  double *newOutCost = new double[n];
+  int *node2partition = new int[n];
+  memset(outCost, 0.0, n * sizeof(float));
+  memset(newOutCost, 0.0, n * sizeof(float));
+
+// #pragma omp for schedule(auto)
+  for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
+   memset(node2partition, -1, n * sizeof(int));
+   std::vector<std::vector<int>> newLeveledParList;
+   int lbLevel = partition2Level[l] - 1;
+   int ubLevel = partition2Level[l + 1];
+   int dfsLevel = partition2Level[l];
+   int curLeveledParCost = 0;
+
+   // Marking lower bound
+   // FIXME: we might need to do all levels below for general DAG
+   // for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
+   //      ++j) {
+   //  int curNode = levelSet[j];
+   //  isMarked[curNode] = true;
+   // }
+
+   // Marking lower bound
+   for (int ii = lbLevel; ii >= 0; --ii) {
+    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+     int curNode = levelSet[j];
+     isMarked[curNode] = true;
+    }
    }
-  }
-  // Iterating over non-visited leaf nodes to compute CCs
-  // CC:connected component
-  int stackStart = 0, cc = 0;
-  std::vector<int> needAliased;
-  bool *isUniq = new bool[n]();
-  for (int k = levelPtr[dfsLevel]; k < levelPtr[dfsLevel + 1]; ++k) {
-   int curLeaf = levelSet[k];
-   bool isCC = true;
-   int minAliasedPar = INT32_MAX;
-   if (!isMarked[curLeaf]) {
-    stackStart =
-     dfs_CSC_CC(n, curLeaf, lC, lR, isMarked, n, xi, xi + n, needAliased,
-     NULL);
-    // Finding unique clusters from needAliased
-    minAliasedPar = make_unique(node2partition, needAliased, n, isUniq);
 
-    isCC = needAliased.size() == 0;
-    if (!isCC) { // There are some intersection between found CCs.
-     for (int j = 0; j < needAliased.size(); ++j) { // the first is min
-      int tn = node2partition[needAliased[j]];
-      if (tn != minAliasedPar) {
-       cc--;
-       for (int i = 0; i < n; ++i) {
-        // Replace all needAliased node with their min part number.
-        if (node2partition[i] == tn) {
-         node2partition[i] = minAliasedPar;
+   // Marking upper bound
+   for (int ii = ubLevel; ii < originalHeight; ++ii) {
+    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+     int curNode = levelSet[j];
+     isMarked[curNode] = true;
+    }
+   }
+   // Iterating over non-visited leaf nodes to compute CCs
+   // CC:connected component
+   int stackStart = 0, cc = 0;
+   std::vector<int> needAliased;
+   bool *isUniq = new bool[n]();
+   for (int k = levelPtr[dfsLevel]; k < levelPtr[dfsLevel + 1]; ++k) {
+    int curLeaf = levelSet[k];
+    bool isCC = true;
+    int minAliasedPar = INT32_MAX;
+    if (!isMarked[curLeaf]) {
+     stackStart = dfs_CSC_CC(n, curLeaf, lC, lR, isMarked, n, xi, xi + n,
+                             needAliased, NULL);
+     // Finding unique clusters from needAliased
+     minAliasedPar = make_unique(node2partition, needAliased, n, isUniq);
+
+     isCC = needAliased.size() == 0;
+     if (!isCC) { // There are some intersection between found CCs.
+      for (int j = 0; j < needAliased.size(); ++j) { // the first is min
+       int tn = node2partition[needAliased[j]];
+       if (tn != minAliasedPar) {
+        cc--;
+        for (int i = 0; i < n; ++i) {
+         // Replace all needAliased node with their min part number.
+         if (node2partition[i] == tn) {
+          node2partition[i] = minAliasedPar;
+         }
         }
        }
       }
+      needAliased.erase(needAliased.begin(), needAliased.end());
+      // Set the nodes in the current cluster
+      for (int i = stackStart; i < n; ++i) {
+       int node = xi[i];
+       node2partition[node] = minAliasedPar;
+       // Compute the cost of each CC
+       outCost[minAliasedPar] += nodeCost[node];
+       // The cost of cur h-partition
+       curLeveledParCost += nodeCost[node];
+       // reseting all nodes but leaf node
+       // marke it with -1
+       if (node2Level[node] != dfsLevel)
+        isMarked[node] = -1;
+      }
+     } else {
+      for (int i = stackStart; i < n; ++i) {
+       int node = xi[i];
+       node2partition[node] = cc;
+       // Compute the cost of each CC
+       outCost[cc] += nodeCost[node];
+       curLeveledParCost += nodeCost[node];
+       // reseting all nodes but leaf node
+       // marke it with -1
+       if (node2Level[node] != dfsLevel)
+        isMarked[node] = -1;
+      }
+      cc++; // one more CC.
      }
-     needAliased.erase(needAliased.begin(), needAliased.end());
-     // Set the nodes in the current cluster
-     for (int i = stackStart; i < n; ++i) {
-      int node = xi[i];
-      node2partition[node] = minAliasedPar;
-      // Compute the cost of each CC
-      outCost[minAliasedPar] += nodeCost[node];
-      // The cost of cur h-partition
-      curLeveledParCost += nodeCost[node];
-      // reseting all nodes but leaf node
-      // marke it with -1
-      if (node2Level[node] != dfsLevel)
-       isMarked[node] = -1;
-     }
-    } else {
-     for (int i = stackStart; i < n; ++i) {
-      int node = xi[i];
-      node2partition[node] = cc;
-      // Compute the cost of each CC
-      outCost[cc] += nodeCost[node];
-      curLeveledParCost += nodeCost[node];
-      // reseting all nodes but leaf node
-      // marke it with -1
-      if (node2Level[node] != dfsLevel)
-       isMarked[node] = -1;
-     }
-     cc++; // one more CC.
     }
    }
-  }
-  // Reset all marked node in the DAG
-  // std::cout<<cc<<"\n";
-  for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel +
-  1];
-       ++j) {
-   int curNode = levelSet[j];
-   isMarked[curNode] = false;
-  }
-  // Marking upper bound
-  for (int ii = ubLevel; ii < originalHeight; ++ii) {
-   for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+   // Reset all marked node in the DAG
+   // std::cout<<cc<<"\n";
+   for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
+        ++j) {
     int curNode = levelSet[j];
     isMarked[curNode] = false;
-    visited[curNode] = true; // Make it ready for mod-BFS
    }
-  }
-  // Topological sort of each cc, the fastest way, FIXME: make it more
-  // local
-  std::vector<int> extraDim;
-  for (int i = 0; i < cc; ++i) {
-   newLeveledParList.push_back(extraDim);
-  }
-  modified_BFS_CSC(n, lC, lR, inDegree, visited, node2partition, levelPtr,
-                   levelSet, dfsLevel, newLeveledParList);
-  }*/
-  // Marking upper bound
-  for (int ii = ubLevel; ii < originalHeight; ++ii) {
-   for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-    int curNode = levelSet[j];
-    visited[curNode] = false; // Make it ready for mod-BFS
+   // Marking upper bound
+   for (int ii = ubLevel; ii < originalHeight; ++ii) {
+    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+     int curNode = levelSet[j];
+     isMarked[curNode] = false;
+     visited[curNode] = true; // Make it ready for mod-BFS
+    }
    }
-  }
-  // Bin packing and form W-partitions
-  int levelParCostThresh = curLeveledParCost / innerParts;
-  levelParCostThresh += (0.1 * levelParCostThresh);
-  int outinnerParts = 0;
-  totalCC += newLeveledParList.size();
-  mergedLeveledParList.resize(innerPartsSize[l]); // FIXME
-  if (newLeveledParList.size() > innerPartsSize[l]) {
-   outinnerParts =
-    worst_fit_bin_pack(newLeveledParList, outCost, mergedLeveledParList,
-                       newOutCost, levelParCostThresh, innerPartsSize[l]);
-   // assert(outinnerParts<=innerParts);
-  } else {
-   mergedLeveledParList.erase(mergedLeveledParList.begin(),
-                              mergedLeveledParList.end());
-   mergedLeveledParList = newLeveledParList;
-   outinnerParts = newLeveledParList.size();
+
+   // Topological sort of each cc, the fastest way, FIXME: make it more
+   // local
+   std::vector<int> extraDim;
+   for (int i = 0; i < cc; ++i) {
+    newLeveledParList.push_back(extraDim);
+   }
+   modified_BFS_CSC(n, lC, lR, inDegree, visited, node2partition, levelPtr,
+                    levelSet, dfsLevel, newLeveledParList);
+   /*for (int ll = dfsLevel; ll < ubLevel; ++ll) {
+    for (int ii = levelPtr[ll]; ii < levelPtr[ll+1]; ++ii) {
+     int curNode=levelSet[ii];
+     assert(node2partition[curNode]>=0);
+     newLeveledParList[node2partition[curNode]].push_back(curNode);
+    }
+   }*/
+   // Marking upper bound
+   for (int ii = ubLevel; ii < originalHeight; ++ii) {
+    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+     int curNode = levelSet[j];
+     visited[curNode] = false; // Make it ready for mod-BFS
+    }
+   }
+   // Bin packing and form W-partitions
+   int levelParCostThresh = curLeveledParCost / innerParts;
+   levelParCostThresh += (0.1 * levelParCostThresh);
+   int outinnerParts = 0;
+   totalCC += newLeveledParList.size();
+   mergedLeveledParListByL[l].resize(innerPartsSize[l]); // FIXME
+   if (newLeveledParList.size() > innerPartsSize[l]) {
+    outinnerParts =
+     worst_fit_bin_pack(newLeveledParList, outCost, mergedLeveledParListByL[l],
+                        newOutCost, levelParCostThresh, innerPartsSize[l]);
+    // assert(outinnerParts<=innerParts);
+   } else {
+    mergedLeveledParListByL[l].erase(mergedLeveledParListByL[l].begin(),
+                                     mergedLeveledParListByL[l].end());
+    mergedLeveledParListByL[l] = newLeveledParList;
+    outinnerParts = newLeveledParList.size();
 #if 0
     if(outinnerParts>1) {
      for (int ii = 0; ii < outinnerParts; ++ii) {
@@ -158,19 +185,40 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
      }
     }
 #endif
+   }
+
+   outinnerPartsList[l] = outinnerParts;
+
+   // Cleaning the current sets.
+   for (int i = 0; i < newLeveledParList.size(); ++i) {
+    newLeveledParList[i].erase(newLeveledParList[i].begin(),
+                               newLeveledParList[i].end());
+   }
+   newLeveledParList.erase(newLeveledParList.begin(), newLeveledParList.end());
   }
 
+  delete[] visited;
+  delete[] isMarked;
+  delete[] xi;
+  delete[] outCost;
+  delete[] newOutCost;
+  delete[] node2partition;
+ }
+
+ int curNumOfPart = 0;
+ // combining the state from all the partitions
+ for (int l = 0; l < lClusterCnt; ++l) {
+  int outinnerParts = outinnerPartsList[l];
   double curPartCost = 0;
   finaLevelPtr[l + 1] = finaLevelPtr[l] + outinnerParts;
-
   for (int i = 0; i < outinnerParts; ++i) {
    int curPartElem = 0;
    curPartCost = 0;
-   for (int j = 0; j < mergedLeveledParList[i].size(); ++j) {
-    curPartCost += nodeCost[mergedLeveledParList[i][j]];
+   for (int j = 0; j < mergedLeveledParListByL[l][i].size(); ++j) {
+    curPartCost += nodeCost[mergedLeveledParListByL[l][i][j]];
     finalNodePtr[finalPartPtr[curNumOfPart] + curPartElem] =
-     mergedLeveledParList[i][j];
-    node2partition[mergedLeveledParList[i][j]] = curNumOfPart;
+     mergedLeveledParListByL[l][i][j];
+    // node2partition[mergedLeveledParListByL[l][i][j]] = curNumOfPart;
     curPartElem++;
    }
 #if 0
@@ -180,24 +228,7 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
    finalPartPtr[curNumOfPart + 1] = finalPartPtr[curNumOfPart] + curPartElem;
    curNumOfPart++;
   }
-
-  // Cleaning the current sets.
-  for (int i = 0; i < mergedLeveledParList.size(); ++i) {
-   mergedLeveledParList[i].erase(mergedLeveledParList[i].begin(),
-                                 mergedLeveledParList[i].end());
-  }
-  mergedLeveledParList.erase(mergedLeveledParList.begin(),
-                             mergedLeveledParList.end());
-  for (int i = 0; i < newLeveledParList.size(); ++i) {
-   newLeveledParList[i].erase(newLeveledParList[i].begin(),
-                              newLeveledParList[i].end());
-  }
-  newLeveledParList.erase(newLeveledParList.begin(),
-  newLeveledParList.end());
  }
-
- delete[] isMarked;
- delete[] visited;
 
  return totalCC;
 }
@@ -207,15 +238,11 @@ int get_coarse_Level_set_DAG_CSC03(size_t n, int *lC, int *lR, int &finaLevelNo,
                                    int *&finalPartPtr, int *&finalNodePtr,
                                    int innerParts, int minLevelDist,
                                    int divRate, double *nodeCost) {
- int *node2partition = new int[n];
- double *outCost = new double[n];
- double *newOutCost = new double[n];
  int *node2Level = new int[n];
  int *levelPtr; //= new int[n+1]();
  bool *isChanged = new bool[n]();
 
  int *levelSet; //= new size_t[n]();
- int *xi = new int[2 * n];
  int curNumOfPart = 0;
  std::vector<int> remainingNodes, remainingTmp;
  int clusterCnt = 0;
@@ -226,9 +253,6 @@ int get_coarse_Level_set_DAG_CSC03(size_t n, int *lC, int *lR, int &finaLevelNo,
  int *inDegree = new int[n];
  finaLevelPtr[0] = 0;
  for (int i = 0; i < n; ++i) {
-  node2partition[i] = -1;
-  outCost[i] = 0.0;
-  newOutCost[i] = 0.0;
   inDegree[i] = 0;
  }
  int averageCC = 0;
@@ -268,9 +292,9 @@ int get_coarse_Level_set_DAG_CSC03(size_t n, int *lC, int *lR, int &finaLevelNo,
   innerPartsSize, slackGroups, NULL, partition2Level);
 
  make_l_partitions(n, lC, lR, finaLevelPtr, finalNodePtr, finalPartPtr,
-                   innerParts, originalHeight, node2partition, nodeCost,
-                   node2Level, inDegree, innerPartsSize, lClusterCnt,
-                   partition2Level, levelPtr, levelSet, outCost, newOutCost);
+                   innerParts, originalHeight, nodeCost, node2Level, inDegree,
+                   innerPartsSize, lClusterCnt, partition2Level, levelPtr,
+                   levelSet);
 
  finaLevelNo = lClusterCnt;
  if (true) { // Verification of the set.
@@ -289,17 +313,14 @@ int get_coarse_Level_set_DAG_CSC03(size_t n, int *lC, int *lR, int &finaLevelNo,
    assert(checkExist[i] == true);
   }
   delete[] checkExist;
-  }
-  delete[] outCost;
-  delete[] newOutCost;
-  delete[] partition2Level;
-  delete[] levelPtr;
-  delete[] levelSet;
-  delete[] node2partition;
-  delete[] node2Level;
-  delete[] isChanged;
-  delete[] inDegree;
-
-  return averageCC / lClusterCnt;
  }
+ delete[] partition2Level;
+ delete[] levelPtr;
+ delete[] levelSet;
+ delete[] node2Level;
+ delete[] isChanged;
+ delete[] inDegree;
+
+ return averageCC / lClusterCnt;
+}
 } // namespace sym_lib
