@@ -94,8 +94,7 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
  t_ser = ss->evaluate();
  y_serial = ss->solution();
  copy_vector(0,n,y_serial,y_correct);
- int nthread=omp_get_max_threads();
- std::cout<<nthread;
+
  auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc");
  t_levelset = sls->evaluate();
 
@@ -129,7 +128,7 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
    * profiling for lbc method combined with grouping method
    * */
 
-  auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "grouping_lbc", num_threads, p2, p3);
+  auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "grouping_lbc", num_threads, p2, p3,false);
   t_lbc = sglbc->evaluate();
   auto levelPtr = sglbc->getLevelPtr();
   auto partPtr = sglbc->getPartPtr();

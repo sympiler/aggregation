@@ -68,8 +68,9 @@ namespace sym_lib{
   for (int i = beg_idx; i < end_idx; ++i) {
    if(std::isnan(vec1[i]) || std::isnan(vec2[i]))
     return false;
-   if(std::abs(vec1[i] - vec2[i]) > eps)
-    return false;
+   if(std::abs(vec1[i] - vec2[i]) > eps) {
+       return false;
+   }
   }
   return true;
  }

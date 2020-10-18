@@ -27,6 +27,24 @@ namespace sym_lib {
  }
 
 
+    void fs_ic0csc_inspector_group(int ngroup, int *groupPtr, int *groupSet, int *gInv, int *Lp, int *Li, std::vector<std::vector<int>> &DAG)
+    {
+        //Inspector
+#pragma omp parallel for
+        for (int i = 0; i < ngroup; ++i) {
+            for(int j=groupPtr[i]; j<groupPtr[i+1]; j++)
+            {
+                int iidx = groupSet[j];
+                for (int k = Lp[iidx]+1; k < Lp[iidx+1]; ++k) {
+                    auto sid = gInv[Li[k]];
+                    if(sid!=i ){
+                        connect(i,sid, DAG);
+                    }
+                }
+            }
+        }
+    }
+
  void fs_csr_inspector_dep(int n, int *Lp, int *Li, std::vector<std::vector<int>> &DAG)
  {
 //#pragma omp parallel for

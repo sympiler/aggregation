@@ -140,6 +140,12 @@ namespace sym_lib {
   /// \param dst
  void copy_from_to(CSR *src, CSR *dst);
 
+ /**
+  * @brief Copy CSR to CSR
+  * @param src
+  * @param dst
+  */
+ void copy_from_to(CSC *src, CSC *dst);
 /// Finds the number of empty columns.
 /// \param A 
 /// \return

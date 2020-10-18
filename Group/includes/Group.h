@@ -51,6 +51,17 @@ namespace sym_lib
 
 
   /**
+   * @brief Grouping consecutive columns with dependence of sptrsv_csc
+   * @param groupPtr
+   * @param groupSet
+   * @param ngroup
+   * @param groupInv
+   */
+  void inspection_spicocsc_v1(int *groupPtr, int *groupSet, int &ngroup, int *groupInv);
+
+  void inspection_spicocsc_v2(int *groupPtr, int *groupSet, int &ngroup, int *groupInv);
+
+     /**
    * @brief Grouping consecutive columns with dependence for sptrsv_csr
    * @param groupPtr Pointer to the starting location of one group
    * @param groupSet Pointer to the column indices in one group

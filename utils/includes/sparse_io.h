@@ -64,8 +64,17 @@ namespace sym_lib{
 /// \param Ax
  void print_csc(int fd, std::string beg, size_t n, int *Ap, int *Ai, double *Ax);
  void print_csc(int fd, std::string beg, CSC *A);
-
- ///
+ /**
+  * @brief Print CSR Matrix into CSR
+  * @param fd
+  * @param beg
+  * @param n
+  * @param Ap
+  * @param Ai
+  * @param Ax
+  */
+ void print_csr(int fd, std::string beg, size_t n, int *Ap, int *Ai, double *Ax);
+    ///
  /// \param fd
  /// \param A
  void print_dense(int fd, Dense *A);

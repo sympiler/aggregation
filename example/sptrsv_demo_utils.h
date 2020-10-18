@@ -85,6 +85,11 @@ namespace sym_lib {
    return level_no;
   }
 
+  double averParallelism()
+  {
+      return 1.0*L1_csc_->n/level_no;
+  }
+
 
   ~SptrsvLevelSet () override {
    delete []level_ptr;
@@ -150,6 +155,10 @@ namespace sym_lib {
    return final_level_no;
   }
 
+  double AverParalleism(){
+      return fina_level_ptr[final_level_no]*1.0/final_level_no;
+  }
+
   int getPartNo(){
    return part_no;
   }
@@ -163,9 +172,9 @@ namespace sym_lib {
 
 
  class SptrsvLBCDAG : public SptrsvLBC {
-
+ protected:
   void build_set() override {
-   auto *cost = new double[n_]();
+      auto *cost = new double[n_]();
    for (int i = 0; i < n_; ++i) {
     cost[i] = L1_csr_->p[i + 1] - L1_csr_->p[i];
    }
@@ -180,10 +189,45 @@ namespace sym_lib {
                int cp, int ic)
     : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic) {}
   ~SptrsvLBCDAG() {}
+     double averWsize(){
+         part_no=fina_level_ptr[final_level_no];
+         // Sorting the w partitions
+         int ncols=0;
+         for (int i = 0; i < part_no; ++i) {
+             for (int k1 = final_part_ptr[i]; k1 < final_part_ptr[i+1]; ++k1) {
+                 int k=final_node_ptr[k1];
+                 ncols+=(L1_csr_->p[k+1]-L1_csr_->p[k]);
+             }
+         }
+         return 1.0*ncols/part_no;
+     }
+
+     double consecutiveRatio(){
+         part_no=fina_level_ptr[final_level_no];
+         // Sorting the w partitions
+         double aver_ratio=0;
+         int sum=0;
+         int t_sum=0;
+         for (int i = 0; i < part_no; ++i) {
+
+             t_sum += (final_part_ptr[i+1]-final_part_ptr[i]-1);
+             for (int k1 = final_part_ptr[i]; k1 < final_part_ptr[i+1]-1; ++k1) {
+                 if((final_node_ptr[k1+1]-final_node_ptr[k1])==1)sum+=1;
+             }
+         }
+         return 1.0*sum/t_sum;
+     }
+
  };
 
- class SptrsvLBC_W_Sorting : public SptrsvLBC {
+ class SptrsvLBC_W_Sorting : public SptrsvSerial {
  protected:
+     int final_level_no, *fina_level_ptr, *final_part_ptr, *final_node_ptr;
+     int part_no;
+     int lp_, cp_, ic_;
+
+     bool f_sort;
+
   void build_set() override {
 
    auto *cost = new double[n_]();
@@ -191,24 +235,82 @@ namespace sym_lib {
     cost[i] = L1_csr_->p[i + 1] - L1_csr_->p[i];
    }
 
-   get_coarse_levelSet_DAG_CSC_tree(n_, L1_csr_->p, L1_csr_->i, final_level_no,
+      get_coarse_Level_set_DAG_CSC03(n_, L1_csc_->p, L1_csc_->i, final_level_no,
                                     fina_level_ptr, part_no, final_part_ptr,
                                     final_node_ptr, lp_, cp_, ic_, cost);
 
-
-   // Sorting the w partitions
-   for (int i = 0; i < part_no; ++i) {
-    std::sort(final_node_ptr + final_part_ptr[i],
-              final_node_ptr + final_part_ptr[i + 1]);
+   if(f_sort){
+       part_no=fina_level_ptr[final_level_no];
+       // Sorting the w partitions
+       for (int i = 0; i < part_no; ++i) {
+           std::sort(final_node_ptr + final_part_ptr[i],
+                     final_node_ptr + final_part_ptr[i + 1]);
+       }
    }
-
    delete[] cost;
   }
 
+     timing_measurement fused_code() override {
+         timing_measurement t1;
+
+         t1.start_timer();
+         sptrsv_csr_lbc(n_, L1_csr_->p, L1_csr_->i, L1_csr_->x, x_in_,
+                        final_level_no, fina_level_ptr,
+                        final_part_ptr, final_node_ptr);
+         t1.measure_elapsed_time();
+         copy_vector(0,n_,x_in_,x_);
+         return t1;
+     }
+
  public:
   SptrsvLBC_W_Sorting(CSR *L, CSC *L_csc, double *correct_x, std::string name,
-                      int lp, int cp, int ic)
-    : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic){};
+                      int lp, int cp, int ic, bool flag)
+    : SptrsvSerial(L, L_csc, correct_x, name){
+      L1_csr_ = L;
+      L1_csc_ = L_csc;
+      correct_x_ = correct_x;
+      lp_=lp; cp_=cp; ic_=ic;
+
+      f_sort = flag;
+  };
+
+  int levels(){
+      return final_level_no;
+  }
+
+  double averParallelism(){
+      return fina_level_ptr[final_level_no]*1.0/final_level_no;
+  }
+
+  double averWsize(){
+          part_no=fina_level_ptr[final_level_no];
+          // Sorting the w partitions
+          int ncols=0;
+          for (int i = 0; i < part_no; ++i) {
+              for (int k1 = final_part_ptr[i]; k1 < final_part_ptr[i+1]; ++k1) {
+                  int k=final_node_ptr[k1];
+                  ncols+=(L1_csr_->p[k+1]-L1_csr_->p[k]);
+              }
+          }
+          return 1.0*ncols/part_no;
+  }
+
+  double consecutiveRatio(){
+      part_no=fina_level_ptr[final_level_no];
+      // Sorting the w partitions
+      double aver_ratio=0;
+      int sum=0;
+      int t_sum=0;
+      for (int i = 0; i < part_no; ++i) {
+
+          t_sum += (final_part_ptr[i+1]-final_part_ptr[i]-1);
+          for (int k1 = final_part_ptr[i]; k1 < final_part_ptr[i+1]-1; ++k1) {
+              if((final_node_ptr[k1+1]-final_node_ptr[k1])==1)sum+=1;
+          }
+      }
+      return 1.0*sum/t_sum;
+  }
+
 
   ~SptrsvLBC_W_Sorting() {};
  };
@@ -220,7 +322,9 @@ namespace sym_lib {
   int *groupSet, *groupPtr, *groupInv, ngroup, nlevels, nthreads;
   int *levelPtr, *levelSet;
   int blksize=1;
+  timing_measurement t_group, t_levelset;
   void build_set() override {
+   t_group.start_timer();
    groupPtr = (int *)malloc(sizeof(int)*(L1_csc_->n+1));
    memset(groupPtr, 0, sizeof(int)*(1+L1_csc_->n));
    groupSet = (int *)malloc(sizeof(int)*L1_csc_->n);
@@ -229,9 +333,10 @@ namespace sym_lib {
    memset(groupInv, 0, sizeof(int)*L1_csc_->n);
 
    group g(L1_csr_->n, L1_csr_->p, L1_csr_->i);
-
    g.inspection_sptrsvcsr_v1(groupPtr, groupSet, ngroup, groupInv);
-//            NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, blksize);
+   t_group.measure_elapsed_time();
+
+   t_levelset.start_timer();
    std::vector<std::vector<int>> DAG;
    DAG.resize(ngroup);
 
@@ -263,6 +368,8 @@ namespace sym_lib {
 
    nlevels = buildLevelSet_CSC_Queue(ngroup, 0, gv, gedg, levelPtr, levelSet);
 
+
+   t_levelset.measure_elapsed_time();
 //            std::cout<<nlevels<<","<<ngroup*1.0/nlevels<<std::endl;
   }
 
@@ -287,6 +394,25 @@ namespace sym_lib {
    blksize = 1;
   };
 
+  timing_measurement groupTime(){
+      return t_group;
+  }
+  timing_measurement levelsetTime(){
+      return t_levelset;
+  }
+
+  double groupWith(){
+      return 1.0*L1_csc_->n /ngroup;
+  }
+
+  int levels(){
+      return nlevels;
+  }
+
+  double averParallelism(){
+      return 1.0*ngroup/nlevels;
+  }
+
   ~SpTrsvCSR_Grouping() override{};
  };
 
@@ -303,6 +429,10 @@ namespace sym_lib {
   int part_no;
   int lp_, cp_, ic_;
 
+  bool f_sort; // flag for sorting w;
+
+  timing_measurement t_group, t_coarsen, t_sort;
+
   void build_set() override {
    groupPtr = (int *)malloc(sizeof(int)*(L1_csc_->n+1));
    memset(groupPtr, 0, sizeof(int)*(1+L1_csc_->n));
@@ -311,10 +441,15 @@ namespace sym_lib {
    groupInv = (int *)malloc(sizeof(int)*L1_csc_->n);
    memset(groupInv, 0, sizeof(int)*L1_csc_->n);
 
+
    group g(L1_csr_->n, L1_csr_->p, L1_csr_->i);
 
+   t_group.start_timer();
    g.inspection_sptrsvcsr_v1(groupPtr, groupSet, ngroup, groupInv);
 //            g.NaiveGrouping(L1_csr_->n,  groupPtr, groupSet, ngroup, groupInv, 1);
+   t_group.measure_elapsed_time();
+
+   t_coarsen.start_timer();
    std::vector<std::vector<int>> DAG;
    DAG.resize(ngroup);
 
@@ -351,7 +486,7 @@ namespace sym_lib {
    }
 
 
-   get_coarse_levelSet_DAG_CSC(ngroup,
+      get_coarse_Level_set_DAG_CSC03(ngroup,
                                gv,
                                gedg,
                                final_level_no,
@@ -361,7 +496,18 @@ namespace sym_lib {
                                lp_,cp_, ic_, cost
    );
    nlevels = final_level_no;
+   t_coarsen.measure_elapsed_time();
 
+   t_sort.start_timer();
+      if(f_sort){
+          part_no=fina_level_ptr[final_level_no];
+          // Sorting the w partitions
+          for (int i = 0; i < part_no; ++i) {
+              std::sort(final_node_ptr + final_part_ptr[i],
+                        final_node_ptr + final_part_ptr[i + 1]);
+          }
+      }
+    t_sort.measure_elapsed_time();
    delete []cost;
   }
 
@@ -377,12 +523,13 @@ namespace sym_lib {
  public:
   SpTrsvCSR_Grouping_H2(CSR *L, CSC *L_csc,
                         double *correct_x, std::string name,
-                        int lp, int cp, int ic) :
+                        int lp, int cp, int ic, bool flag) :
     SptrsvSerial(L, L_csc, correct_x, name) {
    L1_csr_ = L;
    L1_csc_ = L_csc;
    correct_x_ = correct_x;
    lp_=lp; cp_=cp; ic_=ic;
+   f_sort=flag;
   };
 
   int *getLevelPtr(){
@@ -415,6 +562,65 @@ namespace sym_lib {
 
   int getGroupNo(){
    return ngroup;
+  }
+
+  double averParallelism(){
+      return fina_level_ptr[final_level_no] * 1.0 / final_level_no;
+  }
+
+  double averWsize(){
+      int part_no=fina_level_ptr[final_level_no];
+      int ncol=0;
+      // Sorting the w partitions
+      for (int i = 0; i < part_no; ++i) {
+          for(int j=final_part_ptr[i]; j<final_part_ptr[i+1]; j++)
+          {
+              int k = final_node_ptr[j];
+              for (int l = groupPtr[k]; l < groupPtr[k+1]; ++l) {
+                  int k1=groupSet[l];
+                  ncol +=(L1_csr_->p[k1+1] - L1_csr_->p[k1]);
+              }
+          }
+      }
+      return ncol*1.0/part_no;
+  }
+
+     double consecutiveRatio(){
+         part_no=fina_level_ptr[final_level_no];
+         // Sorting the w partitions
+         double aver_ratio=0;
+         int sum=0;
+         int t_sum=0;
+         for (int i = 0; i < part_no; ++i) {
+//             t_sum += (final_part_ptr[i+1]-final_part_ptr[i]-1);
+             for (int k1 = final_part_ptr[i]; k1 < final_part_ptr[i+1]-1; ++k1) {
+                 if((final_node_ptr[k1+1]-final_node_ptr[k1])==1){
+                     sum+=(groupPtr[k1+1]-groupPtr[k1]);
+                    t_sum+=(groupPtr[k1+1]-groupPtr[k1]);
+                 }
+                 else{
+                     sum+=(groupPtr[k1+1]-groupPtr[k1]-1);
+                     t_sum+=(groupPtr[k1+1]-groupPtr[k1]);
+                 }
+             }
+
+             sum +=groupPtr[final_part_ptr[i+1]]-groupPtr[final_part_ptr[i+1]-1];
+             t_sum += groupPtr[final_part_ptr[i+1]]-groupPtr[final_part_ptr[i+1]];
+             t_sum = t_sum-1;
+         }
+         return 1.0*sum/t_sum;
+     }
+
+  timing_measurement groupTime(){
+      return t_group;
+  }
+
+  timing_measurement coarsenTime(){
+      return t_coarsen;
+  }
+
+  timing_measurement sortTime(){
+      return t_sort;
   }
 
   ~SpTrsvCSR_Grouping_H2 () override {

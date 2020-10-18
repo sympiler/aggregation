@@ -121,6 +121,25 @@ namespace sym_lib {
   }
  }
 
+    void
+    print_csr(int fd, std::string beg, size_t n, int *Ap, int *Ai, double *Ax) {
+        dprintf(fd, "%s\n", beg.c_str());
+        int nnz = n > 0 ? Ap[n] : 0;
+        dprintf(fd, "%zu %zu %d\n", n, n, nnz);
+        for (int i = 0; i < n; ++i) {
+            for (int j = Ap[i]; j < Ap[i + 1]; ++j) {
+                double x = Ax != NULLPNTR ? Ax[j] : 0;
+                dprintf(fd, "%d %d %.12f", i + 1, Ai[j] + 1,  x);
+//    std::cout<<Ai[j]+1<<" "<<i+1<<" "<<std::setprecision(12)<< x;
+                if (j + 1 != Ap[n])
+                    dprintf(fd, "\n");
+            }
+        }
+    }
+
+
+
+
  void print_csc(int fd, std::string beg, CSC *A) {
   print_csc(fd, beg, A->n, A->p, A->i, A->x);
  }

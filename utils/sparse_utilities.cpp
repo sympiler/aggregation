@@ -518,6 +518,16 @@ namespace sym_lib {
   }
  }
 
+void copy_from_to(CSC *src, CSC *dst){
+        for (int i = 0; i < src->n; ++i) {
+            dst->p[i] = dst->p[i];
+            for (int j = src->p[i]; j < src->p[i + 1]; ++j) {
+                dst->i[j] = src->i[j];
+                dst->x[j] = src->x[j];
+            }
+        }
+    }
+
  void copy_vector_dense(size_t beg, size_t end, const double *src, double *dst) {
   for(size_t i = beg; i < end; i++)
    dst[i] = src[i];

@@ -50,7 +50,20 @@ namespace sym_lib
   */
  std::vector<std::vector<int>> Group_DAG(std::vector<std::vector<int>> DAG, int *groupPtr, int *groupSet, int *groupInv, int ngroup);
 
- /**
+/**
+ * @brief Inspector the dependence between Groups
+ * @param ngroup
+ * @param groupPtr
+ * @param groupSet
+ * @param gInv
+ * @param Lp
+ * @param Li
+ * @param DAG
+ */
+ void fs_ic0csc_inspector_group(int ngroup, int *groupPtr, int *groupSet, int *gInv, int *Lp, int *Li, std::vector<std::vector<int>> &DAG);
+
+
+    /**
   * @brief used for verifying the correctness of the generated DAG. if circle exists (A->B, B->A), the DAG is wrong
   * @param DAG  the input DAG
   * @return
