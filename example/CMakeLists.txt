@@ -39,6 +39,11 @@ add_executable(sptrsv_csr_profile ${SPTRSVD_SOURCE_FILES}
 target_link_libraries( sptrsv_csr_profile lbc
         ${METIS_LIBRARY} ${METIS_LIBRARIES})
 
+add_executable(sptrsv_dag_test ${SPTRSVD_SOURCE_FILES}
+        sptrsv_dag_test.cpp)
+target_link_libraries(sptrsv_dag_test
+        lbc
+        ${METIS_LIBRARY} ${METIS_LIBRARIES})
 
 
 project(spic0_demo)
