@@ -42,20 +42,37 @@ target_link_libraries( sptrsv_csr_profile lbc
 
 
 project(spic0_demo)
-set(SPTRSVD_SOURCE_FILES
+set(SPIC0_SOURCE_FILES
         ${SPARSE_UTIL_SRC}/sparse_utilities.cpp
         ${SPARSE_UTIL_SRC}/sparse_inspector.cpp
         ${SPARSE_UTIL_SRC}/sparse_io.cpp
         ${SPARSE_UTIL_SRC}/test_utils.cpp
         ${SPARSE_UTIL_SRC}/utils.cpp
         ${SPARSE_EXTN_SRC}/mmio.cpp
+        ${Profiler_SRC}/StatSpMat_v1.cpp
+        ${Sparse_BLAS_SRC}/executor.cpp
         ${Sparse_BLAS_SRC}/spic0.cpp
+        ${Group_SRC}/Group.cpp
+        ${Group_SRC}/Utils.cpp
         ${METIS_SOURCE_FILES}
         FusionDemo.cpp
         )
 
-add_executable(spic0_demo ${SPTRSVD_SOURCE_FILES}
+add_executable(spic0_demo ${SPIC0_SOURCE_FILES}
         spic0_demo.cpp)
 target_link_libraries(spic0_demo
         lbc
+        ${METIS_LIBRARY} ${METIS_LIBRARIES})
+
+add_executable(spic0_csc_demo ${SPIC0_SOURCE_FILES}
+        spico_csc_demo.cpp)
+
+target_link_libraries(spic0_csc_demo
+        lbc
+        ${METIS_LIBRARY} ${METIS_LIBRARIES})
+
+add_executable(spic0_csc_profile  ${SPIC0_SOURCE_FILES}
+                        spic0_csc_profile.cpp)
+target_link_libraries(spic0_csc_profile
+                lbc
         ${METIS_LIBRARY} ${METIS_LIBRARIES})

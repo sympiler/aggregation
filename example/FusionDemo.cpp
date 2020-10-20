@@ -19,7 +19,7 @@ namespace sym_lib{
                           A_csr_(NULLPNTR),A_csc_(NULLPNTR),
                           x_(NULLPNTR),
                           x_in_(NULLPNTR), correct_x_(NULLPNTR){
-  num_test_=10;
+  num_test_=1;
   redundant_nodes_=0;
 #ifdef PROFILE
   pw_ = NULLPNTR;
@@ -62,7 +62,7 @@ namespace sym_lib{
  }
 
  void FusionDemo::testing() {
-  if(correct_x_)
+   if(correct_x_)
    if (!is_equal(0, n_, correct_x_, x_,1e-6))
     PRINT_LOG(name_ + " code != reference solution.\n");
  }

@@ -93,8 +93,10 @@ namespace sym_lib {
  /// \return
  CSC* make_full(CSC *A);
 
+ /// Verify whether SpMat misses diagonal values
+ bool verify_csc_diagonal(CSC* A);
 
- /// transpose matrix A after applying the given permutation, if give.
+    /// transpose matrix A after applying the given permutation, if give.
  /// \param A Input symmetric matrix, either lower or upper part should be stored
  /// \param Perm
  /// \return

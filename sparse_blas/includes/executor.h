@@ -25,6 +25,18 @@ namespace sym_lib
     void fs_csr_stat(int n, int *Lp, int *Li,  int &flops, int &access_nnz, int &reuse_nnz);
 
     /**
+     * @brief profile serial implementation of incompelete choleksy factorization based on CSC format
+     * @param n
+     * @param val
+     * @param colPtr
+     * @param rowIdx
+     * @param flops
+     * @param access_nnz
+     * @param reuse_nnz
+     */
+    void ic0_csc_stat(int n, int * colPtr, int *rowIdx, int &flops, int &access_nnz, int &reuse_nnz);
+
+    /**
      * brief  profile parallel implementation of triangular solver based on CSR
      * @param Lp row pointer in the CSR format
      * @param Li index array in the CSR format

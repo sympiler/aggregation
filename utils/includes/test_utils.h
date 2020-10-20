@@ -67,7 +67,10 @@ namespace sym_lib{
    double eps=1e-8){
   for (int i = beg_idx; i < end_idx; ++i) {
    if(std::isnan(vec1[i]) || std::isnan(vec2[i]))
-    return false;
+   {
+       return false;
+   }
+
    if(std::abs(vec1[i] - vec2[i]) > eps) {
        return false;
    }

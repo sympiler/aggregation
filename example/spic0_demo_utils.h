@@ -97,7 +97,7 @@ class Spic0CSCSerial : public FusionDemo {
         void testing() override {
             if(correct_x_)
                 if (!is_equal(0, factor_->nnz, correct_x_, factor_->x,1e-3))
-                        std::cout<<(name_ + " code != reference solution.\n");
+                       PRINT_CSV(name_ + " code != reference solution.\n");
         }
 
     public:
@@ -150,6 +150,15 @@ public:
 
     }
 
+    int *getLeveSet(){
+        return level_set;
+    }
+
+    int *getLevelPtr(){
+        return level_ptr;
+    }
+
+
     int numLevels(){
         return level_no;
     }
@@ -181,9 +190,11 @@ protected:
         memset(groupInv, 0, sizeof(int)*L1_csc_->n);
 
         group g(L1_csc_->n, L1_csc_->p, L1_csc_->i);
-
+        t_group.start_timer();
         g.inspection_spicocsc_v1(groupPtr, groupSet, ngroup, groupInv);
+        t_group.measure_elapsed_time();
 
+        t_levelset.start_timer();
         std::vector<std::vector<int>> DAG;
         DAG.resize(ngroup);
 
@@ -214,6 +225,7 @@ protected:
         gv[cti] = edges;
 
         nlevels = buildLevelSet_CSC_Queue(ngroup, 0, gv, gedg, levelPtr, levelSet);
+        t_levelset.measure_elapsed_time();
     }
 
 
@@ -234,6 +246,15 @@ public:
 
 
     }
+
+    timing_measurement groupTime(){
+        return t_group;
+    }
+
+    timing_measurement levelsetTime(){
+        return t_levelset;
+    }
+
 
     double groupWidth(){
         return 1.0 * L1_csc_->n/ngroup;
@@ -267,6 +288,8 @@ protected:
 
     bool f_sort;
 
+    timing_measurement t_group, t_coarsen, t_sort;
+
     void build_set() override {
         Spic0CSCSerial::build_set();
 
@@ -278,9 +301,11 @@ protected:
         memset(groupInv, 0, sizeof(int)*L1_csc_->n);
 
         group g(L1_csc_->n, L1_csc_->p, L1_csc_->i);
-
+        t_group.start_timer();
         g.inspection_spicocsc_v1(groupPtr, groupSet, ngroup, groupInv);
+        t_group.start_timer();
 
+        t_coarsen.start_timer();
         std::vector<std::vector<int>> DAG;
         DAG.resize(ngroup);
 
@@ -327,7 +352,9 @@ protected:
         );
 
         nlevels = final_level_no;
+        t_coarsen.measure_elapsed_time();
 
+        t_sort.start_timer();
         if(f_sort)
         {
             part_no=fina_level_ptr[final_level_no];
@@ -337,7 +364,7 @@ protected:
                           final_node_ptr + final_part_ptr[i + 1]);
             }
         }
-
+        t_sort.measure_elapsed_time();
         delete [] cost;
     }
 
@@ -372,6 +399,72 @@ public:
     double averparallelism(){
         return 1.0 *  fina_level_ptr[nlevels]/ nlevels;
     }
+
+    double averWsize(){
+        int part_no=fina_level_ptr[final_level_no];
+        int ncol=0;
+        // Sorting the w partitions
+        for (int i = 0; i < part_no; ++i) {
+            for(int j=final_part_ptr[i]; j<final_part_ptr[i+1]; j++)
+            {
+                int k = final_node_ptr[j];
+                for (int l = groupPtr[k]; l < groupPtr[k+1]; ++l) {
+                    int k1=groupSet[l];
+                    ncol +=(L1_csr_->p[k1+1] - L1_csr_->p[k1]);
+                }
+            }
+        }
+        return ncol*1.0/part_no;
+    }
+
+    double consecutiveRatio(){
+        part_no=fina_level_ptr[final_level_no];
+        // Sorting the w partitions
+        double aver_ratio=0;
+        int sum=0;
+        int t_sum=0;
+        for (int i = 0; i < part_no; ++i) {
+//             t_sum += (final_part_ptr[i+1]-final_part_ptr[i]-1);
+            for (int k1 = final_part_ptr[i]; k1 < final_part_ptr[i+1]-1; ++k1) {
+                if((final_node_ptr[k1+1]-final_node_ptr[k1])==1){
+                    sum+=(groupPtr[k1+1]-groupPtr[k1]);
+                    t_sum+=(groupPtr[k1+1]-groupPtr[k1]);
+                }
+                else{
+                    sum+=(groupPtr[k1+1]-groupPtr[k1]-1);
+                    t_sum+=(groupPtr[k1+1]-groupPtr[k1]);
+                }
+            }
+
+            sum +=groupPtr[final_part_ptr[i+1]]-groupPtr[final_part_ptr[i+1]-1];
+            t_sum += groupPtr[final_part_ptr[i+1]]-groupPtr[final_part_ptr[i+1]];
+            t_sum = t_sum-1;
+        }
+        return 1.0*sum/t_sum;
+    }
+
+
+    timing_measurement groupTime(){
+        return t_group;
+    }
+
+    timing_measurement coarsenTime(){
+        return t_coarsen;
+    }
+
+    timing_measurement sortTime(){
+        return t_sort;
+    }
+
+    ~SpicoCSC_Grouping_H2() override{
+        delete [] fina_level_ptr;
+        delete [] final_part_ptr;
+        delete [] final_node_ptr;
+
+        free(groupPtr);
+        free(groupSet);
+    }
+
 
 };
 
@@ -439,6 +532,36 @@ public:
 
     double averparallelism(){
         return 1.0 * fina_level_ptr[final_level_no] / final_level_no;
+    }
+
+
+    double averWsize(){
+        part_no=fina_level_ptr[final_level_no];
+        // Sorting the w partitions
+        int ncols=0;
+        for (int i = 0; i < part_no; ++i) {
+            for (int k1 = final_part_ptr[i]; k1 < final_part_ptr[i+1]; ++k1) {
+                int k=final_node_ptr[k1];
+                ncols+=(L1_csr_->p[k+1]-L1_csr_->p[k]);
+            }
+        }
+        return 1.0*ncols/part_no;
+    }
+
+    double consecutiveRatio(){
+        part_no=fina_level_ptr[final_level_no];
+        // Sorting the w partitions
+        double aver_ratio=0;
+        int sum=0;
+        int t_sum=0;
+        for (int i = 0; i < part_no; ++i) {
+
+            t_sum += (final_part_ptr[i+1]-final_part_ptr[i]-1);
+            for (int k1 = final_part_ptr[i]; k1 < final_part_ptr[i+1]-1; ++k1) {
+                if((final_node_ptr[k1+1]-final_node_ptr[k1])==1)sum+=1;
+            }
+        }
+        return 1.0*sum/t_sum;
     }
 
     ~Spic0CSCParallelLBC(){

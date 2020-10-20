@@ -101,27 +101,27 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
  auto LevelSetNo = sls->getLevelNo();
 
  if (option==0){
-   /**
-    * profiling for levelset method, in which grouping can be enabled by setting p2 > 1
-    * **/
-   auto *sg = new SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "grouping code", num_threads);
-   t_group = sg->evaluate();
-   SpKerType ktype = SpTrsv_CSR;
-   //        if(num_threads==1)num_threads=16;
-   StatSpMat profiler(L2_csr, ktype, num_threads, p2);
-   profiler.set_seq_time(t_ser.elapsed_time);
-   profiler.set_level_time(t_levelset.elapsed_time);
-   profiler.set_lbc_time(t_lbc.elapsed_time);
-   profiler.set_glevel_time(t_group.elapsed_time);
+  /**
+   * profiling for levelset method, in which grouping can be enabled by setting p2 > 1
+   * **/
+  auto *sg = new SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "grouping code", num_threads);
+  t_group = sg->evaluate();
+  SpKerType ktype = SpTrsv_CSR;
+  //        if(num_threads==1)num_threads=16;
+  StatSpMat profiler(L2_csr, ktype, num_threads, p2);
+  profiler.set_seq_time(t_ser.elapsed_time);
+  profiler.set_level_time(t_levelset.elapsed_time);
+  profiler.set_lbc_time(t_lbc.elapsed_time);
+  profiler.set_glevel_time(t_group.elapsed_time);
 
-   size_t pos = matrix_name.find_last_of("/\\");
-   matrix_name = matrix_name.substr(pos+1);
-   PRINT_CSV(matrix_name);
-   PRINT_CSV(p2);
-   profiler.PrintData();
-   std::cout<<"\n";
+  size_t pos = matrix_name.find_last_of("/\\");
+  matrix_name = matrix_name.substr(pos+1);
+  PRINT_CSV(matrix_name);
+  PRINT_CSV(p2);
+  profiler.PrintData();
+  std::cout<<"\n";
 
-   delete sg;
+  delete sg;
  }
  else if (option==1){
   /**
