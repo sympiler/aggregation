@@ -4,6 +4,7 @@
 
 #include "includes/lbc_utils.h"
 #include <cstring>
+#include <omp.h>
 #include <ostream>
 #include <sparse_inspector.h>
 #include <sparse_utilities.h>
@@ -12,13 +13,13 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
                       int *finalNodePtr, int *finalPartPtr, int innerParts,
                       int originalHeight, double *nodeCost, int *node2Level,
                       std::vector<int> &innerPartsSize, int lClusterCnt,
-                      int *partition2Level, int *levelPtr, int *levelSet) {
+                      int *partition2Level, int *levelPtr, int *levelSet, int numThreads) {
  int totalCC = 0;
  int outinnerPartsList[lClusterCnt];
  std::vector<std::vector<std::vector<int>>> mergedLeveledParListByL;
  mergedLeveledParListByL.resize(lClusterCnt);
 
-#pragma omp parallel reduction(+ : totalCC)
+#pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
  {
   bool *visited = new bool[n]();
   int *isMarked = new int[n]();
@@ -243,7 +244,7 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
 int get_coarse_Level_set_DAG_CSC03_parallel(
  size_t n, int *lC, int *lR, int &finaLevelNo, int *&finaLevelPtr, int &partNo,
  int *&finalPartPtr, int *&finalNodePtr, int innerParts, int minLevelDist,
- int divRate, double *nodeCost) {
+ int divRate, double *nodeCost, int numThreads) {
  int *node2Level = new int[n];
  int *levelPtr; //= new int[n+1]();
  bool *isChanged = new bool[n]();
@@ -291,7 +292,7 @@ int get_coarse_Level_set_DAG_CSC03_parallel(
  make_l_partitions(n, lC, lR, finaLevelPtr, finalNodePtr, finalPartPtr,
                    innerParts, originalHeight, nodeCost, node2Level,
                    innerPartsSize, lClusterCnt, partition2Level, levelPtr,
-                   levelSet);
+                   levelSet, numThreads);
 
  finaLevelNo = lClusterCnt;
  if (true) { // Verification of the set.
