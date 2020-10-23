@@ -81,7 +81,7 @@ namespace sym_lib {
                                                 minLevelDist, divRate,
                                                 innerPartsSize, slackGroups,
                                                 NULL, partition2Level);
-
+  double tt_ts=0;
   for (int l = 0; l < lClusterCnt; ++l) {//for each leveled partition
    int lbLevel = partition2Level[l] - 1;
    int ubLevel = partition2Level[l + 1];
@@ -122,7 +122,7 @@ namespace sym_lib {
       for (int j = 0; j < needAliased.size(); ++j) {//the first is min
        int tn = node2partition[needAliased[j]];
        if (tn != minAliasedPar) {
-        cc--;
+//        cc--;
         for (int i = 0; i < n; ++i) {
          //Replace all needAliased node with their min part number.
          if (node2partition[i] == tn) {
@@ -182,9 +182,15 @@ namespace sym_lib {
    for (int i = 0; i < cc; ++i) {
     newLeveledParList.push_back(extraDim);
    }
+   timing_measurement t_reorder;
+
+   t_reorder.start_timer();
    modified_BFS_CSC(n, lC, lR, inDegree, visited,
                    node2partition, levelPtr, levelSet, dfsLevel,
                    newLeveledParList);
+    t_reorder.measure_elapsed_time();
+    tt_ts+=t_reorder.elapsed_time;
+//    std::cout<<t_reorder.elapsed_time<<"\n";
    /*for (int ll = dfsLevel; ll < ubLevel; ++ll) {
     for (int ii = levelPtr[ll]; ii < levelPtr[ll+1]; ++ii) {
      int curNode=levelSet[ii];
@@ -259,6 +265,7 @@ namespace sym_lib {
   }
 
   finaLevelNo = lClusterCnt;
+//  std::cout<<tt_ts<<",";
   if (true) {//Verification of the set.
    bool *checkExist = new bool[n];
    for (int i = 0; i < n; ++i) checkExist[i] = false;

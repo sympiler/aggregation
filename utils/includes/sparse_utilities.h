@@ -93,8 +93,10 @@ namespace sym_lib {
  /// \return
  CSC* make_full(CSC *A);
 
+ /// Verify whether SpMat misses diagonal values
+ bool verify_csc_diagonal(CSC* A);
 
- /// transpose matrix A after applying the given permutation, if give.
+    /// transpose matrix A after applying the given permutation, if give.
  /// \param A Input symmetric matrix, either lower or upper part should be stored
  /// \param Perm
  /// \return
@@ -140,6 +142,12 @@ namespace sym_lib {
   /// \param dst
  void copy_from_to(CSR *src, CSR *dst);
 
+ /**
+  * @brief Copy CSR to CSR
+  * @param src
+  * @param dst
+  */
+ void copy_from_to(CSC *src, CSC *dst);
 /// Finds the number of empty columns.
 /// \param A 
 /// \return
