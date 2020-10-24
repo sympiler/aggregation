@@ -143,6 +143,7 @@ int spic0_demo01(int argc, char *argv[]) {
 
 
  delete itsnf;
+ delete spls;
  delete itplnf;
 
  delete A;

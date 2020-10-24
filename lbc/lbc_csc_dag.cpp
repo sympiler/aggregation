@@ -161,6 +161,7 @@ namespace sym_lib {
      }
     }
    }
+   delete []isUniq;
    //Reset all marked node in the DAG
    //std::cout<<cc<<"\n";
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0];
