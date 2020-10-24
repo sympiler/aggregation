@@ -79,7 +79,11 @@ void spico_csc_levelset(int n, const int *Lp, const int *Li, double *Lx,
                                   int levels, const int *levelPtr,
                                   const int *levelSet, int *groupPtr, int *groupSet);
 
-    void spico_csc_lbc(int n, double *Lx, int *Lp, int *Li,
+    void spic0_csr_levelset(int n, double *Lx, int *Lp, int *Li,
+                         int level_no, const int *level_ptr,
+                         const int *level_set);
+
+ void spico_csc_lbc(int n, double *Lx, int *Lp, int *Li,
                        int level_no, int *level_ptr,
                        int *par_ptr, int *partition);
     void spic0_csc_group_lbc(int n, int *Lp, int *Li, double *Lx,

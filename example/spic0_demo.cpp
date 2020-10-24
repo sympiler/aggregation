@@ -24,7 +24,7 @@ int spic0_demo01(int argc, char *argv[]) {
  CSC *L1_csc, *A = NULLPNTR;
  CSR *L2_csr;
  size_t n;
- int num_threads = 12;
+ int num_threads = 6;
  int p2 = -3, p3 = 4000; // LBC params
  int header = 0;
  int *perm;
@@ -51,8 +51,12 @@ int spic0_demo01(int argc, char *argv[]) {
  }
  if(argc >= 3)
   p2 = atoi(argv[2]);
- if(argc == 4)
-  header = atoi(argv[3]);
+ if(argc >= 4)
+  p3 = atoi(argv[3]);
+ if(argc >= 5)
+  num_threads = atoi(argv[4]);
+ if(argc == 6)
+  header = atoi(argv[5]);
  omp_set_num_threads(num_threads);
  /// Re-ordering L matrix
 #ifdef METIS
@@ -83,7 +87,7 @@ int spic0_demo01(int argc, char *argv[]) {
   B_csr = csc_to_csr(B);
  }
  auto *factor_correct = new double[L2_csr->nnz]();
- timing_measurement t_serial, t_lbc ;
+ timing_measurement t_serial, t_level_set, t_lbc ;
 
  //print_csc(1,"CSR:\n",n,B_csr->p, B_csr->i, B_csr->x);
 
@@ -92,7 +96,12 @@ int spic0_demo01(int argc, char *argv[]) {
                                              "Serial");
  t_serial = itsnf->evaluate();
  copy_vector(0, L2_csr->nnz, itsnf->Factor(), factor_correct);
- //print_vec("X: \n", 0, n, x_correct);
+ //print_vec("X: \n", 0, n, factor_correct);
+
+ auto *spls = new Spic0ParallelLevelset(L2_csr, L1_csc, B_csr, B,
+                                     factor_correct,
+                                     "Parallel Level set");
+ t_level_set = spls->evaluate();
 
  auto *itplnf = new Spic0ParallelLBC(L2_csr, L1_csc, B_csr, B,
                                              factor_correct,
@@ -107,7 +116,9 @@ int spic0_demo01(int argc, char *argv[]) {
   std::cout<<"Matrix Name,Code Type,Data Type,Metis Enabled,"
              "Number of Threads,LBC Param1,LBC Param2,"
              "Serial Non-fused,"
-             "Parallel LBC Non-fused CSR Analysis Time,"
+             "Parallel Level set CSR Analysis Time,"
+             "Parallel Level set CSR,"
+             "Parallel LBC CSR Analysis Time,"
              "Parallel LBC CSR,"
              "\n";
 
@@ -123,6 +134,10 @@ int spic0_demo01(int argc, char *argv[]) {
  PRINT_CSV(p3);
 
  PRINT_CSV(t_serial.elapsed_time);
+
+ PRINT_CSV(spls->analysisTime().elapsed_time);
+ PRINT_CSV(t_level_set.elapsed_time);
+
  PRINT_CSV(itplnf->analysisTime().elapsed_time);
  PRINT_CSV(t_lbc.elapsed_time);
 

@@ -129,8 +129,38 @@ namespace sym_lib {
         }
        }
       }
-     };
+     }
     }
+
+ void spic0_csr_levelset(int n, double *Lx, int *Lp, int *Li,
+                    int level_no, const int *level_ptr,
+                    const int *level_set) {
+
+#pragma omp parallel
+  {
+   for (int i1 = 0; i1 < level_no; ++i1) {
+    {
+#pragma omp  for schedule(auto)
+     for (int j1 = level_ptr[i1]; j1 < level_ptr[i1 + 1]; ++j1) {
+       int i = level_set[j1];
+       Lx[Lp[i+1]-1] = sqrt(Lx[Lp[i+1]-1]);//S1
+
+       for (int m = Lp[i]; m < Lp[i + 1]-1; m++) {
+        Lx[m] = Lx[m] / Lx[Lp[i+1]-1];//S2
+       }
+
+       for (int m = Lp[i] ; m < Lp[i + 1]-1; m++) {
+        for (int k = Lp[Li[m]]; k < Lp[Li[m] + 1]; k++) {
+         for (int l = m; l < Lp[i + 1]-1; l++) {
+          if (Li[l] == Li[k] && Li[l + 1] <= Li[k]) {
+           Lx[k] -= Lx[m] * Lx[l]; //S3
+          }
+         }
+        }
+       }
+      }}}//LBC outermost
+  };
+ }
 
     void spic0_csc_group_lbc(int n, int *Lp, int *Li, double *Lx,
                              int level_no, int *level_ptr,
@@ -178,7 +208,6 @@ namespace sym_lib {
     void spic0_csr_lbc(int n, double *Lx, int *Lp, int *Li,
                        int level_no, int *level_ptr,
                        int *par_ptr, int *partition) {
-
 #pragma omp parallel
      {
       for (int i1 = 0; i1 < level_no; ++i1) {
@@ -203,7 +232,7 @@ namespace sym_lib {
            }
           }
          }}}}//LBC outermost
-     };
+     }
     }
 
     void spico_csc_lbc(int n, double *Lx, int *Lp, int *Li,

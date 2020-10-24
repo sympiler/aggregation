@@ -571,7 +571,47 @@ public:
     }
 };
 
+ class Spic0ParallelLevelset : public Spic0Serial {
+ protected:
+  int *level_set, *level_ptr, level_no;
+  int part_no;
+  void build_set() override {
+   Spic0Serial::build_set();
+   level_no = build_levelSet_CSC(L1_csc_->n, L1_csc_->p, L1_csc_->i,
+                                 level_ptr, level_set);
+  }
 
+  timing_measurement fused_code() override {
+   timing_measurement t1;
+
+   t1.start_timer();
+   spic0_csr_levelset(n_, factor_->x, factor_->p, factor_->i,
+                 level_no, level_ptr, level_set);
+   t1.measure_elapsed_time();
+   //print_vec("Lx:\n",0,n_,x_);
+   return t1;
+  }
+
+ public:
+  Spic0ParallelLevelset(CSR *L, CSC *L_csc, CSR *A, CSC *A_csc,
+                   double *correct_x, std::string name) :
+    Spic0Serial(L,L_csc,A,A_csc,correct_x,name){};
+
+#ifdef PROFILE
+  Spic0SptrsvParallelLBCNonFused(CSR *L, CSC *L_csc, CSR *A, CSC *A_csc,
+  double *correct_x, std::string name,
+  int l_param, int c_param, int i_param, PAPIWrapper *pw):
+    Spic0SptrsvSerialNonFused(L,L_csc,A,A_csc,correct_x,name),
+    lp_(l_param),cp_(c_param),ic_(i_param){
+   pw_ = pw;
+   num_threads_ = lp_;
+  }
+#endif
+  ~Spic0ParallelLevelset(){
+   delete []level_ptr;
+   delete []level_set;
+  }
+ };
 
  class Spic0ParallelLBC : public Spic0Serial {
  protected:
