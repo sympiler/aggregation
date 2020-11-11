@@ -28,15 +28,15 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
   double *newOutCost = new double[n];
   int *node2partition = new int[n];
   int *inDegree = new int[n];
+  std::vector<std::vector<int>> newLeveledParList;
 
-  memset(outCost, 0.0, n * sizeof(float));
-  memset(newOutCost, 0.0, n * sizeof(float));
+  memset(outCost, 0.0, n * sizeof(double));
+  memset(newOutCost, 0.0, n * sizeof(double));
 
-#pragma omp for schedule(auto)
+#pragma omp for schedule(dynamic, 1)
   for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
    memset(inDegree, 0, n * sizeof(int));
 
-   std::vector<std::vector<int>> newLeveledParList;
    int lbLevel = partition2Level[l] - 1;
    int ubLevel = partition2Level[l + 1];
    int dfsLevel = partition2Level[l];
@@ -261,7 +261,10 @@ int get_coarse_Level_set_DAG_CSC03_parallel(
 
  int averageCC = 0;
  // making levelset
+ // timing_measurement time_levelset;
+ // time_levelset.start_timer();
  int levelNo = build_levelSet_CSC(n, lC, lR, levelPtr, levelSet);
+ // std::cout << "levelSet, " << time_levelset.measure_elapsed_time() << std::endl;
  // COMPUTING NODE2lEVEL
  for (int i = 0; i < levelNo; ++i) {
   for (int j = levelPtr[i]; j < levelPtr[i + 1]; ++j) {
