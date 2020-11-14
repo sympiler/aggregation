@@ -19,7 +19,7 @@ namespace sym_lib{
                           A_csr_(NULLPNTR),A_csc_(NULLPNTR),
                           x_(NULLPNTR),
                           x_in_(NULLPNTR), correct_x_(NULLPNTR){
-  num_test_=1;
+  num_test_=5;
   redundant_nodes_=0;
 #ifdef PROFILE
   pw_ = NULLPNTR;
