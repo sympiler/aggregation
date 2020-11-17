@@ -220,7 +220,7 @@ namespace sym_lib {
 
     };
 
-  class SptrsvLBCDAGParallel : public SptrsvLBCDAG {
+    class SptrsvLBCDAGParallel : public SptrsvLBCDAG {
     protected:
         void build_set() override {
          auto *cost = new double[n_]();
@@ -238,6 +238,7 @@ namespace sym_lib {
                      int cp, int ic)
                 : SptrsvLBCDAG(L, L_csc, correct_x, name, lp, cp, ic) {}
         ~SptrsvLBCDAGParallel() {}
+
     };
 
     class SptrsvLBC_W_Sorting : public SptrsvSerial {

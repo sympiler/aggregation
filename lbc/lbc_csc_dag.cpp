@@ -605,4 +605,4 @@ int get_coarse_Level_set_DAG_CSC03(size_t n,
   return averageCC / lClusterCnt;
 
  }
-} // namespace sym_lib
+}
