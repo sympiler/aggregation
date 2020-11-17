@@ -87,7 +87,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  double *y_serial, *y_correct = new double[n];
 
  timing_measurement t_ser, t_par, t_lbc_w_sort, t_blocked, t_blocked_mkl,
- t_blocked_levelset, t_levelset, t_lbc_dag;
+   t_blocked_levelset, t_levelset, t_lbc_dag, t_lbc_dag_parallel;
 
  SptrsvSerial *ss = new SptrsvSerial(L2_csr, L1_csc, NULLPNTR, "serial");
  t_ser = ss->evaluate();
@@ -103,6 +103,10 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "lbc DAG",num_threads, p2, p3);
  t_lbc_dag = sld->evaluate();
+
+ auto *sldp =
+  new SptrsvLBCDAGParallel(L2_csr, L1_csc, y_serial, "lbc DAG (Parallel Partitioning)", num_threads, p2, p3);
+ t_lbc_dag_parallel = sldp->evaluate();
 
  auto *slwg = new SptrsvLBC_W_Sorting(L2_csr, L1_csc, y_serial, "lbc with w sorting", num_threads, p2, p3);
  t_lbc_w_sort = slwg->evaluate();
@@ -124,6 +128,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  PRINT_CSV(t_levelset.elapsed_time);
  PRINT_CSV(t_par.elapsed_time);
  PRINT_CSV(t_lbc_dag.elapsed_time);
+ PRINT_CSV(t_lbc_dag_parallel.elapsed_time);
  PRINT_CSV(t_lbc_w_sort.elapsed_time);
 
  delete []y_correct;

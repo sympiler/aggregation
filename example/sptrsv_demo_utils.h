@@ -182,6 +182,26 @@ namespace sym_lib {
   ~SptrsvLBCDAG() {}
  };
 
+ class SptrsvLBCDAGParallel : public SptrsvLBC {
+
+  void build_set() override {
+   auto *cost = new double[n_]();
+   for (int i = 0; i < n_; ++i) {
+    cost[i] = L1_csr_->p[i + 1] - L1_csr_->p[i];
+   }
+   get_coarse_Level_set_DAG_CSC03_parallel(
+    n_, L1_csc_->p, L1_csc_->i, final_level_no, fina_level_ptr, part_no,
+    final_part_ptr, final_node_ptr, lp_, cp_, ic_, cost, -1);
+   delete[] cost;
+  }
+
+public:
+  SptrsvLBCDAGParallel(CSR *L, CSC *L_csc, double *correct_x, std::string name, int lp,
+               int cp, int ic)
+   : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic) {}
+  ~SptrsvLBCDAGParallel() {}
+ };
+
  class SptrsvLBC_W_Sorting : public SptrsvLBC {
  protected:
   void build_set() override {

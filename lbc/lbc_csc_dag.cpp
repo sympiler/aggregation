@@ -9,11 +9,17 @@
 #include <sparse_inspector.h>
 #include <sparse_utilities.h>
 namespace sym_lib {
-int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
-                      int *finalNodePtr, int *finalPartPtr, int innerParts,
-                      int originalHeight, double *nodeCost, int *node2Level,
-                      std::vector<int> &innerPartsSize, int lClusterCnt,
-                      int *partition2Level, int *levelPtr, int *levelSet, int numThreads) {
+int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
+                               int *finalNodePtr, int *finalPartPtr,
+                               int innerParts, int originalHeight,
+                               double *nodeCost, int *node2Level,
+                               std::vector<int> &innerPartsSize,
+                               int lClusterCnt, int *partition2Level,
+                               int *levelPtr, int *levelSet, int numThreads) {
+ if (numThreads == -1) {
+  numThreads = omp_get_num_threads();
+ }
+
  int totalCC = 0;
  int outinnerPartsList[lClusterCnt];
  std::vector<std::vector<std::vector<int>>> mergedLeveledParListByL;
@@ -54,7 +60,6 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
    }
 
    // Marking lower bound
-   // FIXME: we might need to do all levels below for general DAG
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
         ++j) {
     int curNode = levelSet[j];
@@ -88,7 +93,6 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
       for (int j = 0; j < needAliased.size(); ++j) { // the first is min
        int tn = node2partition[needAliased[j]];
        if (tn != minAliasedPar) {
-        // cc--;
         for (int i = 0; i < n; ++i) {
          // Replace all needAliased node with their min part number.
          if (node2partition[i] == tn) {
@@ -128,7 +132,6 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
     }
    }
    // Reset all marked node in the DAG
-   // std::cout<<cc<<"\n";
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
         ++j) {
     int curNode = levelSet[j];
@@ -152,13 +155,6 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
    modified_BFS_CSC(n, lC, lR, inDegree, visited, node2partition, levelPtr,
                     levelSet, dfsLevel, newLeveledParList);
 
-   /*for (int ll = dfsLevel; ll < ubLevel; ++ll) {
-    for (int ii = levelPtr[ll]; ii < levelPtr[ll+1]; ++ii) {
-     int curNode=levelSet[ii];
-     assert(node2partition[curNode]>=0);
-     newLeveledParList[node2partition[curNode]].push_back(curNode);
-    }
-   }*/
    // Marking upper bound
    for (int ii = ubLevel; ii < originalHeight; ++ii) {
     for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
@@ -176,7 +172,6 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
     outinnerParts =
      worst_fit_bin_pack(newLeveledParList, outCost, mergedLeveledParListByL[l],
                         newOutCost, levelParCostThresh, innerPartsSize[l]);
-    // assert(outinnerParts<=innerParts);
    } else {
     mergedLeveledParListByL[l].erase(mergedLeveledParListByL[l].begin(),
                                      mergedLeveledParListByL[l].end());
@@ -226,18 +221,15 @@ int make_l_partitions(int n, int *lC, int *lR, int *finaLevelPtr,
     curPartCost += nodeCost[mergedLeveledParListByL[l][i][j]];
     finalNodePtr[finalPartPtr[curNumOfPart] + curPartElem] =
      mergedLeveledParListByL[l][i][j];
-    // node2partition[mergedLeveledParListByL[l][i][j]] = curNumOfPart;
     curPartElem++;
    }
 #if 0
-    //std::cout<<"parts: "<<newLeveledParList.size()<<","<<curPartCost<<", ";
     std::cout<<curPartCost<<", ";
 #endif
    finalPartPtr[curNumOfPart + 1] = finalPartPtr[curNumOfPart] + curPartElem;
    curNumOfPart++;
   }
  }
-
  return totalCC;
 }
 
@@ -260,12 +252,7 @@ int get_coarse_Level_set_DAG_CSC03_parallel(
  finaLevelPtr[0] = 0;
 
  int averageCC = 0;
- // making levelset
- // timing_measurement time_levelset;
- // time_levelset.start_timer();
  int levelNo = build_levelSet_CSC(n, lC, lR, levelPtr, levelSet);
- // std::cout << "levelSet, " << time_levelset.measure_elapsed_time() << std::endl;
- // COMPUTING NODE2lEVEL
  for (int i = 0; i < levelNo; ++i) {
   for (int j = levelPtr[i]; j < levelPtr[i + 1]; ++j) {
    int node = levelSet[j];
@@ -292,10 +279,10 @@ int get_coarse_Level_set_DAG_CSC03_parallel(
   levelNo, levelPtr, NULL, originalHeight, innerParts, minLevelDist, divRate,
   innerPartsSize, slackGroups, NULL, partition2Level);
 
- make_l_partitions(n, lC, lR, finaLevelPtr, finalNodePtr, finalPartPtr,
-                   innerParts, originalHeight, nodeCost, node2Level,
-                   innerPartsSize, lClusterCnt, partition2Level, levelPtr,
-                   levelSet, numThreads);
+ make_l_partitions_parallel(n, lC, lR, finaLevelPtr, finalNodePtr, finalPartPtr,
+                            innerParts, originalHeight, nodeCost, node2Level,
+                            innerPartsSize, lClusterCnt, partition2Level,
+                            levelPtr, levelSet, numThreads);
 
  finaLevelNo = lClusterCnt;
  if (true) { // Verification of the set.
