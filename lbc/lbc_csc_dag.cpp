@@ -8,6 +8,7 @@
 #include <ostream>
 #include <sparse_inspector.h>
 #include <sparse_utilities.h>
+
 namespace sym_lib {
 int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
                                int *finalNodePtr, int *finalPartPtr,

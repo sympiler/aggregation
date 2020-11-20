@@ -8,6 +8,7 @@
 #define PROJECT_LBC_UTILS_H
 
 #include <vector>
+#include <stdlib.h>
 namespace sym_lib{
 
  struct subTree {
