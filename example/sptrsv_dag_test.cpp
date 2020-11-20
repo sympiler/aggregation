@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
  int p2 = -1, p3 = 4000; // LBC params
  int header = 0;
  int *perm;
- int mode; // 0: parallel or 1: serial
+ int mode = 0; // 0: parallel or 1: serial
  int creation_threads_temp = -1;
  std::string matrix_name;
 
