@@ -34,6 +34,14 @@ target_link_libraries(sptrsv_demo
         ${METIS_LIBRARY} ${METIS_LIBRARIES})
 
 
+add_executable(sptrsvprofiler_demo ${SPTRSVD_SOURCE_FILES}
+        sptrsvprofiler_demo.cpp)
+target_link_libraries(sptrsvprofiler_demo
+        lbc
+        ${METIS_LIBRARY} ${METIS_LIBRARIES} papi)
+
+
+
 add_executable(sptrsv_csr_profile ${SPTRSVD_SOURCE_FILES}
         sptrsv_csr_profile.cpp)
 target_link_libraries( sptrsv_csr_profile lbc

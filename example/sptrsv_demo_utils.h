@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <sparse_inspector.h>
 #include <lbc.h>
-
+#include <cstring>
 #include "FusionDemo.h"
 #include "sparse_blas_lib.h"
 #include <Group.h>
@@ -16,8 +16,8 @@
 #include <executor.h>
 #include <StatSpMat.h>
 
-namespace sym_lib {
 
+namespace sym_lib {
     class SptrsvSerial : public FusionDemo {
     protected:
         timing_measurement fused_code() override {
@@ -72,6 +72,16 @@ namespace sym_lib {
          L1_csc_ = L_csc;
          correct_x_ = correct_x;
         };
+
+        SptrsvLevelSet (CSR *L, CSC *L_csc,
+                        double *correct_x, std::string name, PAPIWrapper *pw) :
+                SptrsvSerial(L, L_csc, correct_x, name) {
+            L1_csr_ = L;
+            L1_csc_ = L_csc;
+            correct_x_ = correct_x;
+            pw_ = pw;
+        };
+
 
         int *getLeveSet(){
          return level_set;
@@ -188,6 +198,12 @@ namespace sym_lib {
         SptrsvLBCDAG(CSR *L, CSC *L_csc, double *correct_x, std::string name, int lp,
                      int cp, int ic)
                 : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic) {}
+        SptrsvLBCDAG(CSR *L, CSC *L_csc, double *correct_x, std::string name, int lp,
+                     int cp, int ic, PAPIWrapper *pw)
+                : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic) {
+            pw_ = pw;
+        }
+
         ~SptrsvLBCDAG() {}
         double averWsize(){
          part_no=fina_level_ptr[final_level_no];
@@ -294,6 +310,19 @@ namespace sym_lib {
 
          f_sort = flag;
         };
+
+        SptrsvLBC_W_Sorting(CSR *L, CSC *L_csc, double *correct_x, std::string name,
+                            int lp, int cp, int ic, bool flag, PAPIWrapper *pw)
+                : SptrsvSerial(L, L_csc, correct_x, name){
+            L1_csr_ = L;
+            L1_csc_ = L_csc;
+            correct_x_ = correct_x;
+            lp_=lp; cp_=cp; ic_=ic;
+
+            f_sort = flag;
+            pw_ = pw;
+        };
+
 
         int levels(){
          return final_level_no;
@@ -414,6 +443,18 @@ namespace sym_lib {
          nthreads = nt;
          blksize = 1;
         };
+
+        SpTrsvCSR_Grouping(CSR *L, CSC *L_csc,
+                           double *correct_x, std::string name, int nt, PAPIWrapper *pw):
+                SptrsvSerial(L, L_csc, correct_x, name){
+            L1_csr_ = L;
+            L1_csc_ = L_csc;
+            correct_x_ = correct_x;
+            nthreads = nt;
+            blksize = 1;
+            pw_=pw;
+        };
+
 
         timing_measurement groupTime(){
          return t_group;
@@ -551,6 +592,18 @@ namespace sym_lib {
          correct_x_ = correct_x;
          lp_=lp; cp_=cp; ic_=ic;
          f_sort=flag;
+        };
+
+        SpTrsvCSR_Grouping_H2(CSR *L, CSC *L_csc,
+                              double *correct_x, std::string name,
+                              int lp, int cp, int ic, bool flag, PAPIWrapper *pw) :
+                SptrsvSerial(L, L_csc, correct_x, name) {
+            L1_csr_ = L;
+            L1_csc_ = L_csc;
+            correct_x_ = correct_x;
+            lp_=lp; cp_=cp; ic_=ic;
+            f_sort=flag;
+            pw_ = pw;
         };
 
         int *getLevelPtr(){
