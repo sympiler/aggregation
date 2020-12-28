@@ -32,14 +32,9 @@ AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
 find_package(METIS OPTIONAL_COMPONENTS)
 
-if (APPLE)
-    SET(CMAKE_C_COMPILER /usr/local/Cellar/gcc/9.1.0/bin/gcc-9)
-    SET(CMAKE_CXX_COMPILER /usr/local/Cellar/gcc/9.1.0/bin/g++-9)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp ")
-endif ()
-if (UNIX AND NOT APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -std=c++11 ")
-endif ()
+find_package(OpenMP REQUIRED)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 
 add_subdirectory(lbc)
 if(EXISTS "${METIS_INCLUDES}")
