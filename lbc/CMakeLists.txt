@@ -3,6 +3,7 @@ project(lbc)
 
 include_directories(includes
         ${SPARSE_UTIL_INC}
+        ${OpenMP_CXX_INCLUDE_DIRS}
         )
 
 add_library (lbc STATIC
