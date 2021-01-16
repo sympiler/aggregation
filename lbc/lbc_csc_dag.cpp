@@ -127,6 +127,14 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
    int cc = parallel_cc(lC, lR, dfsLevel, levelPtr, levelSet, node2partition,
                         outCost, nodeCost, node2Level, curLeveledParCost,
                         numNodesAtCurLevel, nodesAtCurLevel, isNodeInCurLevel);
+   std::cout << "CC: " << cc << std::endl;
+
+   for (int ii = dfsLevel; ii < ubLevel; ++ii) {
+    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+     int x = levelSet[j];
+     std::cout << x << "->" << node2partition[x] << std::endl;
+    }
+   }
 
    // Reset all marked node in the DAG
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
@@ -356,6 +364,15 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
     }
    }
 
+   std::cout << "CC: " << cc << std::endl;
+
+   for (int ii = dfsLevel; ii < ubLevel; ++ii) {
+    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+     int x = levelSet[j];
+     std::cout << x << "->" << node2partition[x] << std::endl;
+    }
+   }
+
    // Reset all marked node in the DAG
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
         ++j) {
@@ -507,6 +524,84 @@ int get_coarse_Level_set_DAG_CSC03_parallel(
   innerPartsSize, slackGroups, NULL, partition2Level);
 
  make_l_partitions_parallel(n, lC, lR, finaLevelPtr, finalNodePtr, finalPartPtr,
+                            innerParts, originalHeight, nodeCost, node2Level,
+                            innerPartsSize, lClusterCnt, partition2Level,
+                            levelPtr, levelSet, numThreads);
+
+ finaLevelNo = lClusterCnt;
+ if (true) { // Verification of the set.
+  bool *checkExist = new bool[n];
+  for (int i = 0; i < n; ++i)
+   checkExist[i] = false;
+  for (int i = 0; i < lClusterCnt; ++i) {
+   for (int k = finaLevelPtr[i]; k < finaLevelPtr[i + 1]; ++k) {
+    for (int j = finalPartPtr[k]; j < finalPartPtr[k + 1]; ++j) {
+     assert(checkExist[finalNodePtr[j]] == false);
+     checkExist[finalNodePtr[j]] = true;
+    }
+   }
+  }
+  for (int i = 0; i < n; ++i) {
+   assert(checkExist[i] == true);
+  }
+  delete[] checkExist;
+ }
+ delete[] partition2Level;
+ delete[] levelPtr;
+ delete[] levelSet;
+ delete[] node2Level;
+ delete[] isChanged;
+
+ return averageCC / lClusterCnt;
+}
+
+int get_coarse_Level_set_DAG_CSC03_w_parallel(
+ size_t n, int *lC, int *lR, int &finaLevelNo, int *&finaLevelPtr, int &partNo,
+ int *&finalPartPtr, int *&finalNodePtr, int innerParts, int minLevelDist,
+ int divRate, double *nodeCost, int numThreads) {
+ int *node2Level = new int[n];
+ int *levelPtr; //= new int[n+1]();
+ bool *isChanged = new bool[n]();
+
+ int *levelSet; //= new size_t[n]();
+ int curNumOfPart = 0;
+ std::vector<int> remainingNodes, remainingTmp;
+ int clusterCnt = 0;
+ int originalHeight = 0;
+ finaLevelPtr = new int[n + 1];
+ finalPartPtr = new int[n]();
+ finalNodePtr = new int[n];
+ finaLevelPtr[0] = 0;
+
+ int averageCC = 0;
+ int levelNo = build_levelSet_CSC(n, lC, lR, levelPtr, levelSet);
+ for (int i = 0; i < levelNo; ++i) {
+  for (int j = levelPtr[i]; j < levelPtr[i + 1]; ++j) {
+   int node = levelSet[j];
+   node2Level[node] = i;
+  }
+ }
+#if 0
+  for (int i = 0; i < levelNo; ++i) {
+   std::cout<<i<<"::";
+   for (int j = levelPtr[i]; j < levelPtr[i+1]; ++j) {
+    std::cout<<levelSet[j]<<";";
+   }
+   std::cout<<"\n";
+  }
+#endif
+
+ // H-partitioning
+ int *partition2Level = new int[levelNo + 1]();
+ std::vector<int> innerPartsSize;
+ originalHeight = levelNo;
+ std::vector<std::vector<int>> slackGroups(originalHeight + 1);
+ std::vector<std::vector<int>> slackedLevelSet(originalHeight + 1);
+ int lClusterCnt = height_partitioning_DAG_trng(
+  levelNo, levelPtr, NULL, originalHeight, innerParts, minLevelDist, divRate,
+  innerPartsSize, slackGroups, NULL, partition2Level);
+
+ make_w_partitions_parallel(n, lC, lR, finaLevelPtr, finalNodePtr, finalPartPtr,
                             innerParts, originalHeight, nodeCost, node2Level,
                             innerPartsSize, lClusterCnt, partition2Level,
                             levelPtr, levelSet, numThreads);

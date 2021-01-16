@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
  int p2 = -1, p3 = 4000; // LBC params
  int header = 0;
  int *perm;
- int mode = 0; // 0: parallel or 1: serial
+ int mode = 0; // 0: parallel l, 1: parallel w, 2: serial
  int creation_threads_temp = -1;
  std::string matrix_name;
 
@@ -92,11 +92,18 @@ int main(int argc, char *argv[]) {
 
  for (int i = 0; i < 1; ++i) {
   timing_measurement time;
-  if (mode == 1) {
+  if (mode == 2) {
    time.start_timer();
    get_coarse_Level_set_DAG_CSC03(n, L1_csc->p, L1_csc->i, final_level_no,
                                   fina_level_ptr, part_no, final_part_ptr,
                                   final_node_ptr, num_threads, p2, p3, cost);
+   time.measure_elapsed_time();
+  } else if (mode == 1) {
+   time.start_timer();
+   get_coarse_Level_set_DAG_CSC03_w_parallel(
+    n, L1_csc->p, L1_csc->i, final_level_no, fina_level_ptr, part_no,
+    final_part_ptr, final_node_ptr, num_threads, p2, p3, cost,
+    creation_threads);
    time.measure_elapsed_time();
   } else {
    time.start_timer();
@@ -118,7 +125,7 @@ int main(int argc, char *argv[]) {
  PRINT_CSV(m[1]);
  PRINT_CSV(median_t.elapsed_time);
  if (creation_threads_temp != -1) {
-   PRINT_CSV(creation_threads_temp);
+  PRINT_CSV(creation_threads_temp);
  }
  std::cout << std::endl;
  delete[] cost;

@@ -67,6 +67,11 @@ namespace sym_lib{
   int *&finalPartPtr, int *&finalNodePtr, int innerParts, int minLevelDist,
   int divRate, double *nodeCost, int numThreads);
 
+ int get_coarse_Level_set_DAG_CSC03_w_parallel(
+  size_t n, int *lC, int *lR, int &finaLevelNo, int *&finaLevelPtr, int &partNo,
+  int *&finalPartPtr, int *&finalNodePtr, int innerParts, int minLevelDist,
+  int divRate, double *nodeCost, int numThreads);
+
  int getCoarseLevelSet_DAG_BCSC02(size_t n,
                                   size_t *lC,
                                   size_t *Li_ptr,
