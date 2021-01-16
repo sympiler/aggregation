@@ -96,11 +96,11 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  copy_vector(0,n,y_serial,y_correct);
  //print_vec("x:\n", 0, n, y_correct);
 
- auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc"); // levelset
- t_levelset = sls->evaluate();
+ // auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc"); // levelset
+ // t_levelset = sls->evaluate();
 
- auto *sg = new SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "levelset with grouping", num_threads);
- t_levelset_group = sg->evaluate();
+ // auto *sg = new SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "levelset with grouping", num_threads);
+ // t_levelset_group = sg->evaluate();
 
  auto *lbc_tree = new SptrsvLBC(L2_csr, L1_csc, y_serial, "LBC Tree",num_threads, p2, p3); // ng + c + tp
  lt_t = lbc_tree->evaluate();
@@ -113,15 +113,15 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
   p3);
  t_c_pp = sld_parallel->evaluate();
 
- auto *sld_sort = new SptrsvLBC_W_Sorting(
-  L2_csr, L1_csc, y_serial, "c4+sorting", num_threads, p2, p3, true);
- t_c_sp = sld_sort->evaluate();
+ // auto *sld_sort = new SptrsvLBC_W_Sorting(
+ //  L2_csr, L1_csc, y_serial, "c4+sorting", num_threads, p2, p3, true);
+ // t_c_sp = sld_sort->evaluate();
 
- auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "g_c4", num_threads, p2, p3, false);
- t_g_c_tp = sglbc->evaluate(); // g  + c + tp
+ // auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "g_c4", num_threads, p2, p3, false);
+ // t_g_c_tp = sglbc->evaluate(); // g  + c + tp
 
- auto *sglbc_sort = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "g_c4_sorting", num_threads, p2, p3, true);
- t_g_c_sp = sglbc_sort->evaluate(); // g + c + sp;
+ // auto *sglbc_sort = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "g_c4_sorting", num_threads, p2, p3, true);
+ // t_g_c_sp = sglbc_sort->evaluate(); // g + c + sp;
 
  if(header)
   std::cout<<"Matrix Name,Metis Enabled,"
@@ -140,15 +140,15 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  PRINT_CSV(p3);
 
  PRINT_CSV(t_ser.elapsed_time);
- PRINT_CSV(t_levelset.elapsed_time);
- PRINT_CSV(t_levelset_group.elapsed_time);
+ // PRINT_CSV(t_levelset.elapsed_time);
+ // PRINT_CSV(t_levelset_group.elapsed_time);
 
  PRINT_CSV(lt_t.elapsed_time);
  PRINT_CSV(t_c_tp.elapsed_time);
  PRINT_CSV(t_c_pp.elapsed_time);
- PRINT_CSV(t_c_sp.elapsed_time);
- PRINT_CSV(t_g_c_tp.elapsed_time);
- PRINT_CSV(t_g_c_sp.elapsed_time);
+ // PRINT_CSV(t_c_sp.elapsed_time);
+ // PRINT_CSV(t_g_c_tp.elapsed_time);
+ // PRINT_CSV(t_g_c_sp.elapsed_time);
  std::cout<<"\n";
 
  delete []y_correct;
@@ -157,13 +157,13 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  delete L2_csr;
 
  delete ss;
- delete sls;
- delete sg;
+ // delete sls;
+ // delete sg;
  delete sld;
  delete lbc_tree;
- delete sld_sort;
- delete sglbc;
- delete sglbc_sort;
+ // delete sld_sort;
+ // delete sglbc;
+ // delete sglbc_sort;
 
 
  return 0;

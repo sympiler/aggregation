@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 
  std::vector<timing_measurement> time_array;
 
- for (int i = 0; i < 10; ++i) {
+ for (int i = 0; i < 1; ++i) {
   timing_measurement time;
   if (mode == 1) {
    time.start_timer();
