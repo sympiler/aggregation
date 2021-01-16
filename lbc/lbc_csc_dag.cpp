@@ -11,9 +11,9 @@
 
 namespace sym_lib {
 int parallel_cc(int *lC, int *lR, int dfsLevel, int *levelPtr, int *levelSet,
-                 int *node2partition, double *outCost, double *nodeCost,
-                 int *node2Level, int &curLeveledParCost, int numNodes,
-                 int *nodes) {
+                int *node2partition, double *outCost, double *nodeCost,
+                int *node2Level, int &curLeveledParCost, int numNodes,
+                int *nodes, bool *isNodeInCurLevel) {
  // TODO: Parallel
  for (int i = 0; i < numNodes; ++i) {
   int node = nodes[i];
@@ -30,6 +30,10 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int *levelPtr, int *levelSet,
    // Now we go over all neighbors of u
    for (int r = lC[u]; r < lC[u + 1]; ++r) {
     int v = lR[r];
+
+    if (!isNodeInCurLevel[v])
+     continue;
+
     int comp_u = node2partition[u];
     int comp_v = node2partition[v];
     if (comp_u == comp_v)
@@ -38,7 +42,7 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int *levelPtr, int *levelSet,
     int low_comp = comp_u + (comp_v - high_comp);
     if (high_comp == node2partition[nodes[high_comp]]) {
      change = true;
-     node2partition[high_comp] = low_comp;
+     node2partition[nodes[high_comp]] = low_comp;
     }
    }
   }
@@ -46,8 +50,8 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int *levelPtr, int *levelSet,
   // TODO: Parallel
   for (int i = 0; i < numNodes; ++i) {
    int node = nodes[i];
-   while (node2partition[node] != node2partition[node2partition[node]]) {
-    node2partition[node] = node2partition[node2partition[node]];
+   while (node2partition[node] != node2partition[nodes[node2partition[node]]]) {
+    node2partition[node] = node2partition[nodes[node2partition[node]]];
    }
   }
  }
@@ -59,7 +63,7 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int *levelPtr, int *levelSet,
   int node = nodes[i];
   int cc = node2partition[node];
   outCost[cc] += nodeCost[node];
-  num_cc = std::max(num_cc, cc);
+  num_cc = std::max(num_cc, cc + 1);
  }
 
  return num_cc;
@@ -81,25 +85,25 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
  std::vector<std::vector<std::vector<int>>> mergedLeveledParListByL;
  mergedLeveledParListByL.resize(lClusterCnt);
 
-#pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
+ // #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
  {
   bool *visited = new bool[n]();
-  int *isMarked = new int[n]();
+  bool *isNodeInCurLevel = new bool[n];
   int *xi = new int[2 * n];
   double *outCost = new double[n];
   double *newOutCost = new double[n];
   int *node2partition = new int[n];
   int *inDegree = new int[n];
   std::vector<std::vector<int>> newLeveledParList;
-  // Remember to delete this (free memory)
   int *nodesAtCurLevel = new int[n];
 
   memset(outCost, 0.0, n * sizeof(double));
   memset(newOutCost, 0.0, n * sizeof(double));
 
-#pragma omp for schedule(dynamic, 1)
+  // #pragma omp for schedule(dynamic, 1)
   for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
    memset(inDegree, 0, n * sizeof(int));
+   memset(isNodeInCurLevel, false, n * sizeof(bool));
 
    int lbLevel = partition2Level[l] - 1;
    int ubLevel = partition2Level[l + 1];
@@ -107,49 +111,33 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
    int curLeveledParCost = 0;
    int numNodesAtCurLevel = 0;
 
-   // Setting up inDegree
+   // Setting up inDegree and nodes in current level
    for (int ii = dfsLevel; ii < ubLevel; ++ii) {
     for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
      int x = levelSet[j];
+     nodesAtCurLevel[numNodesAtCurLevel++] = x;
+     isNodeInCurLevel[x] = true;
      for (int r = lC[x]; r < lC[x + 1]; ++r) {
       int cn = lR[r];
       inDegree[cn]++;
-      nodesAtCurLevel[numNodesAtCurLevel++] = cn;
      }
     }
    }
 
-   // Marking lower bound
-   for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
-        ++j) {
-    int curNode = levelSet[j];
-    isMarked[curNode] = true;
-   }
-
-   // Marking upper bound
-   for (int ii = ubLevel; ii < originalHeight; ++ii) {
-    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-     int curNode = levelSet[j];
-     isMarked[curNode] = true;
-    }
-   }
-
-   int cc = parallel_cc(lC, lR, dfsLevel, levelPtr, levelSet, node2partition, outCost,
-               nodeCost, node2Level, curLeveledParCost, numNodesAtCurLevel,
-               nodesAtCurLevel);
+   int cc = parallel_cc(lC, lR, dfsLevel, levelPtr, levelSet, node2partition,
+                        outCost, nodeCost, node2Level, curLeveledParCost,
+                        numNodesAtCurLevel, nodesAtCurLevel, isNodeInCurLevel);
 
    // Reset all marked node in the DAG
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
         ++j) {
     int curNode = levelSet[j];
-    isMarked[curNode] = false;
     visited[curNode] = true;
    }
    // Marking upper bound
    for (int ii = ubLevel; ii < originalHeight; ++ii) {
     for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
      int curNode = levelSet[j];
-     isMarked[curNode] = false;
      visited[curNode] = true; // Make it ready for mod-BFS
     }
    }
@@ -208,12 +196,12 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
   }
 
   delete[] visited;
-  delete[] isMarked;
   delete[] xi;
   delete[] outCost;
   delete[] newOutCost;
   delete[] node2partition;
   delete[] inDegree;
+  delete[] nodesAtCurLevel;
  }
 
  int curNumOfPart = 0;
@@ -257,7 +245,7 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
  std::vector<std::vector<std::vector<int>>> mergedLeveledParListByL;
  mergedLeveledParListByL.resize(lClusterCnt);
 
-#pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
+// #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
  {
   bool *visited = new bool[n]();
   int *isMarked = new int[n]();
@@ -271,19 +259,23 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
   memset(outCost, 0.0, n * sizeof(double));
   memset(newOutCost, 0.0, n * sizeof(double));
 
-#pragma omp for schedule(dynamic, 1)
+// #pragma omp for schedule(dynamic, 1)
   for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
    memset(inDegree, 0, n * sizeof(int));
 
+   timing_measurement time;
+   time.start_timer();
    int lbLevel = partition2Level[l] - 1;
    int ubLevel = partition2Level[l + 1];
    int dfsLevel = partition2Level[l];
    int curLeveledParCost = 0;
+   int numNodesInLevel = 0;
 
    // Setting up inDegree
    for (int ii = dfsLevel; ii < ubLevel; ++ii) {
     for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
      int x = levelSet[j];
+     ++numNodesInLevel;
      for (int r = lC[x]; r < lC[x + 1]; ++r) {
       int cn = lR[r];
       inDegree[cn]++;
@@ -431,6 +423,7 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
                                newLeveledParList[i].end());
    }
    newLeveledParList.erase(newLeveledParList.begin(), newLeveledParList.end());
+   std::cout << l << ", " << numNodesInLevel << ", " << time.measure_elapsed_time() << std::endl;
   }
 
   delete[] visited;
