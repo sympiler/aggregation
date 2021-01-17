@@ -10,10 +10,10 @@
 #include <sparse_utilities.h>
 
 namespace sym_lib {
-int parallel_cc(int *lC, int *lR, int dfsLevel, int *levelPtr, int *levelSet,
-                int *node2partition, double *outCost, double *nodeCost,
-                int *node2Level, int &curLeveledParCost, int numNodes,
-                int *nodes, bool *isNodeInCurLevel) {
+int parallel_cc(int *lC, int *lR, int dfsLevel, int ubLevel, int *node2Level,
+                int *levelPtr, int *levelSet, int *node2partition,
+                double *outCost, double *nodeCost, int &curLeveledParCost,
+                int numNodes, int *nodes) {
  // TODO: Parallel
  for (int i = 0; i < numNodes; ++i) {
   int node = nodes[i];
@@ -31,7 +31,8 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int *levelPtr, int *levelSet,
    for (int r = lC[u]; r < lC[u + 1]; ++r) {
     int v = lR[r];
 
-    if (!isNodeInCurLevel[v])
+    int level = node2Level[v];
+    if (level < dfsLevel || level >= ubLevel)
      continue;
 
     int comp_u = node2partition[u];
@@ -88,7 +89,6 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
  // #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
  {
   bool *visited = new bool[n]();
-  bool *isNodeInCurLevel = new bool[n];
   int *xi = new int[2 * n];
   double *outCost = new double[n];
   double *newOutCost = new double[n];
@@ -103,7 +103,6 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
   // #pragma omp for schedule(dynamic, 1)
   for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
    memset(inDegree, 0, n * sizeof(int));
-   memset(isNodeInCurLevel, false, n * sizeof(bool));
 
    int lbLevel = partition2Level[l] - 1;
    int ubLevel = partition2Level[l + 1];
@@ -116,7 +115,6 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
     for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
      int x = levelSet[j];
      nodesAtCurLevel[numNodesAtCurLevel++] = x;
-     isNodeInCurLevel[x] = true;
      for (int r = lC[x]; r < lC[x + 1]; ++r) {
       int cn = lR[r];
       inDegree[cn]++;
@@ -124,17 +122,17 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
     }
    }
 
-   int cc = parallel_cc(lC, lR, dfsLevel, levelPtr, levelSet, node2partition,
-                        outCost, nodeCost, node2Level, curLeveledParCost,
-                        numNodesAtCurLevel, nodesAtCurLevel, isNodeInCurLevel);
-   std::cout << "CC: " << cc << std::endl;
+   int cc = parallel_cc(lC, lR, dfsLevel, ubLevel, node2Level, levelPtr,
+                        levelSet, node2partition, outCost, nodeCost,
+                        curLeveledParCost, numNodesAtCurLevel, nodesAtCurLevel);
+   // std::cout << "CC: " << cc << std::endl;
 
-   for (int ii = dfsLevel; ii < ubLevel; ++ii) {
-    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-     int x = levelSet[j];
-     std::cout << x << "->" << node2partition[x] << std::endl;
-    }
-   }
+   // for (int ii = dfsLevel; ii < ubLevel; ++ii) {
+   //  for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+   //   int x = levelSet[j];
+   //   std::cout << x << "->" << node2partition[x] << std::endl;
+   //  }
+   // }
 
    // Reset all marked node in the DAG
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
@@ -253,7 +251,7 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
  std::vector<std::vector<std::vector<int>>> mergedLeveledParListByL;
  mergedLeveledParListByL.resize(lClusterCnt);
 
-// #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
+ // #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
  {
   bool *visited = new bool[n]();
   int *isMarked = new int[n]();
@@ -267,23 +265,19 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
   memset(outCost, 0.0, n * sizeof(double));
   memset(newOutCost, 0.0, n * sizeof(double));
 
-// #pragma omp for schedule(dynamic, 1)
+  // #pragma omp for schedule(dynamic, 1)
   for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
    memset(inDegree, 0, n * sizeof(int));
 
-   timing_measurement time;
-   time.start_timer();
    int lbLevel = partition2Level[l] - 1;
    int ubLevel = partition2Level[l + 1];
    int dfsLevel = partition2Level[l];
    int curLeveledParCost = 0;
-   int numNodesInLevel = 0;
 
    // Setting up inDegree
    for (int ii = dfsLevel; ii < ubLevel; ++ii) {
     for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
      int x = levelSet[j];
-     ++numNodesInLevel;
      for (int r = lC[x]; r < lC[x + 1]; ++r) {
       int cn = lR[r];
       inDegree[cn]++;
@@ -364,14 +358,14 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
     }
    }
 
-   std::cout << "CC: " << cc << std::endl;
+   // std::cout << "CC: " << cc << std::endl;
 
-   for (int ii = dfsLevel; ii < ubLevel; ++ii) {
-    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-     int x = levelSet[j];
-     std::cout << x << "->" << node2partition[x] << std::endl;
-    }
-   }
+   // for (int ii = dfsLevel; ii < ubLevel; ++ii) {
+   //  for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+   //   int x = levelSet[j];
+   //   std::cout << x << "->" << node2partition[x] << std::endl;
+   //  }
+   // }
 
    // Reset all marked node in the DAG
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
@@ -440,7 +434,6 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
                                newLeveledParList[i].end());
    }
    newLeveledParList.erase(newLeveledParList.begin(), newLeveledParList.end());
-   std::cout << l << ", " << numNodesInLevel << ", " << time.measure_elapsed_time() << std::endl;
   }
 
   delete[] visited;
@@ -779,6 +772,14 @@ int get_coarse_Level_set_DAG_CSC03(size_t n, int *lC, int *lR, int &finaLevelNo,
    }
   }
   delete[] isUniq;
+  // std::cout << "CC: " << cc << std::endl;
+
+  // for (int ii = dfsLevel; ii < ubLevel; ++ii) {
+  //  for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+  //   int x = levelSet[j];
+  //   std::cout << x << "->" << node2partition[x] << std::endl;
+  //  }
+  // }
   // Reset all marked node in the DAG
   // std::cout<<cc<<"\n";
   for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];

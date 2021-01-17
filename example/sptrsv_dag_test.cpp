@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
    time.measure_elapsed_time();
   } else if (mode == 1) {
    time.start_timer();
+   std::cout << "W parallel" << std::endl;
    get_coarse_Level_set_DAG_CSC03_w_parallel(
     n, L1_csc->p, L1_csc->i, final_level_no, fina_level_ptr, part_no,
     final_part_ptr, final_node_ptr, num_threads, p2, p3, cost,
@@ -107,6 +108,7 @@ int main(int argc, char *argv[]) {
    time.measure_elapsed_time();
   } else {
    time.start_timer();
+   std::cout << "Regular" << std::endl;
    get_coarse_Level_set_DAG_CSC03_parallel(
     n, L1_csc->p, L1_csc->i, final_level_no, fina_level_ptr, part_no,
     final_part_ptr, final_node_ptr, num_threads, p2, p3, cost,
