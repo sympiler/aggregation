@@ -57,17 +57,17 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int ubLevel, int *node2Level,
   }
  }
 
- int num_cc = -1;
+ int max_cc = -1;
  // TODO: Maybe figure out how to do this as part of the previous loop
  // TODO: Parallel
  for (int i = 0; i < numNodes; ++i) {
   int node = nodes[i];
   int cc = node2partition[node];
   outCost[cc] += nodeCost[node];
-  num_cc = std::max(num_cc, cc + 1);
+  max_cc = std::max(max_cc, cc + 1);
  }
 
- return num_cc;
+ return max_cc;
 }
 
 int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
@@ -125,14 +125,6 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
    int cc = parallel_cc(lC, lR, dfsLevel, ubLevel, node2Level, levelPtr,
                         levelSet, node2partition, outCost, nodeCost,
                         curLeveledParCost, numNodesAtCurLevel, nodesAtCurLevel);
-   // std::cout << "CC: " << cc << std::endl;
-
-   // for (int ii = dfsLevel; ii < ubLevel; ++ii) {
-   //  for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-   //   int x = levelSet[j];
-   //   std::cout << x << "->" << node2partition[x] << std::endl;
-   //  }
-   // }
 
    // Reset all marked node in the DAG
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
@@ -357,15 +349,6 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
      }
     }
    }
-
-   // std::cout << "CC: " << cc << std::endl;
-
-   // for (int ii = dfsLevel; ii < ubLevel; ++ii) {
-   //  for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-   //   int x = levelSet[j];
-   //   std::cout << x << "->" << node2partition[x] << std::endl;
-   //  }
-   // }
 
    // Reset all marked node in the DAG
    for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
@@ -772,16 +755,7 @@ int get_coarse_Level_set_DAG_CSC03(size_t n, int *lC, int *lR, int &finaLevelNo,
    }
   }
   delete[] isUniq;
-  // std::cout << "CC: " << cc << std::endl;
 
-  // for (int ii = dfsLevel; ii < ubLevel; ++ii) {
-  //  for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-  //   int x = levelSet[j];
-  //   std::cout << x << "->" << node2partition[x] << std::endl;
-  //  }
-  // }
-  // Reset all marked node in the DAG
-  // std::cout<<cc<<"\n";
   for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
        ++j) {
    int curNode = levelSet[j];
