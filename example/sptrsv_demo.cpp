@@ -88,7 +88,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  timing_measurement t_ser, t_levelset, t_levelset_group;
 
- timing_measurement t_c_tp, t_c_sp, t_g_c_tp, t_g_c_sp, lt_t;
+ timing_measurement t_c_tp, t_c_pp, t_c_sp, t_g_c_tp, t_g_c_sp, lt_t;
 
  SptrsvSerial *ss = new SptrsvSerial(L2_csr, L1_csc, NULLPNTR, "serial"); //seq
  t_ser = ss->evaluate();
@@ -107,9 +107,14 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "coarsening levels",num_threads, p2, p3); // ng + c + tp
  t_c_tp = sld->evaluate();
-//    auto t_coarsen_4=sld->analysisTime();
 
- auto *sld_sort = new SptrsvLBC_W_Sorting(L2_csr, L1_csc, y_serial, "c4+sorting", num_threads, p2, p3, true);
+ auto *sld_parallel = new SptrsvLBCDAGParallel(
+  L2_csr, L1_csc, y_serial, "coarsening 4 levels (parallel partitioning)", num_threads, p2,
+  p3);
+ t_c_pp = sld_parallel->evaluate();
+
+ auto *sld_sort = new SptrsvLBC_W_Sorting(
+  L2_csr, L1_csc, y_serial, "c4+sorting", num_threads, p2, p3, true);
  t_c_sp = sld_sort->evaluate();
 
  auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "g_c4", num_threads, p2, p3, false);
@@ -117,7 +122,6 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  auto *sglbc_sort = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "g_c4_sorting", num_threads, p2, p3, true);
  t_g_c_sp = sglbc_sort->evaluate(); // g + c + sp;
-
 
  if(header)
   std::cout<<"Matrix Name,Metis Enabled,"
@@ -141,10 +145,10 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  PRINT_CSV(lt_t.elapsed_time);
  PRINT_CSV(t_c_tp.elapsed_time);
+ PRINT_CSV(t_c_pp.elapsed_time);
  PRINT_CSV(t_c_sp.elapsed_time);
  PRINT_CSV(t_g_c_tp.elapsed_time);
  PRINT_CSV(t_g_c_sp.elapsed_time);
-
  std::cout<<"\n";
 
  delete []y_correct;

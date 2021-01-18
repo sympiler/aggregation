@@ -58,6 +58,31 @@ if(EXISTS "${METIS_INCLUDES}")
     add_subdirectory(example)
 endif()
 
+### Find PAPI for Profiling
+### Can be cloned directly from https://bitbucket.org/icl/papi.git
+if(EXISTS "$ENV{PAPIROOT}")
+    if(EXISTS "$ENV{PAPIROOT}/src")
+        set(PAPI_LIB "$ENV{PAPIROOT}/src")
+        set(PAPI_LIB2 "${PAPI_LIB}/libpfm4/lib/")
+    elseif(EXISTS "$ENV{PAPIROOT}/lib")
+        set(PAPI_LIB "$ENV{PAPIROOT}/lib")
+    endif()
+    if(EXISTS "$ENV{PAPIROOT}/include")
+        set(PAPI_INC "$ENV{PAPIROOT}/include")
+    else()
+        set(PAPI_INC "$ENV{PAPIROOT}/src")
+    endif()
+
+    add_definitions(-DPAPI)
+    set(PAPI_LIB_NAME "papi")
+    set(PAPI_LIB_NAME2 "pfm")
+    message(STATUS "PAPI found")
+else()
+    message(STATUS "PAPI not found, building without PAPI.")
+    set(PAPI_LIB_NAME "")
+endif()
+
+
 if(TEST_CATCH)
     add_subdirectory(Catch_tests)
 
