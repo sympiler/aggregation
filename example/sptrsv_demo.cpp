@@ -105,7 +105,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  auto *lbc_tree = new SptrsvLBC(L2_csr, L1_csc, y_serial, "LBC Tree",num_threads, p2, p3); // ng + c + tp
  lt_t = lbc_tree->evaluate();
 
- auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "coarsening 4 levels",num_threads, p2, p3); // ng + c + tp
+ auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "coarsening levels",num_threads, p2, p3); // ng + c + tp
  t_c_tp = sld->evaluate();
 //    auto t_coarsen_4=sld->analysisTime();
 
