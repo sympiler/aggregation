@@ -14,7 +14,7 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int ubLevel, int *node2Level,
                 int *levelPtr, int *levelSet, int *node2partition,
                 double *outCost, double *nodeCost, int &curLeveledParCost,
                 int numNodes, int *nodes, int numThreads) {
- // TODO: Parallel
+#pragma omp parallel for num_threads(numThreads)
  for (int i = 0; i < numNodes; ++i) {
   int node = nodes[i];
   node2partition[node] = i;
@@ -24,7 +24,7 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int ubLevel, int *node2Level,
  while (change) {
   change = false;
 
-  // TODO: Parallel
+#pragma omp parallel for num_threads(numThreads)
   for (int i = 0; i < numNodes; ++i) {
    int u = nodes[i];
    // Now we go over all neighbors of u
@@ -48,7 +48,7 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int ubLevel, int *node2Level,
    }
   }
 
-  // TODO: Parallel
+#pragma omp parallel for num_threads(numThreads)
   for (int i = 0; i < numNodes; ++i) {
    int node = nodes[i];
    while (node2partition[node] != node2partition[nodes[node2partition[node]]]) {
@@ -58,8 +58,7 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int ubLevel, int *node2Level,
  }
 
  int max_cc = -1;
- // TODO: Maybe figure out how to do this as part of the previous loop
- // TODO: Parallel
+#pragma omp parallel for num_threads(numThreads) reduction(max : max_cc)
  for (int i = 0; i < numNodes; ++i) {
   int node = nodes[i];
   int cc = node2partition[node];
@@ -68,6 +67,106 @@ int parallel_cc(int *lC, int *lR, int dfsLevel, int ubLevel, int *node2Level,
  }
 
  return max_cc;
+}
+
+void process_l_partition(
+ int l, int n, int *lC, int *lR, int *partition2Level, int *inDegree,
+ int *levelPtr, int *levelSet, int *node2partition, int *node2Level,
+ int *nodesAtCurLevel, double *outCost, double *newOutCost, int originalHeight,
+ double *nodeCost, std::vector<std::vector<int>> &newLeveledParList,
+ bool *visited, int innerParts, std::vector<int> &innerPartsSize,
+ int *outinnerPartsList,
+ std::vector<std::vector<std::vector<int>>> &mergedLeveledParListByL,
+ bool binPacking, int numThreadsForCC, int &totalCC) {
+ memset(inDegree, 0, n * sizeof(int));
+
+ int lbLevel = partition2Level[l] - 1;
+ int ubLevel = partition2Level[l + 1];
+ int dfsLevel = partition2Level[l];
+ int curLeveledParCost = 0;
+ int numNodesAtCurLevel = 0;
+
+ // Setting up inDegree and nodes in current level
+ for (int ii = dfsLevel; ii < ubLevel; ++ii) {
+  for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+   int x = levelSet[j];
+   nodesAtCurLevel[numNodesAtCurLevel++] = x;
+   for (int r = lC[x]; r < lC[x + 1]; ++r) {
+    int cn = lR[r];
+    inDegree[cn]++;
+   }
+  }
+ }
+
+ int cc = parallel_cc(lC, lR, dfsLevel, ubLevel, node2Level, levelPtr, levelSet,
+                      node2partition, outCost, nodeCost, curLeveledParCost,
+                      numNodesAtCurLevel, nodesAtCurLevel, numThreadsForCC);
+
+ // Reset all marked node in the DAG
+ for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
+      ++j) {
+  int curNode = levelSet[j];
+  visited[curNode] = true;
+ }
+ // Marking upper bound
+ for (int ii = ubLevel; ii < originalHeight; ++ii) {
+  for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+   int curNode = levelSet[j];
+   visited[curNode] = true; // Make it ready for mod-BFS
+  }
+ }
+
+ // Topological sort of each cc, the fastest way, FIXME: make it more
+ // local
+ std::vector<int> extraDim;
+ for (int i = 0; i < cc; ++i) {
+  newLeveledParList.push_back(extraDim);
+ }
+ modified_BFS_CSC(n, lC, lR, inDegree, visited, node2partition, levelPtr,
+                  levelSet, dfsLevel, newLeveledParList);
+
+ // Marking upper bound
+ for (int ii = ubLevel; ii < originalHeight; ++ii) {
+  for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+   int curNode = levelSet[j];
+   visited[curNode] = false; // Make it ready for mod-BFS
+  }
+ }
+ // Bin packing and form W-partitions
+ int levelParCostThresh = curLeveledParCost / innerParts;
+ levelParCostThresh += (0.1 * levelParCostThresh);
+ int outinnerParts = 0;
+ totalCC += newLeveledParList.size();
+ mergedLeveledParListByL[l].resize(innerPartsSize[l]); // FIXME
+ if (binPacking && newLeveledParList.size() > innerPartsSize[l]) {
+  outinnerParts =
+   worst_fit_bin_pack(newLeveledParList, outCost, mergedLeveledParListByL[l],
+                      newOutCost, levelParCostThresh, innerPartsSize[l]);
+ } else {
+  mergedLeveledParListByL[l].erase(mergedLeveledParListByL[l].begin(),
+                                   mergedLeveledParListByL[l].end());
+  mergedLeveledParListByL[l] = newLeveledParList;
+  outinnerParts = newLeveledParList.size();
+#if 0
+    if(outinnerParts>1) {
+     for (int ii = 0; ii < outinnerParts; ++ii) {
+      std::cout << outCost[ii] << ";";
+     }
+     for (int ii = outinnerParts; ii < innerParts; ++ii) {
+      std::cout << "0;";
+     }
+    }
+#endif
+ }
+
+ outinnerPartsList[l] = outinnerParts;
+
+ // Cleaning the current sets.
+ for (int i = 0; i < newLeveledParList.size(); ++i) {
+  newLeveledParList[i].erase(newLeveledParList[i].begin(),
+                             newLeveledParList[i].end());
+ }
+ newLeveledParList.erase(newLeveledParList.begin(), newLeveledParList.end());
 }
 
 int make_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
@@ -81,10 +180,64 @@ int make_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
   numThreads = omp_get_num_threads();
  }
 
+ std::vector<int> largePartitions;
+ std::vector<int> smallPartitions;
+ for (int l = 0; l < lClusterCnt; ++l) {
+  int nodesAtLevel = 0;
+  int lbLevel = partition2Level[l] - 1;
+  int ubLevel = partition2Level[l + 1];
+  int dfsLevel = partition2Level[l];
+
+  for (int ii = dfsLevel; ii < ubLevel; ++ii) {
+   for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
+    int x = levelSet[j];
+    nodesAtLevel++;
+   }
+  }
+
+  if (nodesAtLevel > 100000) {
+   largePartitions.push_back(l);
+  } else {
+   smallPartitions.push_back(l);
+  }
+ }
+
  int totalCC = 0;
  int outinnerPartsList[lClusterCnt];
  std::vector<std::vector<std::vector<int>>> mergedLeveledParListByL;
  mergedLeveledParListByL.resize(lClusterCnt);
+
+ {
+  bool *visited = new bool[n]();
+  int *xi = new int[2 * n];
+  double *outCost = new double[n];
+  double *newOutCost = new double[n];
+  int *node2partition = new int[n];
+  int *inDegree = new int[n];
+  std::vector<std::vector<int>> newLeveledParList;
+  int *nodesAtCurLevel = new int[n];
+
+  memset(outCost, 0.0, n * sizeof(double));
+  memset(newOutCost, 0.0, n * sizeof(double));
+
+#pragma omp for schedule(dynamic, 1)
+  for (int i = 0; i < largePartitions.size(); ++i) {
+   process_l_partition(
+    largePartitions[i], n, lC, lR, partition2Level, inDegree, levelPtr,
+    levelSet, node2partition, node2Level, nodesAtCurLevel, outCost, newOutCost,
+    originalHeight, nodeCost, newLeveledParList, visited, innerParts,
+    innerPartsSize, outinnerPartsList, mergedLeveledParListByL, binPacking,
+    numThreads, totalCC);
+  }
+
+  delete[] visited;
+  delete[] xi;
+  delete[] outCost;
+  delete[] newOutCost;
+  delete[] node2partition;
+  delete[] inDegree;
+  delete[] nodesAtCurLevel;
+ }
 
 #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
  {
@@ -101,97 +254,13 @@ int make_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
   memset(newOutCost, 0.0, n * sizeof(double));
 
 #pragma omp for schedule(dynamic, 1)
-  for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
-   memset(inDegree, 0, n * sizeof(int));
-
-   int lbLevel = partition2Level[l] - 1;
-   int ubLevel = partition2Level[l + 1];
-   int dfsLevel = partition2Level[l];
-   int curLeveledParCost = 0;
-   int numNodesAtCurLevel = 0;
-
-   // Setting up inDegree and nodes in current level
-   for (int ii = dfsLevel; ii < ubLevel; ++ii) {
-    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-     int x = levelSet[j];
-     nodesAtCurLevel[numNodesAtCurLevel++] = x;
-     for (int r = lC[x]; r < lC[x + 1]; ++r) {
-      int cn = lR[r];
-      inDegree[cn]++;
-     }
-    }
-   }
-
-   int cc =
-    parallel_cc(lC, lR, dfsLevel, ubLevel, node2Level, levelPtr, levelSet,
-                node2partition, outCost, nodeCost, curLeveledParCost,
-                numNodesAtCurLevel, nodesAtCurLevel, numThreads);
-
-   // Reset all marked node in the DAG
-   for (int j = levelPtr[lbLevel > 0 ? lbLevel : 0]; j < levelPtr[lbLevel + 1];
-        ++j) {
-    int curNode = levelSet[j];
-    visited[curNode] = true;
-   }
-   // Marking upper bound
-   for (int ii = ubLevel; ii < originalHeight; ++ii) {
-    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-     int curNode = levelSet[j];
-     visited[curNode] = true; // Make it ready for mod-BFS
-    }
-   }
-
-   // Topological sort of each cc, the fastest way, FIXME: make it more
-   // local
-   std::vector<int> extraDim;
-   for (int i = 0; i < cc; ++i) {
-    newLeveledParList.push_back(extraDim);
-   }
-   modified_BFS_CSC(n, lC, lR, inDegree, visited, node2partition, levelPtr,
-                    levelSet, dfsLevel, newLeveledParList);
-
-   // Marking upper bound
-   for (int ii = ubLevel; ii < originalHeight; ++ii) {
-    for (int j = levelPtr[ii]; j < levelPtr[ii + 1]; ++j) {
-     int curNode = levelSet[j];
-     visited[curNode] = false; // Make it ready for mod-BFS
-    }
-   }
-   // Bin packing and form W-partitions
-   int levelParCostThresh = curLeveledParCost / innerParts;
-   levelParCostThresh += (0.1 * levelParCostThresh);
-   int outinnerParts = 0;
-   totalCC += newLeveledParList.size();
-   mergedLeveledParListByL[l].resize(innerPartsSize[l]); // FIXME
-   if (binPacking && newLeveledParList.size() > innerPartsSize[l]) {
-    outinnerParts =
-     worst_fit_bin_pack(newLeveledParList, outCost, mergedLeveledParListByL[l],
-                        newOutCost, levelParCostThresh, innerPartsSize[l]);
-   } else {
-    mergedLeveledParListByL[l].erase(mergedLeveledParListByL[l].begin(),
-                                     mergedLeveledParListByL[l].end());
-    mergedLeveledParListByL[l] = newLeveledParList;
-    outinnerParts = newLeveledParList.size();
-#if 0
-    if(outinnerParts>1) {
-     for (int ii = 0; ii < outinnerParts; ++ii) {
-      std::cout << outCost[ii] << ";";
-     }
-     for (int ii = outinnerParts; ii < innerParts; ++ii) {
-      std::cout << "0;";
-     }
-    }
-#endif
-   }
-
-   outinnerPartsList[l] = outinnerParts;
-
-   // Cleaning the current sets.
-   for (int i = 0; i < newLeveledParList.size(); ++i) {
-    newLeveledParList[i].erase(newLeveledParList[i].begin(),
-                               newLeveledParList[i].end());
-   }
-   newLeveledParList.erase(newLeveledParList.begin(), newLeveledParList.end());
+  for (int i = 0; i < smallPartitions.size(); ++i) {
+   process_l_partition(smallPartitions[i], n, lC, lR, partition2Level, inDegree,
+                       levelPtr, levelSet, node2partition, node2Level,
+                       nodesAtCurLevel, outCost, newOutCost, originalHeight,
+                       nodeCost, newLeveledParList, visited, innerParts,
+                       innerPartsSize, outinnerPartsList,
+                       mergedLeveledParListByL, binPacking, 1, totalCC);
   }
 
   delete[] visited;
