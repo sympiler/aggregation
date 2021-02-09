@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
  int p2 = -1, p3 = 4000; // LBC params
  int header = 0;
  int *perm;
- int mode = 0; // 0: parallel l, 1: parallel w, 2: serial, 3: level set
+ int mode = 0; // 0: parallel l, 1: serial, 2: level set
  int creation_threads_temp = -1;
  std::string matrix_name;
 
@@ -93,37 +93,31 @@ int main(int argc, char *argv[]) {
 
  for (int i = 0; i < 10; ++i) {
   timing_measurement time;
-  if (mode == 3) {
-    time.start_timer();
-    build_levelSet_CSC(L1_csc->n, L1_csc->p, L1_csc->i, level_ptr, level_set);
-    time.measure_elapsed_time();
-    delete[] level_set;
-    delete[] level_ptr;
+  if (mode == 2) {
+   time.start_timer();
+   build_levelSet_CSC(L1_csc->n, L1_csc->p, L1_csc->i, level_ptr, level_set);
+   time.measure_elapsed_time();
+   delete[] level_set;
+   delete[] level_ptr;
   } else {
-    if (mode == 2) {
-      time.start_timer();
-      get_coarse_Level_set_DAG_CSC03(n, L1_csc->p, L1_csc->i, final_level_no,
-                                     fina_level_ptr, part_no, final_part_ptr,
-                                     final_node_ptr, num_threads, p2, p3, cost);
-      time.measure_elapsed_time();
-    } else if (mode == 1) {
-      time.start_timer();
-      get_coarse_Level_set_DAG_CSC03_w_parallel(n, L1_csc->p, L1_csc->i, final_level_no, fina_level_ptr, part_no,
-                                                final_part_ptr, final_node_ptr, num_threads, p2, p3, cost,
-                                                creation_threads);
-      time.measure_elapsed_time();
-    } else {
-      time.start_timer();
-      get_coarse_Level_set_DAG_CSC03_parallel(
-                                              n, L1_csc->p, L1_csc->i, final_level_no, fina_level_ptr, part_no,
-                                              final_part_ptr, final_node_ptr, num_threads, p2, p3, cost,
-                                              creation_threads);
-      time.measure_elapsed_time();
-    }
+   if (mode == 1) {
+    time.start_timer();
+    get_coarse_Level_set_DAG_CSC03(n, L1_csc->p, L1_csc->i, final_level_no,
+                                   fina_level_ptr, part_no, final_part_ptr,
+                                   final_node_ptr, num_threads, p2, p3, cost);
+    time.measure_elapsed_time();
+   } else {
+    time.start_timer();
+    get_coarse_Level_set_DAG_CSC03_parallel(
+     n, L1_csc->p, L1_csc->i, final_level_no, fina_level_ptr, part_no,
+     final_part_ptr, final_node_ptr, num_threads, p2, p3, cost,
+     creation_threads);
+    time.measure_elapsed_time();
+   }
 
-    delete[] fina_level_ptr;
-    delete[] final_part_ptr;
-    delete[] final_node_ptr;
+   delete[] fina_level_ptr;
+   delete[] final_part_ptr;
+   delete[] final_node_ptr;
   }
   time_array.emplace_back(time);
  }
