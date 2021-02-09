@@ -86,7 +86,7 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
  std::vector<std::vector<std::vector<int>>> mergedLeveledParListByL;
  mergedLeveledParListByL.resize(lClusterCnt);
 
- // #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
+ #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
  {
   bool *visited = new bool[n]();
   int *xi = new int[2 * n];
@@ -100,7 +100,7 @@ int make_w_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
   memset(outCost, 0.0, n * sizeof(double));
   memset(newOutCost, 0.0, n * sizeof(double));
 
-  // #pragma omp for schedule(dynamic, 1)
+  #pragma omp for schedule(dynamic, 1)
   for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
    memset(inDegree, 0, n * sizeof(int));
 
@@ -243,7 +243,7 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
  std::vector<std::vector<std::vector<int>>> mergedLeveledParListByL;
  mergedLeveledParListByL.resize(lClusterCnt);
 
- // #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
+ #pragma omp parallel num_threads(numThreads) reduction(+ : totalCC)
  {
   bool *visited = new bool[n]();
   int *isMarked = new int[n]();
@@ -257,7 +257,7 @@ int make_l_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
   memset(outCost, 0.0, n * sizeof(double));
   memset(newOutCost, 0.0, n * sizeof(double));
 
-  // #pragma omp for schedule(dynamic, 1)
+  #pragma omp for schedule(dynamic, 1)
   for (int l = 0; l < lClusterCnt; ++l) { // for each leveled partition
    memset(inDegree, 0, n * sizeof(int));
 
