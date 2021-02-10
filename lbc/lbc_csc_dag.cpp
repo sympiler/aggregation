@@ -195,7 +195,7 @@ int make_partitions_parallel(int n, int *lC, int *lR, int *finaLevelPtr,
    }
   }
 
-  if (nodesAtLevel > 100000) {
+  if (nodesAtLevel > 250000) {
    largePartitions.push_back(l);
   } else {
    smallPartitions.push_back(l);
