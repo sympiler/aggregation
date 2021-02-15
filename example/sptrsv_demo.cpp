@@ -88,7 +88,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  timing_measurement t_ser, t_levelset, t_levelset_group;
 
- timing_measurement t_c_tp, t_c_pp, t_c_sp, t_g_c_tp, t_g_c_sp;
+ timing_measurement t_c_tp, t_c_pp, t_c_sp, t_g_c_tp, t_g_c_sp, lt_t;
 
  SptrsvSerial *ss = new SptrsvSerial(L2_csr, L1_csc, NULLPNTR, "serial"); //seq
  t_ser = ss->evaluate();
@@ -96,13 +96,16 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  copy_vector(0,n,y_serial,y_correct);
  //print_vec("x:\n", 0, n, y_correct);
 
- // auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc"); // levelset
- // t_levelset = sls->evaluate();
+  auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc"); // levelset
+  t_levelset = sls->evaluate();
 
  // auto *sg = new SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "levelset with grouping", num_threads);
  // t_levelset_group = sg->evaluate();
 
- auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "coarsening 4 levels",num_threads, p2, p3); // ng + c + tp
+ auto *lbc_tree = new SptrsvLBC(L2_csr, L1_csc, y_serial, "LBC Tree",num_threads, p2, p3); // ng + c + tp
+ lt_t = lbc_tree->evaluate();
+
+ auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "coarsening levels",num_threads, p2, p3); // ng + c + tp
  t_c_tp = sld->evaluate();
 
  auto *sld_parallel = new SptrsvLBCDAGParallel(
@@ -122,8 +125,16 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  if(header)
   std::cout<<"Matrix Name,Metis Enabled,"
-             "Number of Threads,"
-             "Serial Non-fused,Parallel Levelset CSC,Parallel LBC CSR,";
+             "Number of Threads,P1,P2,"
+             "Serial Non-fused,"
+             "Parallel Levelset Analysis,"
+             "Parallel Levelset CSR,"
+             "LBC Tree Analysis,"
+             "LBC Tree Excutor,"
+             "LBC DAG Analysis,"
+             "LBC DAG Excutor,"
+             "LBC Parallel DAG Analysis,"
+             "LBC Parallel DAG Excutor,";
  size_t pos = matrix_name.find_last_of("/\\");
  matrix_name = matrix_name.substr(pos+1);
  PRINT_CSV(matrix_name);
@@ -137,15 +148,23 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  PRINT_CSV(p3);
 
  PRINT_CSV(t_ser.elapsed_time);
- // PRINT_CSV(t_levelset.elapsed_time);
+
+ PRINT_CSV(sls->analysisTime().elapsed_time);
+ PRINT_CSV(t_levelset.elapsed_time);
  // PRINT_CSV(t_levelset_group.elapsed_time);
 
+ PRINT_CSV(lbc_tree->analysisTime().elapsed_time);
+ PRINT_CSV(lt_t.elapsed_time);
+
+ PRINT_CSV(sld->analysisTime().elapsed_time);
  PRINT_CSV(t_c_tp.elapsed_time);
+
+ PRINT_CSV(sld_parallel->analysisTime().elapsed_time);
  PRINT_CSV(t_c_pp.elapsed_time);
  // PRINT_CSV(t_c_sp.elapsed_time);
  // PRINT_CSV(t_g_c_tp.elapsed_time);
  // PRINT_CSV(t_g_c_sp.elapsed_time);
- std::cout<<"\n";
+ //std::cout<<"\n";
 
  delete []y_correct;
  delete A;
@@ -153,12 +172,14 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  delete L2_csr;
 
  delete ss;
- // delete sls;
+  delete sls;
  // delete sg;
  delete sld;
- // delete sld_sort;
- // delete sglbc;
- // delete sglbc_sort;
+ delete lbc_tree;
+ delete sld_parallel;
+// delete sld_sort;
+// delete sglbc;
+// delete sglbc_sort;
 
 
  return 0;

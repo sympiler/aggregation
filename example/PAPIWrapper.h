@@ -5,7 +5,9 @@
 #ifndef FUSION_PAPIWRAPPER_H
 #define FUSION_PAPIWRAPPER_H
 
+#ifdef PROFILE
 #include <papi.h>
+#endif
 #include <utility>
 
 namespace sym_lib{

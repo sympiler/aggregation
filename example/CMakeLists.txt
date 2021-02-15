@@ -31,21 +31,32 @@ add_executable(sptrsv_demo ${SPTRSVD_SOURCE_FILES}
         sptrsv_demo.cpp)
 target_link_libraries(sptrsv_demo
         lbc
-        ${METIS_LIBRARY} ${METIS_LIBRARIES} papi)
+        ${METIS_LIBRARY} ${METIS_LIBRARIES}         ${PAPI_LIB}
+        ${PAPI_LIB2} )
 
 
+if(NOT ${PAPI})
+    message(STATUS "PAPI not available, skipping ")
+else()
 add_executable(sptrsvprofiler_demo ${SPTRSVD_SOURCE_FILES}
         sptrsvprofiler_demo.cpp)
 target_link_libraries(sptrsvprofiler_demo
         lbc
-        ${METIS_LIBRARY} ${METIS_LIBRARIES} papi)
+        ${METIS_LIBRARY} ${METIS_LIBRARIES}         ${PAPI_LIB}
+        ${PAPI_LIB2})
+endif()
 
 
 
+if(NOT ${PAPI})
+    message(STATUS "PAPI not available, skipping ")
+else()
 add_executable(sptrsv_csr_profile ${SPTRSVD_SOURCE_FILES}
         sptrsv_csr_profile.cpp)
 target_link_libraries( sptrsv_csr_profile lbc
-        ${METIS_LIBRARY} ${METIS_LIBRARIES})
+        ${METIS_LIBRARY} ${METIS_LIBRARIES} ${PAPI_LIB}
+        ${PAPI_LIB2})
+endif()
 
 add_executable(sptrsv_dag_test ${SPTRSVD_SOURCE_FILES}
         sptrsv_dag_test.cpp)
@@ -84,8 +95,12 @@ target_link_libraries(spic0_csc_demo
         lbc
         ${METIS_LIBRARY} ${METIS_LIBRARIES})
 
+if(NOT ${PAPI})
+    message(STATUS "PAPI not available, skipping ")
+else()
 add_executable(spic0_csc_profile  ${SPIC0_SOURCE_FILES}
                         spic0_csc_profile.cpp)
 target_link_libraries(spic0_csc_profile
                 lbc
         ${METIS_LIBRARY} ${METIS_LIBRARIES})
+endif()
