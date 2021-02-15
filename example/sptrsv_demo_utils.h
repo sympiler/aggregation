@@ -246,7 +246,7 @@ namespace sym_lib {
          for (int i = 0; i < n_; ++i) {
           cost[i] = L1_csr_->p[i + 1] - L1_csr_->p[i];
          }
-         get_coarse_Level_set_DAG_CSC03_w_parallel(
+         get_coarse_Level_set_DAG_CSC03_parallel(
           n_, L1_csc_->p, L1_csc_->i, final_level_no, fina_level_ptr, part_no,
           final_part_ptr, final_node_ptr, lp_, cp_, ic_, cost, -1);
          delete[] cost;
