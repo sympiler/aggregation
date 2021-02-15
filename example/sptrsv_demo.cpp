@@ -102,8 +102,8 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  auto *sg = new SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "levelset with grouping", num_threads);
  t_levelset_group = sg->evaluate();
 
- auto *lbc_tree = new SptrsvLBC(L2_csr, L1_csc, y_serial, "LBC Tree",num_threads, p2, p3); // ng + c + tp
- lt_t = lbc_tree->evaluate();
+ //auto *lbc_tree = new SptrsvLBC(L2_csr, L1_csc, y_serial, "LBC Tree",num_threads, p2, p3); // ng + c + tp
+// lt_t = lbc_tree->evaluate();
 
  auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "coarsening levels",num_threads, p2, p3); // ng + c + tp
  t_c_tp = sld->evaluate();
@@ -129,8 +129,8 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
              "Serial Non-fused,"
              "Parallel Levelset Analysis,"
              "Parallel Levelset CSR,"
-             "LBC Tree Analysis,"
-             "LBC Tree Excutor,"
+          //   "LBC Tree Analysis,"
+          //   "LBC Tree Excutor,"
              "LBC DAG Analysis,"
              "LBC DAG Excutor,"
              "LBC Parallel DAG Analysis,"
@@ -157,8 +157,8 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  // PRINT_CSV(t_levelset_group.elapsed_time);
  PRINT_CSV(t_levelset_group.elapsed_time);
 
- PRINT_CSV(lbc_tree->analysisTime().elapsed_time);
- PRINT_CSV(lt_t.elapsed_time);
+ //PRINT_CSV(lbc_tree->analysisTime().elapsed_time);
+ //PRINT_CSV(lt_t.elapsed_time);
 
  PRINT_CSV(sld->analysisTime().elapsed_time);
  PRINT_CSV(t_c_tp.elapsed_time);
@@ -180,7 +180,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  delete sls;
  delete sg;
  delete sld;
- delete lbc_tree;
+ //delete lbc_tree;
  delete sld_parallel;
  delete sld_sort;
  delete sglbc;
