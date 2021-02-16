@@ -96,14 +96,14 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  copy_vector(0,n,y_serial,y_correct);
  //print_vec("x:\n", 0, n, y_correct);
 
- auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc"); // levelset
- t_levelset = sls->evaluate();
+  auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc"); // levelset
+  t_levelset = sls->evaluate();
 
  auto *sg = new SpTrsvCSR_Grouping(L2_csr, L1_csc, y_correct, "levelset with grouping", num_threads);
  t_levelset_group = sg->evaluate();
 
- auto *lbc_tree = new SptrsvLBC(L2_csr, L1_csc, y_serial, "LBC Tree",num_threads, p2, p3); // ng + c + tp
- lt_t = lbc_tree->evaluate();
+ //auto *lbc_tree = new SptrsvLBC(L2_csr, L1_csc, y_serial, "LBC Tree",num_threads, p2, p3); // ng + c + tp
+// lt_t = lbc_tree->evaluate();
 
  auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "coarsening levels",num_threads, p2, p3); // ng + c + tp
  t_c_tp = sld->evaluate();
@@ -114,7 +114,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  t_c_pp = sld_parallel->evaluate();
 
  auto *sld_sort = new SptrsvLBC_W_Sorting(
-  L2_csr, L1_csc, y_serial, "c4+sorting", num_threads, p2, p3, true);
+   L2_csr, L1_csc, y_serial, "c4+sorting", num_threads, p2, p3, true);
  t_c_sp = sld_sort->evaluate();
 
  auto *sglbc = new SpTrsvCSR_Grouping_H2(L2_csr, L1_csc, y_correct, "g_c4", num_threads, p2, p3, false);
@@ -125,8 +125,19 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
 
  if(header)
   std::cout<<"Matrix Name,Metis Enabled,"
-             "Number of Threads,"
-             "Serial Non-fused,Parallel Levelset CSC,Parallel LBC CSR,";
+             "Number of Threads,P1,P2,"
+             "Serial Non-fused,"
+             "Parallel Levelset Analysis,"
+             "Parallel Levelset CSR,"
+          //   "LBC Tree Analysis,"
+          //   "LBC Tree Excutor,"
+             "LBC DAG Analysis,"
+             "LBC DAG Excutor,"
+             "LBC Parallel DAG Analysis,"
+             "LBC Parallel DAG Excutor,"
+             "LBC W-sorting Executor," // TODO: from here on naming is random
+             "Grouping Executor,"
+             "Grouping sorted Executor";
  size_t pos = matrix_name.find_last_of("/\\");
  matrix_name = matrix_name.substr(pos+1);
  PRINT_CSV(matrix_name);
@@ -140,16 +151,25 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  PRINT_CSV(p3);
 
  PRINT_CSV(t_ser.elapsed_time);
+
+ PRINT_CSV(sls->analysisTime().elapsed_time);
  PRINT_CSV(t_levelset.elapsed_time);
+ // PRINT_CSV(t_levelset_group.elapsed_time);
  PRINT_CSV(t_levelset_group.elapsed_time);
 
- PRINT_CSV(lt_t.elapsed_time);
+ //PRINT_CSV(lbc_tree->analysisTime().elapsed_time);
+ //PRINT_CSV(lt_t.elapsed_time);
+
+ PRINT_CSV(sld->analysisTime().elapsed_time);
  PRINT_CSV(t_c_tp.elapsed_time);
+
+ PRINT_CSV(sld_parallel->analysisTime().elapsed_time);
  PRINT_CSV(t_c_pp.elapsed_time);
+
  PRINT_CSV(t_c_sp.elapsed_time);
  PRINT_CSV(t_g_c_tp.elapsed_time);
  PRINT_CSV(t_g_c_sp.elapsed_time);
- std::cout<<"\n";
+// std::cout<<"\n";
 
  delete []y_correct;
  delete A;
@@ -160,7 +180,8 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  delete sls;
  delete sg;
  delete sld;
- delete lbc_tree;
+ //delete lbc_tree;
+ delete sld_parallel;
  delete sld_sort;
  delete sglbc;
  delete sglbc_sort;
