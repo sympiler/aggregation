@@ -30,7 +30,12 @@ make
 
 ### Mac
 Setting the C and CXX compilers to GCC and then follow the Linux 
-instructions. 
+instructions. For example:
+`-DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/g++-9 -DCMAKE_C_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/gcc-9`
+
+Alternatively, you can use CLang using `brew install llvm`. 
+The default clang on Mac might not work so make sure to set it llvm clang:
+`-DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++`
 
 ## Example
 As an example, sparse triangular solver example, CSR is turned into

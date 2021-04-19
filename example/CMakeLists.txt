@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
 
+
 include_directories(includes
         ${SPARSE_UTIL_INC}
         ${SPARSE_EXTN_INC}
         ${LBC_INC}
         ${METIS_INCLUDE_DIR} ${METIS_INCLUDES}
         )
+
+
 
 project(sptrsv_demo)
 set(SPTRSVD_SOURCE_FILES
