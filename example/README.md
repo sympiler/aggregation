@@ -1,8 +1,8 @@
-# Running Triangular Example
+# Running LBC Demo
 
-Simply:
 ```bash
-sptrsv_demo matrix_name.mtx level_param div_rate
+lbc_demo matrix_name.mtx num_parts initial_cut div_rate
 ```
 
-For the details of input, refer to the paper. 
+For the details of inputs, refer to the 
+[Sympiler docs](https://www.sympiler.com/docs/lbc/). 

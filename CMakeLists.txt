@@ -20,44 +20,30 @@ set(SPARSE_UTIL_SRC_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_io.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_utilities.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/test_utils.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/utils.cpp")
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/utils.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/BCSCMatrix.cpp"
+        )
 
 
 set(SPARSE_EXTN_INC "${SPARSE_UTIL_SRC}/external/includes")
 set(SPARSE_EXTN_SRC "${SPARSE_UTIL_SRC}/external")
 AUX_SOURCE_DIRECTORY(${SPARSE_EXTN_SRC} SPARSE_EXTN_SRC_FILES)
 
-set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/lbc/includes")
-set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/lbc")
+set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/src/includes")
+set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
 
 find_package(METIS OPTIONAL_COMPONENTS)
 
-
 #message("++++ ${CMAKE_CXX_COMPILER_ID} ")
-if(APPLE)
-    if(EXISTS "/usr/local/opt/llvm/bin/clang++" AND CMAKE_CXX_COMPILER_ID MATCHES "Clang" ) # where LLVM is selected that has OpenMP
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-        link_directories(
-                /usr/local/opt/llvm/lib/
-        )
-        message("Make sure to set the -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++")
-    else()# otherwise, maybe gcc
-        find_package(OpenMP REQUIRED)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    endif()
-else()
-    find_package(OpenMP REQUIRED)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
 
-add_subdirectory(lbc)
+
+
 if(EXISTS "${METIS_INCLUDES}")
     add_definitions(-DMETIS)
     set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
-    add_subdirectory(example)
 endif()
+
+add_subdirectory(src)
+add_subdirectory(example)

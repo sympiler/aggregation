@@ -37,17 +37,18 @@ namespace sym_lib{
  /// \param nodeCost
  /// \return
  int get_coarse_levelSet_DAG_CSC_tree(size_t n,
-                                 int *lC,
-                                 int *lR,
-                                 int &finaLevelNo,
-                                 int *&finaLevelPtr,
-                                 int &partNo,
-                                 int *&finalPartPtr,
-                                 int *&finalNodePtr,
-                                 int innerParts,
-                                 int minLevelDist,
-                                 int divRate,
-                                 double *nodeCost);
+                                      int *lC,
+                                      int *lR,
+                                      int stype,
+                                      int &finaLevelNo,
+                                      int *&finaLevelPtr,
+                                      int &partNo,
+                                      int *&finalPartPtr,
+                                      int *&finalNodePtr,
+                                      int innerParts,
+                                      int minLevelDist,
+                                      int divRate,
+                                      double *nodeCost);
 
  int getCoarseLevelSet_DAG_BCSC02(size_t n,
                                   size_t *lC,

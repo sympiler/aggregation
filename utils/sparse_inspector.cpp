@@ -7,6 +7,7 @@
 #include <cassert>
 #include "sparse_utilities.h"
 #include "includes/def.h"
+#include "includes/BCSCMatrix.h"
 #include "includes/sparse_inspector.h"
 
 namespace sym_lib {
@@ -136,7 +137,6 @@ namespace sym_lib {
     }
    }
   }
-
   for (int i = 0; i < n; i++) {
    if (degrees[i] == 0) {
     queue.push(i);
@@ -393,6 +393,49 @@ namespace sym_lib {
  }
 
 
+ int build_level_set_tree_efficient(size_t n, const int *tree,
+   const int *nChild1,
+   int *levelPtr, int *levelSet, int *node2level) {
+  int maxLen = 0, level = 0, num_levels=0;
+  auto *level_cnt = new int[n]();
+  for (int i = 0; i < n; ++i) {
+   if (nChild1[i] == 0) {
+    levelSet[levelPtr[1]] = i;
+    levelPtr[1] ++;
+    int node = i; level = 0;
+    while (tree[node] >= 0) {
+     node = tree[node];
+     level++;
+     if(level < node2level[node])
+      break; // a longer path visted this node before
+     else
+      node2level[node] = level;// touched this node with level
+    }
+    if (level > maxLen)
+     maxLen = level;
+   }
+  }
+  num_levels = maxLen + 1;
+  for (int j = 0; j < n; ++j) {
+   level_cnt[node2level[j]]++;
+  }
+  assert(level_cnt[0] == levelPtr[1]);
+  for (int k = 2; k < num_levels+1; ++k) {
+   levelPtr[k] = levelPtr[k-1] + level_cnt[k-1];
+   level_cnt[k-1] = 0;
+  }
+  level_cnt[1]=0;
+  for (int l = 0; l < n; ++l) {
+   auto lev = node2level[l];
+   if(!lev) continue;
+   levelSet[levelPtr[lev]+level_cnt[lev]] = l;
+   level_cnt[lev]++;
+  }
+  delete []level_cnt;
+  return num_levels;
+ }
+
+
  int build_level_set_tree(size_t n, const int *inTree, int *levelPtr,
                           int *levelSet) {
 //Naive code for generating level levelSet from ETree, it is not part of
@@ -627,7 +670,6 @@ namespace sym_lib {
  }
 
 
-/*
  CSC *merge_graphs(BCSC *A, CSC *B, BCSC *C) {
   int nodes = A->nodes;
   int *supernodes = A->supernodes;
@@ -779,7 +821,6 @@ namespace sym_lib {
 
   return M;
  }
-*/
 
 
  void

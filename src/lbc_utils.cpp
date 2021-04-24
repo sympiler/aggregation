@@ -219,7 +219,8 @@ namespace sym_lib{
    accuSlackGroups[i] = levelPtr[i + 1] - levelPtr[i];
    assert(accuSlackGroups[i] >= 0);
   }
-  int nthreads = innerParts>1 ? innerParts : omp_get_max_threads();
+  int max_num_thread = 6 ; //omp_get_max_threads(), FIXME, removes this part
+  int nthreads = innerParts>1 ? innerParts : max_num_thread;
 
   partition2Level[0] = 0;
 

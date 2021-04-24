@@ -8,28 +8,32 @@
 #include <iostream>
 #include <sparse_io.h>
 #include <test_utils.h>
+#include <sparse_utilities.h>
 #include <omp.h>
-#include <metis_interface.h>
+#include <lbc.h>
 
-#include "sptrsv_demo_utils.h"
+#ifdef METIS
+#include <metis_interface.h>
+#endif
+
+
 
 using namespace sym_lib;
 
-/// Evaluate spmv-sptrsv based on random matrices
+/// Evaluate LBC based on random matrices or a given MTX matrix/graph.
 /// \return
-int sptrsv_csc_demo02(int argc, char *argv[]);
+int lbc_demo(int argc, char *argv[]);
 
 int main(int argc, char *argv[]){
  int ret_val;
- ret_val = sptrsv_csc_demo02(argc,argv);
+ ret_val = lbc_demo(argc,argv);
  return ret_val;
 }
 
 
 
-int sptrsv_csc_demo02(int argc, char *argv[]){
+int lbc_demo(int argc, char *argv[]){
  CSC *L1_csc, *A = NULLPNTR;
- CSR *L2_csr;
  size_t n;
  int num_threads = 6;
  int p2 = -1, p3 = 4000; // LBC params
@@ -56,7 +60,6 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  }
  if(argc >= 3)
   p2 = atoi(argv[2]);
- omp_set_num_threads(num_threads);
  if(argc >= 4)
   p3 = atoi(argv[3]);
  /// Re-ordering L matrix
@@ -77,52 +80,29 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  delete[]perm;
 #endif
 
- L2_csr = csc_to_csr(L1_csc);
 
- double *y_serial, *y_correct = new double[n];
+ int final_level_no, *fina_level_ptr, *final_part_ptr, *final_node_ptr;
+ int part_no;
+ int lp = num_threads, cp = p2, ic= p3;
 
- timing_measurement t_ser, t_par, t_par2, t_blocked, t_blocked_mkl,
- t_blocked_levelset, t_levelset;
+ auto *cost = new double[n]();
+ for (int i = 0; i < n; ++i) {
+  cost[i] = L1_csc->p[i+1] - L1_csc->p[i];
+ }
 
- SptrsvSerial *ss = new SptrsvSerial(L2_csr, L1_csc, NULLPNTR, "serial");
- t_ser = ss->evaluate();
- y_serial = ss->solution();
- copy_vector(0,n,y_serial,y_correct);
- //print_vec("x:\n", 0, n, y_correct);
+ get_coarse_levelSet_DAG_CSC_tree(n, L1_csc->p, L1_csc->i, L1_csc->stype,
+   final_level_no,
+   fina_level_ptr,part_no,
+   final_part_ptr,final_node_ptr,
+   lp,cp, ic, cost);
+ 
+ print_hlevel_set("HLevel set:\n", final_level_no, fina_level_ptr, final_part_ptr, final_node_ptr);
 
- auto *sls = new SptrsvLevelSet(L2_csr, L1_csc, y_correct, "levelset csc");
- t_levelset = sls->evaluate();
-
- auto *sl = new SptrsvLBC(L2_csr, L1_csc, y_serial, "lbc",num_threads, p2, p3);
- t_par = sl->evaluate();
-
-
- if(header)
-  std::cout<<"Matrix Name,Metis Enabled,"
-             "Number of Threads,"
-             "Serial Non-fused,Parallel Levelset CSC,Parallel LBC CSR,";
-
- #ifdef METIS
- PRINT_CSV("METIS");
-#else
- PRINT_CSV("No");
-#endif
- PRINT_CSV(num_threads);
- PRINT_CSV(p2);
- PRINT_CSV(p3);
- PRINT_CSV(t_ser.elapsed_time);
- PRINT_CSV(t_levelset.elapsed_time);
- PRINT_CSV(t_par.elapsed_time);
-
- delete []y_correct;
+ delete []fina_level_ptr;
+ delete []final_part_ptr;
+ delete []final_node_ptr;
+ delete []cost;
  delete A;
  delete L1_csc;
- delete L2_csr;
-
- delete ss;
- delete sl;
- delete sls;
-
-
  return 0;
 }
