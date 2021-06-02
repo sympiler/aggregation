@@ -13,7 +13,7 @@ It can be used within code generators or libraries. For more information see
 * CMake
 * C++ compiler (GCC, ICC, or CLang)
 * METIS (optional) dependency for running the demo efficiently 
-and is handled by the user.
+and is handled by the cmake.
 
 ### Linux
 Then install LBC by following commands:
