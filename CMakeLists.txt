@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 2.8)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
+include(DownloadProject)
+
+
+set(LBC_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib/)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib/)
+set(LBC_EXTERNAL ${CMAKE_CURRENT_LIST_DIR}/external)
 
 
 project(LBC_lib)
@@ -34,8 +41,33 @@ set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
 
-find_package(METIS OPTIONAL_COMPONENTS)
+#find_package(METIS OPTIONAL_COMPONENTS)
 
+#if( METIS_VERSION_OK)
+#    find_program(MAKE_EXE NAMES gmake nmake make)
+#    set(metis_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/metis")
+#    set(metis_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${metis_INSTALL_DIR})
+#set(EXTERNAL_INSTALL_LOCATION ${CMAKE_CURRENT_LIST_DIR}/external)
+# set(GKLIB_PATH ${SYMPILER_EXTERNAL}/metis/metis-src/GKLIB/ CACHE PATH "d")
+download_project(PROJ metis
+        GIT_REPOSITORY https://github.com/cheshmi/METIS.git  # https://github.com/KarypisLab/METIS.git
+        # BUILD_IN_SOURCE 1
+        #PREFIX  ${metis_BINARY_DIR}
+        #     URL http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+        PREFIX  ${LBC_EXTERNAL}/metis/
+        #SOURCE_DIR ${SYMPILER_EXTERNAL}/metis/metis-src/
+        BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/metis/
+        UPDATE_DISCONNECTED 1
+        #CMAKE_ARGS  -DGKLIB_PATH=${metis_SOURCE_DIR}/GKlib/
+        # BUILD_COMMAND ${MAKE_EXE}
+        )
+add_subdirectory(${metis_SOURCE_DIR})
+set(METIS_INCLUDE_DIR ${metis_SOURCE_DIR}/include)
+set(METIS_INCLUDES ${metis_SOURCE_DIR}/include/)
+set(METIS_LIBRARY ${LBC_ROOT_DIR}/lib/)
+set(METIS_LIBRARIES ${LBC_ROOT_DIR}/lib/)
+set(METIS_LIB_NAME "metis")
+#endif()
 #message("++++ ${CMAKE_CXX_COMPILER_ID} ")
 
 

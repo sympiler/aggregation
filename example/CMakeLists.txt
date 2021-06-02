@@ -33,11 +33,14 @@ set(LBCD_SOURCE_FILES
 
 add_executable(lbc_demo ${LBCD_SOURCE_FILES}
         lbc_demo.cpp )
-
+add_dependencies(lbc_demo metis)
 if(EXISTS "${METIS_INCLUDES}")
+target_link_directories(lbc_demo PUBLIC
+       ${METIS_LIBRARY} )
 target_link_libraries(lbc_demo
         lbc
-        ${METIS_LIBRARY} ${METIS_LIBRARIES})
+        metis
+        )
 else()
 target_link_libraries(lbc_demo
         lbc)

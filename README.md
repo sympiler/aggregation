@@ -1,3 +1,6 @@
+
+![APM](https://badgen.net/github/license/micromatch/micromatch)
+
 # Load-balance Level Coarsening (LBC)
 Load-balance Level Coarsening is a DAG partitionig/scheduling 
 algorithm used for making sparse matrix loops parallel. 
@@ -9,7 +12,8 @@ It can be used within code generators or libraries. For more information see
 ### Prerequisites 
 * CMake
 * C++ compiler (GCC, ICC, or CLang)
-* METIS (optional) dependency for running the demo efficiently.
+* METIS (optional) dependency for running the demo efficiently 
+and is handled by the user.
 
 ### Linux
 Then install LBC by following commands:
@@ -19,15 +23,6 @@ mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
-```
-
-If METIS is installed in the system path,
-CMAKE will resolve the dpendency otherwise you need to set 
-`CMAKE_PREFIX_PATH` to the root directory of metis, i.e., 
-where the cmakelists file exists. 
-For installing METIS in Ubuntu you can also use
-```
-sudo apt install metis
 ```
 
 
