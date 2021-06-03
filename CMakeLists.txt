@@ -41,9 +41,9 @@ set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
 
-#find_package(METIS OPTIONAL_COMPONENTS)
-
-#if( METIS_VERSION_OK)
+find_package(METIS OPTIONAL_COMPONENTS)
+if(NOT METIS_FOUND)
+    message(STATUS  "METIS not detected, downloading it..." )
 #    find_program(MAKE_EXE NAMES gmake nmake make)
 #    set(metis_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/metis")
 #    set(metis_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${metis_INSTALL_DIR})
@@ -61,16 +61,16 @@ download_project(PROJ metis
         #CMAKE_ARGS  -DGKLIB_PATH=${metis_SOURCE_DIR}/GKlib/
         # BUILD_COMMAND ${MAKE_EXE}
         )
-add_subdirectory(${metis_SOURCE_DIR})
-set(METIS_INCLUDE_DIR ${metis_SOURCE_DIR}/include)
-set(METIS_INCLUDES ${metis_SOURCE_DIR}/include/)
-set(METIS_LIBRARY ${LBC_ROOT_DIR}/lib/)
-set(METIS_LIBRARIES ${LBC_ROOT_DIR}/lib/)
-set(METIS_LIB_NAME "metis")
-#endif()
-#message("++++ ${CMAKE_CXX_COMPILER_ID} ")
 
-
+    set(SHARED  TRUE CACHE BOOL "shared library" FORCE)
+    add_subdirectory(${metis_SOURCE_DIR})
+    set(METIS_INCLUDE_DIR ${metis_SOURCE_DIR}/include)
+    set(METIS_INCLUDES ${metis_SOURCE_DIR}/include/)
+    set(METIS_LIBRARY ${LBC_ROOT_DIR}/lib/metis.so)
+    set(METIS_LIBRARIES ${LBC_ROOT_DIR}/lib/metis.so)
+    set(METIS_FOUND TRUE)
+    message(STATUS "METIS library is found at ${METIS_LIBRARY}")
+endif()
 
 if(EXISTS "${METIS_INCLUDES}")
     add_definitions(-DMETIS)
