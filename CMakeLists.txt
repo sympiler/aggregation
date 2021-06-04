@@ -64,8 +64,8 @@ download_project(PROJ metis_shared
 
     set(SHARED  TRUE CACHE BOOL "shared library" FORCE)
     add_subdirectory(${metis_shared_SOURCE_DIR})
-    set(METIS_INCLUDE_DIR ${metis_SOURCE_DIR}/include)
-    set(METIS_INCLUDES ${metis_SOURCE_DIR}/include/)
+    set(METIS_INCLUDE_DIR ${metis_shared_SOURCE_DIR}/include)
+    set(METIS_INCLUDES ${metis_shared_SOURCE_DIR}/include/)
     set(METIS_LIBRARY ${LBC_ROOT_DIR}/lib/)
     set(METIS_LIBRARIES ${LBC_ROOT_DIR}/lib/)
         set(METIS_LIB metis)
@@ -73,7 +73,7 @@ download_project(PROJ metis_shared
     message(STATUS "METIS library is found at ${METIS_LIBRARY}")
 endif()
 
-if(EXISTS "${METIS_INCLUDES}")
+if(METIS_FOUND)
     add_definitions(-DMETIS)
     set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
 endif()

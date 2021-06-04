@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 
 
-if(EXISTS "${METIS_INCLUDES}")
+
+if(METIS_FOUND)
+
 include_directories(includes
         ${SPARSE_UTIL_INC}
         ${SPARSE_EXTN_INC}
