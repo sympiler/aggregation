@@ -49,7 +49,7 @@ if(NOT METIS_FOUND)
 #    set(metis_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${metis_INSTALL_DIR})
 #set(EXTERNAL_INSTALL_LOCATION ${CMAKE_CURRENT_LIST_DIR}/external)
 # set(GKLIB_PATH ${SYMPILER_EXTERNAL}/metis/metis-src/GKLIB/ CACHE PATH "d")
-download_project(PROJ metis
+download_project(PROJ metis_shared
         GIT_REPOSITORY https://github.com/cheshmi/METIS.git  # https://github.com/KarypisLab/METIS.git
         # BUILD_IN_SOURCE 1
         #PREFIX  ${metis_BINARY_DIR}
@@ -63,11 +63,12 @@ download_project(PROJ metis
         )
 
     set(SHARED  TRUE CACHE BOOL "shared library" FORCE)
-    add_subdirectory(${metis_SOURCE_DIR})
+    add_subdirectory(${metis_shared_SOURCE_DIR})
     set(METIS_INCLUDE_DIR ${metis_SOURCE_DIR}/include)
     set(METIS_INCLUDES ${metis_SOURCE_DIR}/include/)
-    set(METIS_LIBRARY ${LBC_ROOT_DIR}/lib/metis.so)
-    set(METIS_LIBRARIES ${LBC_ROOT_DIR}/lib/metis.so)
+    set(METIS_LIBRARY ${LBC_ROOT_DIR}/lib/)
+    set(METIS_LIBRARIES ${LBC_ROOT_DIR}/lib/)
+        set(METIS_LIB metis)
     set(METIS_FOUND TRUE)
     message(STATUS "METIS library is found at ${METIS_LIBRARY}")
 endif()
