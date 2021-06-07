@@ -518,6 +518,18 @@ namespace sym_lib {
   }
  }
 
+
+ void copy_from_to(CSC *src, CSC *dst){
+  for (int i = 0; i < src->n; ++i) {
+   dst->p[i] = dst->p[i];
+   for (int j = src->p[i]; j < src->p[i + 1]; ++j) {
+    dst->i[j] = src->i[j];
+    dst->x[j] = src->x[j];
+   }
+  }
+ }
+
+
  void copy_vector_dense(size_t beg, size_t end, const double *src, double *dst) {
   for(size_t i = beg; i < end; i++)
    dst[i] = src[i];
@@ -579,13 +591,21 @@ namespace sym_lib {
   //Let's do BFS for every leaf node of the
   for (int ii = levelPtr[bfsLevel]; ii < levelPtr[bfsLevel+1]; ++ii) {
    int curNode=levelSet[ii];
+   assert(!visited[curNode]);
    assert(node2partition[curNode]>=0);
    queue.push_back(curNode);
    while (!queue.empty()){
     int popedNode=queue[0];
+    assert(popedNode < n);
     queue.erase(queue.begin());
     visited[popedNode]=true;
+    assert(node2partition[popedNode] < newLeveledParList.size());
     newLeveledParList[node2partition[popedNode]].push_back(popedNode);
+#if 0
+    if(node2partition[popedNode] == 805){
+     std::cout<<" "<<popedNode<<"\n";
+    }
+#endif
     //Find the adjacent nodes_
     for (int r = Lp[popedNode]; r < Lp[popedNode+1]; ++r) {
      int cn=Li[r];
@@ -661,6 +681,32 @@ namespace sym_lib {
  }
 
 
+ int get_tree_height_efficient(int n, const int *tree, const int *nChild1,
+   const int *weight) {
+  int maxLen = 0, level = 0;
+  auto *touch = new int[n]();
+  for (int i = 0; i < n; ++i) {
+   if (nChild1[i] == 0) {
+    int node = i; level = 0;
+    while (tree[node] >= 0) {
+     node = tree[node];
+     if (weight == NULLPNTR)
+      level++;
+     else
+      level += weight[node];
+     if(level < touch[node])
+      break; // a longer path visted this node before
+     else
+      touch[node] = level;// touched this node with level
+    }
+    if (level > maxLen)
+     maxLen = level;
+   }
+  }
+  delete []touch;
+  return maxLen;
+ }
+
  double *compute_subtree_cost(int n, const int *tree, double *weight) {
   double *subTreeCost = new double[n];
   for (int i = 0; i < n; ++i) {//each subtree has a node
@@ -676,6 +722,18 @@ namespace sym_lib {
  }
 
 
+ void sparse2dense(CSC *A, double *D){
+  std::fill_n(D,A->n*A->m,0);
+  for (int i = 0; i < A->n; ++i) {
+   for (int j = A->p[i]; j < A->p[i+1]; ++j) {
+    int r = A->i[j];
+    D[i*A->m+r] = A->x[j];
+    if(A->stype==-1 || A->stype==1){
+     D[r*A->n+i] = A->x[j];
+    }
+   }
+  }
+ }
 
 
  CSC *diagonal(int n, double val){
@@ -690,6 +748,185 @@ namespace sym_lib {
   return A;
  }
 
+
+ int *extract_diagonals(const int n, const int *Ap, const int *Ai){
+  auto *ret_ptr = new int[n];
+  for (int i = 0; i < n; ++i) {
+   for (int j = Ap[i]; j < Ap[i+1]; ++j) {
+    if(Ai[j] == i){
+     ret_ptr[i] = j;
+     break;
+    }
+   }
+  }
+  return ret_ptr;
+ }
+
+
+ void merge_graph(int ngraphs, int n, int **Gps, int **Gis,
+   int *&nGp, int *&nGi) {
+  const int *Gp, *Gi;
+
+  int nnz = 0;
+  for(int i = 0; i < ngraphs; i++)
+   nnz += Gps[i][n];
+  nnz += (ngraphs-1) * n;
+  /** allocate new graph space **/
+  nGp = new int[ngraphs * n + 1]();
+  nGi = new int[nnz]();
+
+  int p_counter = 1;
+  int i_counter = 0;
+  nGp[0] = 0;
+  /** first <ngraphs>-1 graphs**/
+  for(int i = 0; i < ngraphs-1; i++) {
+   Gp = Gps[i];
+   Gi = Gis[i];
+
+   for(int j = 0; j < n; j++) {
+    int diff = Gp[j+1] - Gp[j] + 1;
+    nGp[p_counter] = nGp[p_counter-1] + diff;
+    p_counter++;
+    for(int p = Gp[j]; p < Gp[j+1]; p++) {
+     int row = Gi[p] + (i * n);
+     nGi[i_counter] = row;
+     i_counter++;
+    }
+    nGi[i_counter] = j + (i+1) * n;
+    i_counter++;
+   }
+  }
+  /** last graph **/
+  Gp = Gps[ngraphs-1];
+  Gi = Gis[ngraphs-1];
+  for(int j = 0; j < n; j++) {
+   int diff = Gp[j+1] - Gp[j];
+   nGp[p_counter] = nGp[p_counter-1] + diff;
+   p_counter++;
+   for(int p = Gp[j]; p < Gp[j+1]; p++) {
+    int row = Gi[p] + (ngraphs-1) * n;
+    nGi[i_counter] = row;
+    i_counter++;
+   }
+  }
+ }
+
+ CSC* merge_graph(int ngraphs, int n, int **Gps, int **Gis) {
+  const int *Gp, *Gi;
+  int nnz = 0;
+  for(int i = 0; i < ngraphs; i++)
+   nnz += Gps[i][n];
+  nnz += (ngraphs-1) * n;
+  CSC *merged_graph = new CSC(n*ngraphs,n*ngraphs,nnz, true);
+  /** allocate new graph space **/
+  int *nGp = merged_graph->p;
+  int *nGi = merged_graph->i;
+
+  int p_counter = 1;
+  int i_counter = 0;
+  nGp[0] = 0;
+  /** first <ngraphs>-1 graphs**/
+  for(int i = 0; i < ngraphs-1; i++) {
+   Gp = Gps[i];
+   Gi = Gis[i];
+
+   for(int j = 0; j < n; j++) {
+    int diff = Gp[j+1] - Gp[j] + 1;
+    nGp[p_counter] = nGp[p_counter-1] + diff;
+    p_counter++;
+    for(int p = Gp[j]; p < Gp[j+1]; p++) {
+     int row = Gi[p] + (i * n);
+     nGi[i_counter] = row;
+     i_counter++;
+    }
+    nGi[i_counter] = j + (i+1) * n;
+    i_counter++;
+   }
+  }
+  /** last graph **/
+  Gp = Gps[ngraphs-1];
+  Gi = Gis[ngraphs-1];
+  for(int j = 0; j < n; j++) {
+   int diff = Gp[j+1] - Gp[j];
+   nGp[p_counter] = nGp[p_counter-1] + diff;
+   p_counter++;
+   for(int p = Gp[j]; p < Gp[j+1]; p++) {
+    int row = Gi[p] + (ngraphs-1) * n;
+    nGi[i_counter] = row;
+    i_counter++;
+   }
+  }
+  return merged_graph;
+ }
+
+/*
+ * Takes ngraphs and n-1 dependence graph and merge them
+ * G1 -> DG1 -> G2 -> DG2 -> G3
+ */
+ CSC* merge_DAGs_with_partial_order(int ngraphs, int n, int **Gps, int **Gis,
+   int nd, int **DGps, int **DGis){
+  const int *Gp, *Gi, *DGp, *DGi;
+  int nnz = 0;
+  for(int i = 0; i < ngraphs; i++){
+   nnz += Gps[i][n];
+  }
+  for(int i = 0; i < ngraphs-1; i++){
+   nnz += DGps[i][n];
+  }
+  nnz += (ngraphs-1) * n;
+  CSC *merged_graph = new CSC(n*ngraphs,n*ngraphs,nnz, true);
+
+/** allocate new graph space **/
+
+  int *nGp = merged_graph->p;
+  int *nGi = merged_graph->i;
+
+  int p_counter = 1;
+  int i_counter = 0;
+  nGp[0] = 0;
+
+/** first <ngraphs>-1 graphs**/
+
+  for(int i = 0; i < ngraphs-1; i++) {
+   Gp = Gps[i];
+   Gi = Gis[i];
+   DGp = DGps[i];
+   DGi = DGis[i];
+
+   for(int j = 0; j < n; j++) {
+    int diff = Gp[j+1] - Gp[j];
+    diff += (DGp[j+1] - DGp[j]);
+    nGp[p_counter] = nGp[p_counter-1] + diff;
+    p_counter++;
+    for(int p = Gp[j]; p < Gp[j+1]; p++) {
+     int row = Gi[p] + (i * n);
+     nGi[i_counter] = row;
+     i_counter++;
+    }
+    for(int p = DGp[j]; p < DGp[j+1]; p++) {
+     int row = DGi[p] + (i+1) * n;
+     nGi[i_counter] = row;
+     i_counter++;
+    }
+   }
+  }
+
+/** last graph **/
+
+  Gp = Gps[ngraphs-1];
+  Gi = Gis[ngraphs-1];
+  for(int j = 0; j < n; j++) {
+   int diff = Gp[j+1] - Gp[j];
+   nGp[p_counter] = nGp[p_counter-1] + diff;
+   p_counter++;
+   for(int p = Gp[j]; p < Gp[j+1]; p++) {
+    int row = Gi[p] + (ngraphs-1) * n;
+    nGi[i_counter] = row;
+    i_counter++;
+   }
+  }
+  return merged_graph;
+ }
 
 
 
@@ -828,7 +1065,6 @@ namespace sym_lib {
   return outSize;
  }
 
-
  /* x = x + beta * A(:,j), where x is a dense vector and A(:,j) is sparse */
  int scatter (const CSC *A, int j, double beta, int *w,
               double *x, int mark, CSC *C, int nz){
@@ -847,8 +1083,9 @@ namespace sym_lib {
   return (nz) ;
  }
 
-
- CSC* add(CSC *A, CSC *B, double alpha, double beta, bool sort=true){
+ // TODO: replace the following with a more efficient way of making matrix symmetric
+ // TODO:  it is copied here to remove sparseblas dependency
+ CSC* add_tmp(CSC *A, CSC *B, double alpha, double beta, bool sort=true){
   if(A->stype != B->stype)
    return NULLPNTR;
   int p, j, nz = 0, anz, *Cp, *Ci, *Bp, m, n, bnz, *w ;
@@ -883,12 +1120,96 @@ namespace sym_lib {
    return transpose_symmetric(A, NULLPNTR);
 
   At = transpose_general(A);
-  ApAt = add(A,At,0.5,0.5);//(A+At)/2
+  ApAt = add_tmp(A,At,0.5,0.5);//(A+At)/2
   CSC* As = make_half(ApAt->n, ApAt->p, ApAt->i, ApAt->x, lower);
   As->stype = lower ? -1 : 1;
   delete At;
   delete ApAt;
   return As;
+ }
+
+
+ void compute_nnz_per_col(CSC *A, double *nnz_cnt){
+  for (int i = 0; i < A->n; ++i) {
+   nnz_cnt[i] = A->p[i+1] - A->p[i];
+  }
+ }
+
+
+ void reorder_array(int n, int *arr, int *perm, int *ws){
+  for (int i = 0; i < n; ++i) {
+   ws[i] = arr[perm[i]];
+  }
+  for (int j = 0; j < n; ++j) {
+   arr[j] = ws[j];
+  }
+ }
+
+ void inv_perm(int n, int *perm, int *iperm){
+  for (int i = 0; i < n; ++i) {
+   iperm[perm[i]] = i;
+  }
+ }
+
+
+ CSC *permute_general (const CSC *A, const int *pinv,
+   const int *q)
+ {
+  int nz = 0, n, *Ap, *Ai, *Cp, *Ci ;
+  double *Cx, *Ax ;
+  int m = A->m; n = A->n ; Ap = A->p ; Ai = A->i ; Ax = A->x ;
+  CSC *C = new CSC(m, n, A->nnz);
+  Cp = C->p ; Ci = C->i ; Cx = C->x ;
+  for (int k = 0 ; k < n ; k++)
+  {
+   Cp [k] = nz ; //* column k of C is column q[k] of A */
+   int j = q ? (q [k]) : k ;
+   for (int t = Ap [j] ; t < Ap [j+1] ; t++)
+   {
+    if (Cx) Cx [nz] = Ax [t] ;  /* row i of A is row pinv[i] of C */
+    Ci [nz++] = pinv ? (pinv [Ai [t]]) : Ai [t] ;
+   }
+  }
+  Cp [n] = nz ; //* finalize the last column of C */
+  return C;
+ }
+
+
+ CSC *coarsen_k_times(int n, int nnz, int *Ap, int *Ai, int stype, int k){
+  int new_n = (n%k == 0) ? n/k : (n/k) + 1;
+  CSC *c_mat = new CSC(new_n, new_n, nnz, false);
+  c_mat->stype = stype;
+  int *Bp = c_mat->p; int *Bi = c_mat->i; int cur_col=1, cur_nnz=0;
+  Bp[0] = 0;
+  std::vector<int> faled_vals;
+  auto is_exist = new bool[n]();
+  for (int j = 0; j < n; j+=k) {
+   int bnd = std::min<int>(j + k,n);
+   for (int l = j; l < bnd; ++l) {
+    for (int m = Ap[l]; m < Ap[l + 1]; ++m) {
+     auto tmp = Ai[m];
+     int new_idx = tmp / k;
+     if(!is_exist[new_idx]){
+      is_exist[new_idx] = true;
+      assert(new_idx < new_n);
+      Bi[cur_nnz] = new_idx;
+      cur_nnz++;
+      faled_vals.push_back(new_idx);
+     }
+    }
+   }
+   Bp[cur_col] = cur_nnz;
+   cur_col++;
+   for (auto i : faled_vals ) {
+    is_exist[i] = false;
+   }
+   faled_vals.clear();
+   //std::fill_n(is_exist,n,false);
+  }
+  assert(new_n == cur_col-1);
+  c_mat->nnz = cur_nnz;
+  delete is_exist;
+  return c_mat;
  }
 
 }
