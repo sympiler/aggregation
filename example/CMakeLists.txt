@@ -9,7 +9,7 @@ include_directories(includes
         ${SPARSE_UTIL_INC}
         ${SPARSE_EXTN_INC}
         ${LBC_INC}
-        ${METIS_INCLUDE_DIR} ${METIS_INCLUDES}
+        ${METIS_INCLUDE_DIRS} ${METIS_INCLUDES}
         )
 else()
 include_directories(includes
@@ -40,7 +40,7 @@ link_directories(${METIS_LIBRARY})
 if(METIS_FOUND)
 target_link_libraries(lbc_demo
         lbc
-        ${METIS_LIB}
+        ${METIS_LIBRARIES}
         )
 else()
 target_link_libraries(lbc_demo
