@@ -6,7 +6,7 @@
 
 #ifndef PROJECT_LBC_UTILS_H
 #define PROJECT_LBC_UTILS_H
-
+#include <cstdlib>
 #include <vector>
 namespace sym_lib{
 

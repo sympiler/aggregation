@@ -24,6 +24,8 @@ namespace sym_lib {
   CSC *A = new CSC(m, n, nnz);
   int *J = new int[nnz]();
 
+  A->stype = mm_is_symmetric(mcode) ? -1 : 0;
+
   // Copy matrix data into COO format
   for (int i = 0; i < nnz; i++) {
    if (fscanf(mf, "%d %d %lg\n", (A->i) + i, &J[i], (A->x) + i) == EOF) {
@@ -54,8 +56,6 @@ namespace sym_lib {
   A->m = m;
   A->n = n;
   A->nnz = nnz;
-  A->stype = -1;
-
   return A;
  }
 
