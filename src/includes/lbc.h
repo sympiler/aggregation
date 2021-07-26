@@ -20,7 +20,8 @@ namespace sym_lib{
                                  int innerParts,
                                  int minLevelDist,
                                  int divRate,
-                                 double *nodeCost);
+                                 double *nodeCost,
+                                 bool bp = true);
 
  /// Comnputes coarsened level-set for CSC DAG using etree
  /// \param n

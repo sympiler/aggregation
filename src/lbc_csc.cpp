@@ -23,7 +23,8 @@ namespace sym_lib {
                                  int innerParts,
                                  int minLevelDist,
                                  int divRate,
-                                 double *nodeCost) {
+                                 double *nodeCost,
+                                 bool bin_pack) {
   auto *node2partition = new int[n];
   auto *outCost = new double[n];
   auto *newOutCost = new double[n];
@@ -207,7 +208,7 @@ namespace sym_lib {
    int outinnerParts = 0;
    averageCC += newLeveledParList.size();
    mergedLeveledParList.resize(innerPartsSize[l]);//FIXME;
-   if (newLeveledParList.size() > innerPartsSize[l]) {
+   if (newLeveledParList.size() > innerPartsSize[l] && bin_pack) {
     outinnerParts = worst_fit_bin_pack(newLeveledParList, outCost,
                                        mergedLeveledParList, newOutCost,
                                        levelParCostThresh, innerPartsSize[l]);
