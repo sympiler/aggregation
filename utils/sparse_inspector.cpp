@@ -6,9 +6,9 @@
 #include <queue>
 #include <cassert>
 #include "sparse_utilities.h"
-#include "includes/def.h"
-#include "includes/BCSCMatrix.h"
-#include "includes/sparse_inspector.h"
+#include <def.h>
+#include <BCSCMatrix.h>
+#include <sparse_inspector.h>
 
 namespace sym_lib {
 

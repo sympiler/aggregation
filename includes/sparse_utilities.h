@@ -220,7 +220,8 @@ namespace sym_lib {
  /// \return
  int get_tree_height(int n, const int *tree, int *nChild1,
                      int *weight = NULLPNTR);
-
+ int get_tree_height_efficient(int n, const int *tree, const int *nChild1,
+                               const int *weight);
 
  /// Computes the cost of given tree using the weight vector.
  /// \param n
@@ -270,7 +271,18 @@ namespace sym_lib {
 /// \return
  CSC* merge_graph(int ngraphs, int n, int **Gps, int **Gis);
 
-
+ /// Takes ngraphs and n-1 dependence graph and merge them
+ /// G1 -> DG1 -> G2 -> DG2 -> G3
+ /// \param ngraphs
+ /// \param n
+ /// \param Gps
+ /// \param Gis
+ /// \param nd
+ /// \param DGps
+ /// \param DGis
+ /// \return
+ CSC* merge_DAGs_with_partial_order(int ngraphs, int n, int **Gps,
+                                    int **Gis, int nd, int **DGps, int **DGis);
  ///
  /// \param inSize
  /// \param inTree
@@ -334,5 +346,16 @@ namespace sym_lib {
  /// \param perm in
  /// \param iperm out
  void inv_perm(int n, int *perm, int *iperm);
+
+/// Coarsening every k rows/cols in a CSR/CSC matrix.
+/// \param n
+/// \param nnz
+/// \param Ap
+/// \param Ai
+/// \param stype
+/// \param k
+/// \return
+ CSC *coarsen_k_times(int n, int nnz, int *Ap, int *Ai, int stype, int k);
+
 }
 #endif //FUSION_SPARSE_UTILITIES_H

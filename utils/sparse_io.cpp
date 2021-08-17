@@ -2,9 +2,9 @@
 // Created by Kazem on 10/10/19.
 //
 #include <iostream>
-#include "includes/sparse_io.h"
-#include "def.h"
-#include "external/includes/mmio.h"
+#include <sparse_io.h>
+#include <def.h>
+#include <mmio.h>
 
 namespace sym_lib {
 
@@ -104,6 +104,55 @@ namespace sym_lib {
   }
   fclose(f);
  }
+
+  CSC * convert_to_one_based(const CSC *A){
+  CSC *A_one = new CSC(A->m+1, A->n+1, A->nnz, A->is_pattern);
+  if(A->is_pattern)
+   for (int j = 0; j < A->nnz; ++j) {
+    A_one->i[j] = A->i[j]+1;
+   }
+  else
+   for (int j = 0; j < A->nnz; ++j) {
+    A_one->i[j] = A->i[j]+1;
+    A_one->x[j] = A_one->x[j];
+   }
+
+  for (int k = 0; k < A->n + 1; ++k) {
+   A_one->p[k+1] = A->p[k];
+  }
+  A_one->m--; A_one->n--;
+  return A_one;
+ }
+
+ CSC *dense_to_csc(int rows, int cols, double **val){
+  int n_nz = 0; int *nz_col = new int[cols]();
+  for (int j = 0; j < cols; ++j) {
+   for (int i = 0; i < rows; ++i) {
+    if(val[i][j] != 0){
+     n_nz++;
+     nz_col[j]++;
+    }
+   }
+  }
+  CSC *out = new CSC(rows, cols, n_nz);
+  for (int k = 0; k < cols; ++k) {
+   out->p[k+1] = out->p[k] + nz_col[k];
+  }
+  assert(out->p[cols] == n_nz);
+  n_nz=0;
+  for (int j = 0; j < cols; ++j) {
+   for (int i = 0; i < rows; ++i) {
+    if(val[i][j] != 0){
+     out->i[n_nz] = i;
+     out->x[n_nz] = val[i][j];
+     n_nz++;
+    }
+   }
+  }
+  delete []nz_col;
+  return out;
+ }
+
 
  void
  print_csc(int fd, std::string beg, size_t n, int *Ap, int *Ai, double *Ax) {

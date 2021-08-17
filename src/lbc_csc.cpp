@@ -9,7 +9,7 @@
 #include <sparse_inspector.h>
 #include <lbc.h>
 #include <sparse_io.h>
-#include "includes/lbc_utils.h"
+#include <lbc_utils.h>
 double elap, elap_trans;
 namespace sym_lib {
  int get_coarse_levelSet_DAG_CSC(size_t n,

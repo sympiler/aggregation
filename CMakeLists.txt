@@ -18,7 +18,7 @@ set(CMAKE_CXX_STANDARD 11)
 add_compile_options(-Wno-write-strings)
 add_compile_options(-Wunused-result)
 
-set(SPARSE_UTIL_INC "${CMAKE_CURRENT_SOURCE_DIR}/utils/includes")
+set(SPARSE_UTIL_INC "${CMAKE_CURRENT_SOURCE_DIR}/includes")
 set(SPARSE_UTIL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/utils")
 
 #AUX_SOURCE_DIRECTORY(${SPARSE_UTIL_SRC} SPARSE_UTIL_SRC_FILES)
@@ -28,6 +28,8 @@ set(SPARSE_UTIL_SRC_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_utilities.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/test_utils.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/utils.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/lfactor_creation.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/etree.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/BCSCMatrix.cpp"
         )
 
@@ -36,7 +38,7 @@ set(SPARSE_EXTN_INC "${SPARSE_UTIL_SRC}/external/includes")
 set(SPARSE_EXTN_SRC "${SPARSE_UTIL_SRC}/external")
 AUX_SOURCE_DIRECTORY(${SPARSE_EXTN_SRC} SPARSE_EXTN_SRC_FILES)
 
-set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/src/includes")
+set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/includes")
 set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
