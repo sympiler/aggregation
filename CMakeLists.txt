@@ -22,16 +22,6 @@ set(SPARSE_UTIL_INC "${CMAKE_CURRENT_SOURCE_DIR}/includes")
 set(SPARSE_UTIL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/utils")
 
 #AUX_SOURCE_DIRECTORY(${SPARSE_UTIL_SRC} SPARSE_UTIL_SRC_FILES)
-set(SPARSE_UTIL_SRC_FILES
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_inspector.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_io.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_utilities.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/test_utils.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/utils.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/lfactor_creation.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/etree.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/BCSCMatrix.cpp"
-        )
 
 
 set(SPARSE_EXTN_INC "${SPARSE_UTIL_SRC}/external/includes")
@@ -78,6 +68,19 @@ if(METIS_FOUND)
     add_definitions(-DMETIS)
     set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
 endif()
+
+set(SPARSE_UTIL_SRC_FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_inspector.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_io.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_utilities.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/test_utils.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/utils.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/lfactor_creation.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/etree.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/BCSCMatrix.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/external/mmio.cpp"
+        "${METIS_SOURCE_FILES}"
+        )
 
 add_subdirectory(src)
 add_subdirectory(example)
