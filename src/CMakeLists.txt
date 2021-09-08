@@ -4,6 +4,7 @@ project(lbc)
 include_directories(includes
         ${SPARSE_UTIL_INC}
         ${OpenMP_CXX_INCLUDE_DIRS}
+        ${METIS_INCLUDE_DIRS}
         )
 
 add_library (lbc STATIC
@@ -12,6 +13,5 @@ add_library (lbc STATIC
         lbc_utils.cpp
         ${SPARSE_UTIL_SRC_FILES}
         )
-
-target_link_libraries(lbc
+target_link_libraries(lbc PRIVATE
         sym_amd)
