@@ -12,3 +12,6 @@ add_library (lbc STATIC
         lbc_utils.cpp
         ${SPARSE_UTIL_SRC_FILES}
         )
+
+target_link_libraries(lbc
+        sym_amd)

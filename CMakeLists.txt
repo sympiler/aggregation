@@ -69,6 +69,12 @@ if(METIS_FOUND)
     set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
 endif()
 
+
+file(GLOB_RECURSE EXT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.c)
+
+add_library(sym_amd STATIC
+        ${EXT_SRC})
+
 set(SPARSE_UTIL_SRC_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_inspector.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_io.cpp"
@@ -80,6 +86,7 @@ set(SPARSE_UTIL_SRC_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/BCSCMatrix.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/utils/external/mmio.cpp"
         "${METIS_SOURCE_FILES}"
+        #"${EXT_SRC}"
         )
 
 add_subdirectory(src)
