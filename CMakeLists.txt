@@ -18,25 +18,17 @@ set(CMAKE_CXX_STANDARD 11)
 add_compile_options(-Wno-write-strings)
 add_compile_options(-Wunused-result)
 
-set(SPARSE_UTIL_INC "${CMAKE_CURRENT_SOURCE_DIR}/utils/includes")
+set(SPARSE_UTIL_INC "${CMAKE_CURRENT_SOURCE_DIR}/includes")
 set(SPARSE_UTIL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/utils")
 
 #AUX_SOURCE_DIRECTORY(${SPARSE_UTIL_SRC} SPARSE_UTIL_SRC_FILES)
-set(SPARSE_UTIL_SRC_FILES
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_inspector.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_io.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_utilities.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/test_utils.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/utils.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/utils/BCSCMatrix.cpp"
-        )
 
 
 set(SPARSE_EXTN_INC "${SPARSE_UTIL_SRC}/external/includes")
 set(SPARSE_EXTN_SRC "${SPARSE_UTIL_SRC}/external")
 AUX_SOURCE_DIRECTORY(${SPARSE_EXTN_SRC} SPARSE_EXTN_SRC_FILES)
 
-set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/src/includes")
+set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/includes")
 set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
@@ -68,14 +60,36 @@ download_project(PROJ metis_shared
     set(METIS_INCLUDES ${metis_shared_SOURCE_DIR}/include/)
     set(METIS_LIBRARY_DIRS ${LBC_ROOT_DIR}/lib/)
     set(METIS_LIBRARIES ${LBC_ROOT_DIR}/lib/libmetis.so)
+    set(METIS_LIBRARY ${LBC_ROOT_DIR}/lib/libmetis.so)
+    set(METIS_LIB metis)
     set(METIS_FOUND TRUE)
     message(STATUS "METIS library is found at ${METIS_LIBRARY}")
+else()
+    set(METIS_LIB ${METIS_LIBRARIES})
 endif()
 
 if(METIS_FOUND)
     add_definitions(-DMETIS)
     set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
 endif()
+
+file(GLOB_RECURSE EXT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.c)
+add_library(sym_amd STATIC
+        ${EXT_SRC})
+
+set(SPARSE_UTIL_SRC_FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_inspector.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_io.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/sparse_utilities.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/test_utils.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/utils.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/lfactor_creation.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/etree.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/BCSCMatrix.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/external/mmio.cpp"
+        "${METIS_SOURCE_FILES}"
+        )
 
 add_subdirectory(src)
 add_subdirectory(example)
