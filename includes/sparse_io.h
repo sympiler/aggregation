@@ -26,6 +26,17 @@ namespace sym_lib{
  /// \param fname
  /// \param A
  void BCSC_to_mtx(std::string fname, BCSC *A);
+ /// Converts dense to CSC
+ /// \param rows in
+ /// \param cols in
+ /// \param val in
+ /// \return
+ CSC *dense_to_csc(int rows, int cols, double **val);
+
+ /// Converts indices to one-based
+ /// \param A input CSC
+ /// \return
+ CSC * convert_to_one_based(const CSC *A);
 
  ///
 /// \tparam type

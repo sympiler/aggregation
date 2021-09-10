@@ -45,6 +45,15 @@ namespace sym_lib{
  /// \param k number of partitions to do
  /// \return operation status set by METIS
  int metis_partition_general(CSC *A, int *&part, int k);
+
+ /// First coarsens every coarsen rows/cols and then partition it with metis
+ /// \param A in can be symmetric or general
+ /// \param part  output
+ /// \param k in
+ /// \param coarsen  in
+ /// \return
+ int metis_partition_coarsened(CSC *A, int *&part, int k, int coarsen);
+
 }
 
 

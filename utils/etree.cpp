@@ -2,7 +2,7 @@
 // Created by kazem on 2/7/20.
 //
 
-#include "includes/sparse_inspector.h"
+#include <sparse_inspector.h>
 #include <utils.h>
 
 namespace sym_lib{

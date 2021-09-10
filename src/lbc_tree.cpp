@@ -4,7 +4,7 @@
 
 #include <sparse_utilities.h>
 #include <sparse_inspector.h>
-#include "includes/lbc_utils.h"
+#include <lbc_utils.h>
 
 namespace sym_lib {
  int get_coarse_levelSet_tree(size_t n,

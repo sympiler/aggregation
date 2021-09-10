@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <omp.h>
 #include <iostream>
-#include "includes/lbc_utils.h"
+#include <lbc_utils.h>
 
 namespace sym_lib{
 

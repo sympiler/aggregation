@@ -5,9 +5,10 @@
 #include <metis.h>
 #include <cassert>
 #include <functional>
-#include "includes/def.h"
-#include "includes/sparse_utilities.h"
-#include "includes/metis_interface.h"
+#include <sparse_io.h>
+#include <def.h>
+#include <sparse_utilities.h>
+#include <metis_interface.h>
 
 namespace sym_lib {
  // FIXME
@@ -124,7 +125,7 @@ namespace sym_lib {
 
   // now remove the diagonal elements
   auto Ap = new idx_t[At->n+1]();
-  auto Ai = new idx_t[At->nnz - At->n]();
+  auto Ai = new idx_t[At->nnz ]();
 
   Ap[0] = 0;
   int cnt = 0;
@@ -244,8 +245,9 @@ namespace sym_lib {
   CSR *At = csc_to_csr(A);
 
   // now remove the diagonal elements
+
   auto Ap = new idx_t[At->n+1]();
-  auto Ai = new idx_t[At->nnz - At->n]();
+  auto Ai = new idx_t[At->nnz ]();
 
   Ap[0] = 0;
   int cnt1 = 0;
@@ -272,12 +274,24 @@ namespace sym_lib {
   METIS_SetDefaultOptions(options1);
 
   auto *weigt = new idx_t[n];
+  //auto *unit_wgt = new idx_t[n];
   auto *partIDX = new idx_t[n];
   for (int i = 0; i < n; ++i) {
    partIDX[i] = 0;
-   weigt[i] = 1;
+   weigt[i] = 1 + A->p[i+1]-A->p[i];
+//   for (int j = A->p[i]; j < A->p[i+1]; ++j) {
+  //  weigt[i] += (A->p[j+1] - A->p[j]);
+    //weigt[i] += 1;
+//   }
+   //unit_wgt[i] = 1;
   }
-
+/*
+  for (int j = 0; j < ncolIDXT; ++j) {
+   for (int i = Ap[j]; i < Ap[j + 1]; ++i) {
+    std::cout<<j <<", "<< i << " "<<Ai[i]<<"\n";
+   }
+  }
+*/
   idx_t retMet = METIS_PartGraphKway(&ncolIDXT, &nconIDX, Ap, Ai, weigt,
                                      nullptr, nullptr, &nparsIDX, nullptr,
                                      nullptr, options1, &objvalIDX, partIDX);
@@ -298,7 +312,38 @@ namespace sym_lib {
   delete[]Ai;
   delete[]weigt;
   delete[]partIDX;
+  //delete []unit_wgt;
 
   return 0;
  }
+
+ int metis_partition_coarsened(CSC *A, int *&part, int k, int coarsen){
+//  timing_measurement t; t.reset();
+//  t.start_timer();
+  CSC *tmp = coarsen_k_times(A->n, A->nnz, A->p, A->i, A->stype, coarsen);
+  int *part_cors;
+ // t.start_timer();
+  if(A->stype < 0){
+   metis_partition_symmetric(tmp, part_cors, k);
+  } else{
+   metis_partition_general(tmp, part_cors, k);
+  }
+  //t.start_timer();
+  part = new int[A->n]();
+  for (int i = 0; i < tmp->n; ++i) {
+   int i2p = part_cors[i];
+   int bnd = i+coarsen; // std::max<int>(i + coarsen, A->n);
+   for (int j = i; j < bnd; ++j) {
+    part[j] = i2p;
+   }
+  }
+  //t.measure_elapsed_time();
+  //t.print_t_array();
+  delete part_cors;
+  delete tmp;
+  return 0;
+ }
+
+
+
 }
