@@ -39,6 +39,7 @@ namespace sym_lib{
  int get_coarse_levelSet_DAG_CSC_tree(size_t n,
                                  int *lC,
                                  int *lR,
+                                 int stype,
                                  int &finaLevelNo,
                                  int *&finaLevelPtr,
                                  int &partNo,

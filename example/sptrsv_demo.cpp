@@ -31,7 +31,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  CSC *L1_csc, *A = NULLPNTR;
  CSR *L2_csr;
  size_t n;
- int num_threads = 6;
+ int num_threads = 20;
  int p2 = -1, p3 = 4000; // LBC params
  int header = 0;
  int *perm;
@@ -105,7 +105,7 @@ int sptrsv_csc_demo02(int argc, char *argv[]){
  //auto *lbc_tree = new SptrsvLBC(L2_csr, L1_csc, y_serial, "LBC Tree",num_threads, p2, p3); // ng + c + tp
 // lt_t = lbc_tree->evaluate();
 
- auto *sld = new SptrsvLBCDAG(L2_csr, L1_csc, y_serial, "coarsening levels",num_threads, p2, p3); // ng + c + tp
+ auto *sld = new SptrsvLBC(L2_csr, L1_csc, y_serial, "coarsening levels",num_threads, p2, p3); // ng + c + tp
  t_c_tp = sld->evaluate();
 
  auto *sld_parallel = new SptrsvLBCDAGParallel(

@@ -10,7 +10,7 @@
 #include <lbc.h>
 #include <sparse_io.h>
 #include "includes/lbc_utils.h"
-
+double elap, elap_trans;
 namespace sym_lib {
  int get_coarse_levelSet_DAG_CSC(size_t n,
                                  int *lC,
@@ -112,7 +112,7 @@ namespace sym_lib {
    }
    //Iterating over non-visited leaf nodes_ to compute CCs
    //CC:connected component
-   int stackStart = 0, cc = 0;
+   int stackStart = 0, cc = 0, max_cc=0;
    std::vector<int> needAliased;
    bool *isUniq = new bool[n]();
    for (int k = levelPtr[dfsLevel]; k < levelPtr[dfsLevel + 1]; ++k) {
@@ -133,7 +133,7 @@ namespace sym_lib {
       for (int j : needAliased) {//the first is min
        int tn = node2partition[j];
        if (tn != minAliasedPar) {
-        cc--;
+       // cc--;
         for (int i = 0; i < n; ++i) {
          // Replace all needAliased node with their min part number.
          if (node2partition[i] == tn) {
@@ -148,6 +148,7 @@ namespace sym_lib {
       for (int i = stackStart; i < n; ++i) {
        int node = xi[i];
        node2partition[node] = minAliasedPar;
+       max_cc = std::max(max_cc, minAliasedPar);
        outCost[minAliasedPar] += nodeCost[node];
        curLeveledParCost += nodeCost[node];
        if (node2Level[node] != dfsLevel)
@@ -170,7 +171,7 @@ namespace sym_lib {
    //Reset all marked node in the DAG
    //std::cout<<cc<<"\n";
    int lb = lbLevel > 0 ? lbLevel : 0;
-   for (int j = levelPtr[lb]; j < levelPtr[lbLevel + 1]; ++j) {
+   for (int j = levelPtr[lb]; j < levelPtr[lb + 1]; ++j) {
     int curNode = levelSet[j];
     isMarked[curNode] = false;
    }
@@ -189,6 +190,7 @@ namespace sym_lib {
    for (int i = 0; i < cc; ++i) {
     newLeveledParList.push_back(extraDim);
    }
+
    modified_BFS_CSC(n, lC, lR, inDegree, visited,
                     node2partition, levelPtr, levelSet, dfsLevel,
                     newLeveledParList);
@@ -232,7 +234,8 @@ namespace sym_lib {
    for (int i = 0; i < outinnerParts; ++i) {
     int curPartElem = 0;
     curPartCost = 0;
-    for (int j : mergedLeveledParList[i]) {
+    for (int ii=0; ii < mergedLeveledParList[i].size(); ii++) {
+     int j = mergedLeveledParList[i][ii];
      curPartCost += nodeCost[j];
      finalNodePtr[finalPartPtr[curNumOfPart] + curPartElem] = j;
      node2partition[j] = curNumOfPart;
@@ -295,6 +298,7 @@ namespace sym_lib {
  int get_coarse_levelSet_DAG_CSC_tree(size_t n,
                                  int *lC,
                                  int *lR,
+                                 int stype,
                                  int &finaLevelNo,
                                  int *&finaLevelPtr,
                                  int &partNo,
@@ -304,11 +308,26 @@ namespace sym_lib {
                                  int minLevelDist,
                                  int divRate,
                                  double *nodeCost){
-  CSC *A = new CSC(n,n,lC[n],lC,lR, 0);
+  int ret = 0;
+  CSC *A = new CSC(n,n,lC[n],lC,lR, stype);
+
   // make it symmetric and upper triangular
-  CSC* A_sym =make_symmetric(A, false);
+  timing_measurement t1, t2;
+  t1.start_timer();
   int *etree = new int[n]();
-  int ret = compute_etree(A_sym, etree);
+  if(stype != 1){
+   CSC* A_sym = make_symmetric(A, false);
+   t1.start_timer();
+   elap_trans = t1.measure_elapsed_time();
+   t2.start_timer();
+   ret = compute_etree(A_sym, etree);
+   t2.start_timer();
+  elap = t2.measure_elapsed_time();
+   delete A_sym;
+  } else{
+   ret = compute_etree(A, etree);
+  }
+  //std::cout<<t.elapsed_time<<"\n";
 #if 0
   print_csc(1, "merged \n", A);
   print_vec("ETREE\n",0,n,etree);
@@ -316,16 +335,16 @@ namespace sym_lib {
   print_csc(1,"Tree\n",n,tmp->p, tmp->i, NULLPNTR);
   delete tmp;
 #endif
+  //timing_measurement t1;
+  //t1.start_timer();
   ret = get_coarse_levelSet_tree(n,etree,finaLevelNo,finaLevelPtr,partNo,
     finalPartPtr, finalNodePtr, innerParts, minLevelDist, divRate,
      nodeCost);
+  //t1.measure_elapsed_time();
+  //std::cout<<"--> "<<t1.elapsed_time<<"\n";
   delete []etree;
-  delete A_sym;
   delete A;
   return ret;
  }
-
-
-
 }
 #endif //CROSSKERNEL_LBC_CSC_H

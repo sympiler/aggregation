@@ -107,6 +107,10 @@ namespace sym_lib {
               int *supernodes, int num_nodes, int n_kern, bool isLower);
 
 
+ int build_level_set_tree_efficient(size_t n, const int *tree,
+                                    const int *nChild1,
+                                    int *levelPtr, int *levelSet, int
+                                    *node2level);
  /// Creates level-set from a tree
  /// \param n
  /// \param inTree : array of parents

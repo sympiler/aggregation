@@ -37,6 +37,7 @@ namespace sym_lib {
 #endif
 
 
+
   double overallCost = 0;
   auto nodeHeight = new int[n]();
   auto slackNumber = new int[n]();
@@ -54,6 +55,7 @@ namespace sym_lib {
 /* for (int i = 0; i < partitionNo; ++i) {
   partitionMinLevels[i]=INT_MAX;
  }*/
+//#pragma omp parallel for
   for (int i = 0; i < n; ++i) {
    nChildTmp[i] = 0;
   }
@@ -69,10 +71,24 @@ namespace sym_lib {
    if (eTree[j] < 0)
     treePartsOrig++;
   }
+
+
+
+  //int levelNo = build_level_set_tree(n, eTree, levelPtr, levelSet);
+  int levelNo = build_level_set_tree_efficient(n, eTree, nChildTmp,
+                                               levelPtr, levelSet, node2Level);
+
   //Finding node levels in original ETree
   //TODO also find the unweighted version of eTree, there might be more levels ignoring them.
-  int originalHeight = get_tree_height(n, eTree, nChildTmp);
-
+  //timing_measurement t2;
+  //t2.start_timer();
+  //int originalHeight = get_tree_height_efficient(n, eTree, nChildTmp);
+  int originalHeight = levelNo;
+  //t2.measure_elapsed_time();
+  //std::cout<<"==: "<<t2.elapsed_time<<"\n";
+  //std::cout<<"*** : "<<originalHeight<<"\n";
+  //int originalHeight2 = get_tree_height(n, eTree, nChildTmp);
+  //assert(originalHeight==originalHeight2);
   if (originalHeight == 0 && n == 1) {// e.g., one super-node
    finaLevelNo = 1;
    finaLevelPtr[0] = 0;
@@ -99,14 +115,16 @@ namespace sym_lib {
   std::vector <std::vector<int>> slackGroups(originalHeight + 1);
   std::vector <std::vector<int>> slackedLevelSet(originalHeight + 1);
   //First compute node2level
-  int levelNo = build_level_set_tree(n, eTree, levelPtr, levelSet);
+
   //std::cout<<"--;"<<levelNo<<","<<n<<";";
-  for (int i = 0; i < levelNo; ++i) {
+/*  for (int i = 0; i < levelNo; ++i) {
    for (int j = levelPtr[i]; j < levelPtr[i + 1]; ++j) {
     assert(levelSet[j] < static_cast<int>(n) && levelSet[j] >= 0);
     node2Level[levelSet[j]] = i;
+   // std::cout<<levelSet[j]<<",";
    }
-  }
+  // std::cout<<"\n";
+  }*/
   //computing the cost of each level,
   auto levelCost = new double[levelNo]();
   auto curLevelCost = new double[levelNo]();
@@ -143,7 +161,7 @@ namespace sym_lib {
                                        levelPtr, NULL, originalHeight,
                                        innerParts, minLevelDist,
                                        divRate, innerPartsSize, slackGroups,
-                                       subTreeCost, partition2Level,true);
+                                       subTreeCost, partition2Level);
 
   //
 #if 0
@@ -177,13 +195,13 @@ namespace sym_lib {
   //If slackgroup is not empty yet, distribute it in levels evenly
 #endif
   //recomputing levelcost
-  for (int i = 0; i < levelNo; ++i) levelCost[i] = 0;
+/*  for (int i = 0; i < levelNo; ++i) levelCost[i] = 0;
   overallCost = 0;
   for (int i = 0; i < n; ++i) {
    assert(node2Level[i] < levelNo);
    levelCost[node2Level[i]] += nodeCost[i];
    overallCost += nodeCost[i];
-  }
+  }*/
 
 
 
@@ -198,12 +216,16 @@ namespace sym_lib {
   auto outNode2Par = new int[n]();
   int outSize = 0;
   double ccc = 0;
+
+//#pragma omp parallel for
   for (int i = 0; i < n; ++i)
    tmpTree[i] = -2;
+//timing_measurement tt;
+//tt.start_timer();
   for (int l = 0; l < lClusterCnt; ++l) {//for each leveled partition
+ //  tt.measure_elapsed_time();
    int curLeveledParCost = 0;
    innerParts = innerPartsSize[l];
-//   printf("innerParts=%d\n", innerParts);
    //Create tmpTree for the partition l
    for (int i = partition2Level[l]; i < partition2Level[l + 1]; ++i) {
     curLeveledParCost += levelCost[i];
@@ -237,11 +259,13 @@ namespace sym_lib {
 #endif
    //partition it using the partitioning function call
    outSize = 0;
+//#pragma omp parallel for
    for (int k = 0; k < n; ++k) {
     outNode2Par[k] = 0;
     outCost[k] = 0;
    }
    treeParts = 0;
+//#pragma omp parallel for reduction(+:treeParts)
    for (int j = 0; j < n; ++j) {
     if (tmpTree[j] == -1) {
      treeParts++;
@@ -265,13 +289,13 @@ namespace sym_lib {
    post_order_spliting(n, tmpTree, nodeCost, childPtrSubtree, childNoSubtree,
                      nChildTmp, curLeveledParCost, innerParts,
                      outSize, outCost, outNode2Par, newLeveledParList);
-   double tmpp = 0;
+/*   double tmpp = 0;
    for (int i = 0; i < newLeveledParList.size(); ++i) {
     for (int j = 0; j < newLeveledParList[i].size(); ++j) {
      assert(newLeveledParList[i][j] < n);
      tmpp += nodeCost[newLeveledParList[i][j]];
     }
-   }
+   }*/
    //assert(tmpp == curLeveledParCost);
    //the partitioning is found, now we need merge some of those if the number is larger than
    //inner parts. It should be typically bigger since the input is a forest.
@@ -353,11 +377,12 @@ namespace sym_lib {
    newLeveledParList.erase(newLeveledParList.begin(), newLeveledParList.end());
    //std::cout<<"parts: "<<outinnerParts<<"\n";
 //  std::cout<<outinnerParts<<",";
+//t.measure_elapsed_time();
   }
-  //A HACK for printing the clustering info in the output
-  for (int i = lClusterCnt; i < 7; ++i) {
-   // std::cout<<"0,";
-  }
+//  tt.measure_elapsed_time();
+//  tt.print_t_array();
+//  std::cout<<"\n";
+  //t.print_t_array();
 
   finaLevelNo = lClusterCnt;
   if (false) {//Verification of the set.
@@ -379,7 +404,6 @@ namespace sym_lib {
    delete[] checkExist;
   }
   partNo = finaLevelPtr[finaLevelNo];
-//  printf("partNo=%d\n", partNo);
   delete[] nodeHeight;
   delete[] slackNumber;
   delete [] node2Level;
