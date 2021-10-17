@@ -374,7 +374,8 @@ namespace sym_lib{
   }
  }
 
- LFactorSymbolicInfo *build_symbolic_simplicial_lfactor(CSC *A){
+ LFactorSymbolicInfo *build_symbolic_simplicial_lfactor(CSC *A, CSC *A_ord,
+                                                        CSC *At_ord){
   if(!A)
    return NULLPNTR;
   int n = A->n;
@@ -391,13 +392,15 @@ namespace sym_lib{
   int *perm_metis;
   CSC *A_full = make_full(A);
   metis_perm_general(A_full, perm_metis);
-  CSC *At_ord = transpose_symmetric(A, perm_metis);
-  CSC *A_ord = transpose_symmetric(At_ord, NULLPNTR);
+  At_ord = transpose_symmetric(A, perm_metis);
+  A_ord = transpose_symmetric(At_ord, NULLPNTR);
   std::copy(perm_metis,perm_metis+n, perm);
   delete perm_metis;
   delete A_full;
 #else
   for(int i=0; i<n; i++) perm[i] = i; // no permutation
+  At_ord = transpose_symmetric(A, NULLPNTR); // transpose of orig
+  A_ord = transpose_symmetric(At_ord, NULLPNTR); // orig matrix actually!
 #endif
   /// Building etree
   compute_etree(At_ord, parent);
@@ -419,8 +422,8 @@ namespace sym_lib{
   /// Build the L-factor pattern
   lfsi->L = build_L_pattern_from_col_counts(n, At_ord, col_count, parent,
     lfsi->accessed_nnz_per_col);
-  delete A_ord;
-  delete At_ord;
+  //delete A_ord;
+  //delete At_ord;
   delete []ws;
   delete []first;
   delete []level;

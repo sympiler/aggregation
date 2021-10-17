@@ -870,7 +870,7 @@ namespace sym_lib {
  }
 
 /* find nonzero pattern of Cholesky L(k,1:k-1) using etree and triu(A(:,k)) */
- int ereach(int n, int *Ap, int *Ai, int k, const int *parent,
+ int ereach(int n, const int *Ap, const int *Ai, int k, const int *parent,
             int *s, int *w) {
   int i, p, len, top;
   if (!Ap || !Ai || !parent || !s || !w) return (-1);   /* check inputs */

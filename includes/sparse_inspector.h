@@ -202,7 +202,7 @@ namespace sym_lib {
 /// \param s output size of n
 /// \param w output size of n
 /// \return
- int ereach(int n, int *Ap, int *Ai, int k, const int *parent,
+ int ereach(int n, const int *Ap, const int *Ai, int k, const int *parent,
             int *s, int *w);
 
 

@@ -80,8 +80,13 @@ namespace sym_lib{
  CSC *build_L_pattern_from_col_counts(int n, CSC *A,
                                       int *col_count, int *parent,
                                       double *accessed_nnz);
-
- LFactorSymbolicInfo *build_symbolic_simplicial_lfactor(CSC *A);
+ ///
+ /// \param A  input matrix
+ /// \param A_ord output reorded matrix
+ /// \param At_ord output reordered transpose matrix
+ /// \return symbolic info of L-factor
+ LFactorSymbolicInfo *build_symbolic_simplicial_lfactor(CSC *A, CSC
+  *A_ord=NULLPNTR, CSC *At_ord=NULLPNTR);
 
 
 
