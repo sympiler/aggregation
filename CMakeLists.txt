@@ -14,7 +14,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib/)
 set(LBC_EXTERNAL ${CMAKE_CURRENT_LIST_DIR}/external/)
 
 
-project(LBC_lib)
+project(LBC_lib CXX C)
 set(CMAKE_CXX_STANDARD 11)
 
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)

@@ -12,7 +12,7 @@ add_library (lbc STATIC
 target_include_directories( lbc PRIVATE
         ${LBC_INC}
         ${OpenMP_CXX_INCLUDE_DIRS}
-        ${METIS_INCLUDE_DIRS}
+        #${METIS_INCLUDE_DIRS}
 )
 target_link_libraries(lbc PRIVATE
         sym_amd
