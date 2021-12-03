@@ -2,7 +2,6 @@
 // Created by kazem on 10/9/19.
 //
 
-#include <omp.h>
 #include <cstring>
 #include <def.h>
 #include <cassert>
