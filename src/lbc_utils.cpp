@@ -6,7 +6,6 @@
 #include <cassert>
 #include <climits>
 #include <algorithm>
-#include <omp.h>
 #include <iostream>
 #include <lbc_utils.h>
 
