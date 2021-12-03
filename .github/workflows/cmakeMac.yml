@@ -1,4 +1,6 @@
-name: UbuntuBuild
+# This is a basic workflow to help you get started with Actions
+
+name: MacBuild
 
 # Controls when the workflow will run
 on:
@@ -16,7 +18,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: macos-11
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -41,5 +43,5 @@ jobs:
     
       - name: run test 1
         run: |
-          ${{github.workspace}}/build/examples/lbc_demo
+          ${{github.workspace}}/build/example/lbc_demo
       

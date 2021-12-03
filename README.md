@@ -1,5 +1,9 @@
 
 ![APM](https://badgen.net/github/license/micromatch/micromatch)
+![example workflow](https://github.
+com/sympiler/lbc/actions/workflows/cmakeUbuntu.yml/badge.svg)
+![example workflow](https://github.com/sympiler/lbc/actions/workflows/cmakeMac.
+yml/badge.svg)
 
 # Load-balance Level Coarsening (LBC)
 Load-balance Level Coarsening is a DAG partitionig/scheduling 
