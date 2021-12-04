@@ -51,7 +51,9 @@ endif()
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
-    message(STATUS "OpenMP found in: ${OpenMP_CXX_INCLUDE_DIRS}" )
+    if(APPLE) #TODO: there might be a better support
+        set(OpenMP_CXX_INCLUDE_DIRS  "/usr/local/include/")
+    endif()
     include_directories(
             ${OpenMP_CXX_INCLUDE_DIRS}
     )
