@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.12)
 
 list(APPEND CMAKE_MODULE_PATH
         ${CMAKE_CURRENT_LIST_DIR}/cmake
@@ -51,8 +51,14 @@ endif()
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
-add_definitions(-DENABLE_OPENMP)
-add_definitions(-D__OPENMP__)
+    if(APPLE) #TODO: there might be a better support
+        set(OpenMP_CXX_INCLUDE_DIRS  "/usr/local/include/")
+    endif()
+    include_directories(
+            ${OpenMP_CXX_INCLUDE_DIRS}
+    )
+    add_definitions(-DENABLE_OPENMP)
+    add_definitions(-D__OPENMP__)
 endif()
 
 file(GLOB_RECURSE EXT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.cpp
