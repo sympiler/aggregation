@@ -11,14 +11,22 @@ It can be used within code generators or libraries. For more information see
 
 ## Install
 
-### Prerequisites 
+### Prerequisites
+First following items should be installed:
 * CMake
 * C++ compiler (GCC, ICC, or CLang)
-* METIS and OpenMP (optional) dependency for running the demo efficiently 
-and are handled by the cmake.
+* METIS (optional) dependency for running the demo efficiently 
+and is handled by the cmake. If you have installed the package using
+a packet manager (e.g., apt of homebrew), CMake should be able to detect it. 
+Otherwise, it installs METIS from source internally. 
+* OpenMP (optional) for running some parts of the code in parallel. If you 
+use GCC/ICC then OpenMP should be supported natively. If you use Apple CLang,
+you probably need to install OpenMP using `homebrew install libomp`. You can 
+* also install LLVM usng `brew install llvm` which support OpenMP natively.
 
-### Linux
-Then install LBC by following commands:
+
+### Build
+Then build LBC, using the following:
 
 ```bash
 mkdir build
@@ -28,14 +36,11 @@ make
 ```
 
 
-### Mac
-Setting the C and CXX compilers to GCC and then follow the Linux 
-instructions. For example:
-`-DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/g++-9 -DCMAKE_C_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/gcc-9`
+You can always set `-DCMAKE_CXX_COMPILER=` and `-DCMAKE_C_COMPILER=` to use 
+a different compiler. For example:
+`cmake -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/g++-9 
+-DCMAKE_C_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/gcc-9 ..`
 
-Alternatively, you can use CLang using `brew install llvm`. 
-The default clang on Mac might not work so make sure to set it llvm clang:
-`-DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++`
 
 ## Example
 The example directory shows how to call LBC API and iterate over 
