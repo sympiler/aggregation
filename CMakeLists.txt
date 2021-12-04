@@ -42,13 +42,6 @@ set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
-
-include(metis)
-if(METIS_FOUND)
-    add_definitions(-DMETIS)
-    set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
-endif()
-
 find_package(OpenMP)
 if(OpenMP_FOUND)
     if(APPLE) #TODO: there might be a better support
@@ -57,9 +50,19 @@ if(OpenMP_FOUND)
     include_directories(
             ${OpenMP_CXX_INCLUDE_DIRS}
     )
+    link_libraries(
+            OpenMP::OpenMP_CXX
+    )
     add_definitions(-DENABLE_OPENMP)
     add_definitions(-D__OPENMP__)
 endif()
+
+include(metis)
+if(METIS_FOUND)
+    add_definitions(-DMETIS)
+    set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
+endif()
+
 
 file(GLOB_RECURSE EXT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.c)

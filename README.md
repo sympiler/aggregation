@@ -14,8 +14,8 @@ It can be used within code generators or libraries. For more information see
 ### Prerequisites 
 * CMake
 * C++ compiler (GCC, ICC, or CLang)
-* METIS (optional) dependency for running the demo efficiently 
-and is handled by the cmake.
+* METIS and OpenMP (optional) dependency for running the demo efficiently 
+and are handled by the cmake.
 
 ### Linux
 Then install LBC by following commands:
