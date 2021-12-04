@@ -18,3 +18,7 @@ target_link_libraries(lbc PRIVATE
         sym_amd
         metis::metis
         )
+
+if(OpenMP_FOUND)
+target_link_libraries(lbc PRIVATE OpenMP::OpenMP_CXX)
+endif()

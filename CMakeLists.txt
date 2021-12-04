@@ -49,6 +49,12 @@ if(METIS_FOUND)
     set(METIS_SOURCE_FILES "${SPARSE_UTIL_SRC}/metis_interface.cpp")
 endif()
 
+find_package(OpenMP)
+if(OpenMP_FOUND)
+add_definitions(-DENABLE_OPENMP)
+add_definitions(-D__OPENMP__)
+endif()
+
 file(GLOB_RECURSE EXT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.c)
 add_library(sym_amd STATIC

@@ -9,7 +9,6 @@
 #include <sparse_io.h>
 #include <test_utils.h>
 #include <sparse_utilities.h>
-#include <omp.h>
 #include <lbc.h>
 
 #ifdef METIS
