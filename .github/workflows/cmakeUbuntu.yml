@@ -37,7 +37,7 @@ jobs:
           
       - name: Build
       # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --target lbc lbc_demo
+        run: cmake --build ${{github.workspace}}/build --target lbc lbc_demo sptrsv_demo
     
       - name: run test 1
         run: |

@@ -41,6 +41,10 @@ a different compiler. For example:
 `cmake -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/g++-9 
 -DCMAKE_C_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/gcc-9 ..`
 
+## Profiling
+You can install papi in Ubuntu using `apt install papi-tools` and then you 
+should be able to use profiling utils. You can install papi yourself and 
+passed installtion path using `-DCMAKE_PREFIX_PATH=`.
 
 ## Example
 The example directory shows how to call LBC API and iterate over 
