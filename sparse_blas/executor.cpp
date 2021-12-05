@@ -28,6 +28,7 @@ namespace sym_lib
        }
       }
      };
+     return 1;
     }
 
     void fs_csr_stat(int n, int *Lp, int *Li,  int &flops, int &access_nnz, int &reuse_nnz)
@@ -106,11 +107,13 @@ namespace sym_lib
     void fs_csr_levelset_stat(int *Lp, int *Li, int *groupPtr, int *groupSet,
                               int levels, int *levelPtr, int *levelSet, int *lcost)
     {
-
-     int *cost = (int *)malloc(sizeof(int)*omp_get_max_threads());
-     memset(cost, 0, sizeof(int)*omp_get_max_threads());
-
+#ifdef ENABLE_OPENMP
      int len = omp_get_max_threads();
+#else
+     int len = 1;
+#endif
+     int *cost = (int *)malloc(sizeof(int)*len);
+     memset(cost, 0, sizeof(int)*len);
 
      if (!Lp || !Li ) return ;
 //#pragma omp parallel
@@ -118,7 +121,11 @@ namespace sym_lib
       for (int l = 0; l < levels; ++l) {
 #pragma omp parallel for schedule(auto)
        for (int li = levelPtr[l]; li < levelPtr[l + 1]; ++li) {
+#ifdef ENABLE_OPENMP
         int tidx = omp_get_thread_num();
+#else
+        int tidx = 1;
+#endif
         int t_cost=0;
         int lidx = levelSet[li];
 
@@ -158,17 +165,23 @@ namespace sym_lib
     void sptrsv_csr_lbc_stat(int n, int *Lp, int *Li,
                              int level_no, int *level_ptr,
                              int *par_ptr, int *partition, int *lcost) {
-     int *cost = (int *)malloc(sizeof(int)*omp_get_max_threads());
-     memset(cost, 0, sizeof(int)*omp_get_max_threads());
-
+#ifdef ENABLE_OPENMP
      int len = omp_get_max_threads();
+#else
+     int len = 1;
+#endif
+     int *cost = (int *)malloc(sizeof(int)*len);
+     memset(cost, 0, sizeof(int)*len);
 
      for (int i1 = 0; i1 < level_no; ++i1) {
       {
 #pragma omp  parallel for schedule(auto)
        for (int j1 = level_ptr[i1]; j1 < level_ptr[i1 + 1]; ++j1) {
+#ifdef ENABLE_OPENMP
         int tidx = omp_get_thread_num();
-
+#else
+        int tidx = 1;
+#endif
         for (int k1 = par_ptr[j1]; k1 < par_ptr[j1 + 1]; ++k1) {
          int i = partition[k1];
          cost[tidx] += (Lp[i+1] - Lp[i]);
@@ -205,16 +218,22 @@ namespace sym_lib
     void sptrsv_csr_group_lbc_stat(int n, int *Lp, int *Li,
                                    int level_no, int *level_ptr,
                                    int *par_ptr, int *partition, int *groupPtr, int *groupSet, int *lcost) {
-     int *cost = (int *)malloc(sizeof(int)*omp_get_max_threads());
-     memset(cost, 0, sizeof(int)*omp_get_max_threads());
-
+#ifdef ENABLE_OPENMP
      int len = omp_get_max_threads();
-
+#else
+     int len = 1;
+#endif
+     int *cost = (int *)malloc(sizeof(int)*len);
+     memset(cost, 0, sizeof(int)*len);
      for (int i1 = 0; i1 < level_no; ++i1) {
       {
 #pragma omp  parallel for schedule(auto)
        for (int j1 = level_ptr[i1]; j1 < level_ptr[i1 + 1]; ++j1) {
+#ifdef ENABLE_OPENMP
         int tidx = omp_get_thread_num();
+#else
+        int tidx = 1;
+#endif
 
         for (int k1 = par_ptr[j1]; k1 < par_ptr[j1 + 1]; ++k1) {
          int p = partition[k1];
@@ -242,13 +261,7 @@ namespace sym_lib
       temp_cost.clear();
       memset(cost, 0, len*sizeof(int));
      }
-
      free(cost);
     }
-
-
-
-
-
 
 }

@@ -11,11 +11,9 @@
 #include <cstring>
 #include "FusionDemo.h"
 #include "sparse_blas_lib.h"
-#include <Group.h>
-#include <Utils.h>
+#include "group.h"
+#include "group_utils.h"
 #include <executor.h>
-#include <StatSpMat.h>
-
 
 namespace sym_lib {
     class SptrsvSerial : public FusionDemo {
@@ -72,6 +70,7 @@ namespace sym_lib {
          L1_csc_ = L_csc;
          correct_x_ = correct_x;
         };
+/*
 #ifdef PAPI
         SptrsvLevelSet (CSR *L, CSC *L_csc,
                         double *correct_x, std::string name, PAPIWrapper *pw) :
@@ -82,6 +81,7 @@ namespace sym_lib {
             pw_ = pw;
         };
 #endif
+*/
 
         int *getLeveSet(){
          return level_set;
@@ -200,6 +200,7 @@ namespace sym_lib {
                      int cp, int ic)
                 : SptrsvLBC(L, L_csc, correct_x, name, lp, cp, ic) {}
 
+/*
 #ifdef PAPI
         SptrsvLBCDAG(CSR *L, CSC *L_csc, double *correct_x, std::string name, int lp,
                      int cp, int ic, PAPIWrapper *pw)
@@ -208,6 +209,7 @@ namespace sym_lib {
         }
 
 #endif
+*/
         ~SptrsvLBCDAG() {}
         double averWsize(){
          part_no=fina_level_ptr[final_level_no];
@@ -314,6 +316,7 @@ namespace sym_lib {
 
          f_sort = flag;
         };
+/*
 #ifdef PAPI
         SptrsvLBC_W_Sorting(CSR *L, CSC *L_csc, double *correct_x, std::string name,
                             int lp, int cp, int ic, bool flag, PAPIWrapper *pw)
@@ -327,6 +330,7 @@ namespace sym_lib {
             pw_ = pw;
         };
 #endif
+*/
 
         int levels(){
          return final_level_no;
@@ -366,7 +370,11 @@ namespace sym_lib {
         }
 
 
-        ~SptrsvLBC_W_Sorting() {};
+        ~SptrsvLBC_W_Sorting() {
+         delete []fina_level_ptr;
+         delete []final_part_ptr;
+         delete []final_node_ptr;
+        };
     };
 
 
@@ -447,6 +455,7 @@ namespace sym_lib {
          nthreads = nt;
          blksize = 1;
         };
+/*
 #ifdef PAPI
         SpTrsvCSR_Grouping(CSR *L, CSC *L_csc,
                            double *correct_x, std::string name, int nt, PAPIWrapper *pw):
@@ -459,6 +468,7 @@ namespace sym_lib {
             pw_=pw;
         };
 #endif
+*/
 
         timing_measurement groupTime(){
          return t_group;
@@ -597,6 +607,7 @@ namespace sym_lib {
          lp_=lp; cp_=cp; ic_=ic;
          f_sort=flag;
         };
+/*
 #ifdef PAPI
         SpTrsvCSR_Grouping_H2(CSR *L, CSC *L_csc,
                               double *correct_x, std::string name,
@@ -610,6 +621,7 @@ namespace sym_lib {
             pw_ = pw;
         };
 #endif
+*/
         int *getLevelPtr(){
          return fina_level_ptr;
         }

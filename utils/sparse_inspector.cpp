@@ -6,8 +6,9 @@
 #include <queue>
 #include <cassert>
 #include "sparse_utilities.h"
-#include "includes/def.h"
-#include "includes/sparse_inspector.h"
+#include <def.h>
+#include <BCSCMatrix.h>
+#include <sparse_inspector.h>
 
 namespace sym_lib {
 
@@ -199,7 +200,6 @@ namespace sym_lib {
     }
    }
   }
-
   for (int i = 0; i < n; i++) {
    if (degrees[i] == 0) {
     queue.push(i);
@@ -732,7 +732,6 @@ namespace sym_lib {
  }
 
 
-/*
  CSC *merge_graphs(BCSC *A, CSC *B, BCSC *C) {
   int nodes = A->nodes;
   int *supernodes = A->supernodes;
@@ -884,7 +883,6 @@ namespace sym_lib {
 
   return M;
  }
-*/
 
 
  void
@@ -934,7 +932,7 @@ namespace sym_lib {
  }
 
 /* find nonzero pattern of Cholesky L(k,1:k-1) using etree and triu(A(:,k)) */
- int ereach(int n, int *Ap, int *Ai, int k, const int *parent,
+ int ereach(int n, const int *Ap, const int *Ai, int k, const int *parent,
             int *s, int *w) {
   int i, p, len, top;
   if (!Ap || !Ai || !parent || !s || !w) return (-1);   /* check inputs */

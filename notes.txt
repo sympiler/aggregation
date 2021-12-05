@@ -1,0 +1,10 @@
+
+## Integration notes:
+* add HDAGG to the src directory similar to other methods.
+* try to have steps separated so we can easily enable/disable it.
+* sparse_blas is a temp directory, we will use to facilitate testing.
+* all your tests (which is in example directory) will be in sympiler-benchmark
+eventually. For now you can keep it here.
+* put your profiling demos in the profiler directory. The setup for your
+profiler should be in utils.
+

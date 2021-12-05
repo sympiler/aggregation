@@ -1,25 +1,32 @@
+
+![APM](https://badgen.net/github/license/micromatch/micromatch)
+![example workflow](https://github.com/sympiler/lbc/actions/workflows/cmakeUbuntu.yml/badge.svg)
+![example workflow](https://github.com/sympiler/lbc/actions/workflows/cmakeMac.yml/badge.svg)
+
 # Load-balance Level Coarsening (LBC)
-Load-balance Level Coarsening is a scheduling algorithm for 
-making sparse matrix loops parallel. It can be used within 
- code generators or libraries. For more information see 
-[Sympiler website](http:://www.sympiler.com/).
+Load-balance Level Coarsening is a DAG partitionig/scheduling 
+algorithm used for making sparse matrix loops parallel. 
+It can be used within code generators or libraries. For more information see 
+[Sympiler documents](https://www.sympiler.com/docs/lbc/).
 
 ## Install
 
-### Linux
-LBC library does not have any dependency.
-However, if you want to run the triangular solve example, 
-you need to install METIS. If METIS is installed in the system path,
-CMAKE will resolve the dpendency otherwise you need to set 
-`CMAKE_PREFIX_PATH` to the root directory of metis, i.e., 
-where the cmakelists file exists. 
-For installing METIS in Ubuntu you can also use
-```
-sudo apt install metis
-```
+### Prerequisites
+First following items should be installed:
+* CMake
+* C++ compiler (GCC, ICC, or CLang)
+* METIS (optional) dependency for running the demo efficiently 
+and is handled by the cmake. If you have installed the package using
+a packet manager (e.g., apt of homebrew), CMake should be able to detect it. 
+Otherwise, it installs METIS from source internally. 
+* OpenMP (optional) for running some parts of the code in parallel. If you 
+use GCC/ICC then OpenMP should be supported natively. If you use Apple CLang,
+you probably need to install OpenMP using `homebrew install libomp`. You can 
+* also install LLVM usng `brew install llvm` which support OpenMP natively.
 
 
-Then install LBC by following commands:
+### Build
+Then build LBC, using the following:
 
 ```bash
 mkdir build
@@ -28,18 +35,16 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 
-### Mac
-Setting the C and CXX compilers to GCC and then follow the Linux 
-instructions. 
+
+You can always set `-DCMAKE_CXX_COMPILER=` and `-DCMAKE_C_COMPILER=` to use 
+a different compiler. For example:
+`cmake -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/g++-9 
+-DCMAKE_C_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/gcc-9 ..`
+
 
 ## Example
-As an example, sparse triangular solver example, CSR is turned into
-a parallel code using the LBC algorithm.
-
-## Testing
-If you want to build unit tests, you need to pass the following to Cmake
-```
-cmake -DotheroptionXX -DTEST_CATCH=true ..
-``` 
-
+The example directory shows how to call LBC API and iterate over 
+the created partitioning. For more examples on how LBC is used for
+making loops with sparse dependencies parallel, please check 
+[Sympiler Git repo](https://github.com/sympiler/sympiler).
 

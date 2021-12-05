@@ -2,7 +2,6 @@
 // Created by kazem on 10/9/19.
 //
 
-#include <omp.h>
 #include <cstring>
 #include <def.h>
 #include <cassert>
@@ -710,24 +709,243 @@ namespace sym_lib {
     }
 
 
+ int get_tree_height_efficient(int n, const int *tree, const int *nChild1,
+   const int *weight) {
+  int maxLen = 0, level = 0;
+  auto *touch = new int[n]();
+  for (int i = 0; i < n; ++i) {
+   if (nChild1[i] == 0) {
+    int node = i; level = 0;
+    while (tree[node] >= 0) {
+     node = tree[node];
+     if (weight == NULLPNTR)
+      level++;
+     else
+      level += weight[node];
+     if(level < touch[node])
+      break; // a longer path visted this node before
+     else
+      touch[node] = level;// touched this node with level
+    }
+    if (level > maxLen)
+     maxLen = level;
+   }
+  }
+  delete []touch;
+  return maxLen;
+ }
 
 
-    int post_order_spliting(int inSize, int *inTree, double *inCost,
-                            int *inChildPtr, int *inChildNo,//Children list
-                            int *nChild,int n, int partitionNum,
-            /*Outputs*/
-                            int &outSize, double* outCost,
-                            int* outNode2Par, std::vector<std::vector<int>> &parList){
-     auto *visited = new bool[inSize]();
-     auto *mark = new bool[inSize]();
-     int Threshold, k=0;
-     Threshold=n/partitionNum;//Almost the same numjber of columns in each partition
-     //Threshold=1;
-     std::vector<int> stack;
-     //Initial partitioning, each partition one node.
-     //parList.resize(inSize);
-     std::vector<int> extraDim;
-     parList.push_back(extraDim);
+ void sparse2dense(CSC *A, double *D){
+  std::fill_n(D,A->n*A->m,0);
+  for (int i = 0; i < A->n; ++i) {
+   for (int j = A->p[i]; j < A->p[i+1]; ++j) {
+    int r = A->i[j];
+    D[i*A->m+r] = A->x[j];
+    if(A->stype==-1 || A->stype==1){
+     D[r*A->n+i] = A->x[j];
+    }
+   }
+  }
+ }
+
+
+ int *extract_diagonals(const int n, const int *Ap, const int *Ai){
+  auto *ret_ptr = new int[n];
+  for (int i = 0; i < n; ++i) {
+   for (int j = Ap[i]; j < Ap[i+1]; ++j) {
+    if(Ai[j] == i){
+     ret_ptr[i] = j;
+     break;
+    }
+   }
+  }
+  return ret_ptr;
+ }
+
+
+ void merge_graph(int ngraphs, int n, int **Gps, int **Gis,
+   int *&nGp, int *&nGi) {
+  const int *Gp, *Gi;
+
+  int nnz = 0;
+  for(int i = 0; i < ngraphs; i++)
+   nnz += Gps[i][n];
+  nnz += (ngraphs-1) * n;
+  /** allocate new graph space **/
+  nGp = new int[ngraphs * n + 1]();
+  nGi = new int[nnz]();
+
+  int p_counter = 1;
+  int i_counter = 0;
+  nGp[0] = 0;
+  /** first <ngraphs>-1 graphs**/
+  for(int i = 0; i < ngraphs-1; i++) {
+   Gp = Gps[i];
+   Gi = Gis[i];
+
+   for(int j = 0; j < n; j++) {
+    int diff = Gp[j+1] - Gp[j] + 1;
+    nGp[p_counter] = nGp[p_counter-1] + diff;
+    p_counter++;
+    for(int p = Gp[j]; p < Gp[j+1]; p++) {
+     int row = Gi[p] + (i * n);
+     nGi[i_counter] = row;
+     i_counter++;
+    }
+    nGi[i_counter] = j + (i+1) * n;
+    i_counter++;
+   }
+  }
+  /** last graph **/
+  Gp = Gps[ngraphs-1];
+  Gi = Gis[ngraphs-1];
+  for(int j = 0; j < n; j++) {
+   int diff = Gp[j+1] - Gp[j];
+   nGp[p_counter] = nGp[p_counter-1] + diff;
+   p_counter++;
+   for(int p = Gp[j]; p < Gp[j+1]; p++) {
+    int row = Gi[p] + (ngraphs-1) * n;
+    nGi[i_counter] = row;
+    i_counter++;
+   }
+  }
+ }
+
+ CSC* merge_graph(int ngraphs, int n, int **Gps, int **Gis) {
+  const int *Gp, *Gi;
+  int nnz = 0;
+  for(int i = 0; i < ngraphs; i++)
+   nnz += Gps[i][n];
+  nnz += (ngraphs-1) * n;
+  CSC *merged_graph = new CSC(n*ngraphs,n*ngraphs,nnz, true);
+  /** allocate new graph space **/
+  int *nGp = merged_graph->p;
+  int *nGi = merged_graph->i;
+
+  int p_counter = 1;
+  int i_counter = 0;
+  nGp[0] = 0;
+  /** first <ngraphs>-1 graphs**/
+  for(int i = 0; i < ngraphs-1; i++) {
+   Gp = Gps[i];
+   Gi = Gis[i];
+
+   for(int j = 0; j < n; j++) {
+    int diff = Gp[j+1] - Gp[j] + 1;
+    nGp[p_counter] = nGp[p_counter-1] + diff;
+    p_counter++;
+    for(int p = Gp[j]; p < Gp[j+1]; p++) {
+     int row = Gi[p] + (i * n);
+     nGi[i_counter] = row;
+     i_counter++;
+    }
+    nGi[i_counter] = j + (i+1) * n;
+    i_counter++;
+   }
+  }
+  /** last graph **/
+  Gp = Gps[ngraphs-1];
+  Gi = Gis[ngraphs-1];
+  for(int j = 0; j < n; j++) {
+   int diff = Gp[j+1] - Gp[j];
+   nGp[p_counter] = nGp[p_counter-1] + diff;
+   p_counter++;
+   for(int p = Gp[j]; p < Gp[j+1]; p++) {
+    int row = Gi[p] + (ngraphs-1) * n;
+    nGi[i_counter] = row;
+    i_counter++;
+   }
+  }
+  return merged_graph;
+ }
+
+/*
+ * Takes ngraphs and n-1 dependence graph and merge them
+ * G1 -> DG1 -> G2 -> DG2 -> G3
+ */
+ CSC* merge_DAGs_with_partial_order(int ngraphs, int n, int **Gps, int **Gis,
+   int nd, int **DGps, int **DGis){
+  const int *Gp, *Gi, *DGp, *DGi;
+  int nnz = 0;
+  for(int i = 0; i < ngraphs; i++){
+   nnz += Gps[i][n];
+  }
+  for(int i = 0; i < ngraphs-1; i++){
+   nnz += DGps[i][n];
+  }
+  nnz += (ngraphs-1) * n;
+  CSC *merged_graph = new CSC(n*ngraphs,n*ngraphs,nnz, true);
+
+/** allocate new graph space **/
+
+  int *nGp = merged_graph->p;
+  int *nGi = merged_graph->i;
+
+  int p_counter = 1;
+  int i_counter = 0;
+  nGp[0] = 0;
+
+/** first <ngraphs>-1 graphs**/
+
+  for(int i = 0; i < ngraphs-1; i++) {
+   Gp = Gps[i];
+   Gi = Gis[i];
+   DGp = DGps[i];
+   DGi = DGis[i];
+
+   for(int j = 0; j < n; j++) {
+    int diff = Gp[j+1] - Gp[j];
+    diff += (DGp[j+1] - DGp[j]);
+    nGp[p_counter] = nGp[p_counter-1] + diff;
+    p_counter++;
+    for(int p = Gp[j]; p < Gp[j+1]; p++) {
+     int row = Gi[p] + (i * n);
+     nGi[i_counter] = row;
+     i_counter++;
+    }
+    for(int p = DGp[j]; p < DGp[j+1]; p++) {
+     int row = DGi[p] + (i+1) * n;
+     nGi[i_counter] = row;
+     i_counter++;
+    }
+   }
+  }
+
+/** last graph **/
+
+  Gp = Gps[ngraphs-1];
+  Gi = Gis[ngraphs-1];
+  for(int j = 0; j < n; j++) {
+   int diff = Gp[j+1] - Gp[j];
+   nGp[p_counter] = nGp[p_counter-1] + diff;
+   p_counter++;
+   for(int p = Gp[j]; p < Gp[j+1]; p++) {
+    int row = Gi[p] + (ngraphs-1) * n;
+    nGi[i_counter] = row;
+    i_counter++;
+   }
+  }
+  return merged_graph;
+ }
+
+
+int post_order_spliting(int inSize, int *inTree, double *inCost,
+                       int *inChildPtr, int *inChildNo,//Children list
+                       int *nChild,int n, int partitionNum,
+   /*Outputs*/
+                       int &outSize, double* outCost,
+                       int* outNode2Par, std::vector<std::vector<int>> &parList){
+  auto *visited = new bool[inSize]();
+  auto *mark = new bool[inSize]();
+  int Threshold, k=0;
+  Threshold=n/partitionNum;//Almost the same numjber of columns in each partition
+  //Threshold=1;
+  std::vector<int> stack;
+  //Initial partitioning, each partition one node.
+  //parList.resize(inSize);
+  std::vector<int> extraDim;
+  parList.push_back(extraDim);
 #if 0
      for (int l = 0; l < inSize; ++l) {
         std::cout<<l<<": "<<inTree[l]<<",";
@@ -909,6 +1127,90 @@ namespace sym_lib {
      delete ApAt;
      return As;
     }
+
+
+ void compute_nnz_per_col(CSC *A, double *nnz_cnt){
+  for (int i = 0; i < A->n; ++i) {
+   nnz_cnt[i] = A->p[i+1] - A->p[i];
+  }
+ }
+
+
+ void reorder_array(int n, int *arr, int *perm, int *ws){
+  for (int i = 0; i < n; ++i) {
+   ws[i] = arr[perm[i]];
+  }
+  for (int j = 0; j < n; ++j) {
+   arr[j] = ws[j];
+  }
+ }
+
+ void inv_perm(int n, int *perm, int *iperm){
+  for (int i = 0; i < n; ++i) {
+   iperm[perm[i]] = i;
+  }
+ }
+
+
+ CSC *permute_general (const CSC *A, const int *pinv,
+   const int *q)
+ {
+  int nz = 0, n, *Ap, *Ai, *Cp, *Ci ;
+  double *Cx, *Ax ;
+  int m = A->m; n = A->n ; Ap = A->p ; Ai = A->i ; Ax = A->x ;
+  CSC *C = new CSC(m, n, A->nnz);
+  Cp = C->p ; Ci = C->i ; Cx = C->x ;
+  for (int k = 0 ; k < n ; k++)
+  {
+   Cp [k] = nz ; //* column k of C is column q[k] of A */
+   int j = q ? (q [k]) : k ;
+   for (int t = Ap [j] ; t < Ap [j+1] ; t++)
+   {
+    if (Cx) Cx [nz] = Ax [t] ;  /* row i of A is row pinv[i] of C */
+    Ci [nz++] = pinv ? (pinv [Ai [t]]) : Ai [t] ;
+   }
+  }
+  Cp [n] = nz ; //* finalize the last column of C */
+  return C;
+ }
+
+
+ CSC *coarsen_k_times(int n, int nnz, int *Ap, int *Ai, int stype, int k){
+  int new_n = (n%k == 0) ? n/k : (n/k) + 1;
+  CSC *c_mat = new CSC(new_n, new_n, nnz, false);
+  c_mat->stype = stype;
+  int *Bp = c_mat->p; int *Bi = c_mat->i; int cur_col=1, cur_nnz=0;
+  Bp[0] = 0;
+  std::vector<int> faled_vals;
+  auto is_exist = new bool[n]();
+  for (int j = 0; j < n; j+=k) {
+   int bnd = std::min<int>(j + k,n);
+   for (int l = j; l < bnd; ++l) {
+    for (int m = Ap[l]; m < Ap[l + 1]; ++m) {
+     auto tmp = Ai[m];
+     int new_idx = tmp / k;
+     if(!is_exist[new_idx]){
+      is_exist[new_idx] = true;
+      assert(new_idx < new_n);
+      Bi[cur_nnz] = new_idx;
+      cur_nnz++;
+      faled_vals.push_back(new_idx);
+     }
+    }
+   }
+   Bp[cur_col] = cur_nnz;
+   cur_col++;
+   for (auto i : faled_vals ) {
+    is_exist[i] = false;
+   }
+   faled_vals.clear();
+   //std::fill_n(is_exist,n,false);
+  }
+  assert(new_n == cur_col-1);
+  c_mat->nnz = cur_nnz;
+  delete is_exist;
+  return c_mat;
+ }
 
 }
 
