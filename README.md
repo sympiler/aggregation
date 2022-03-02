@@ -4,7 +4,7 @@
 
 # Aggregation
 
-The aggregation repository contains a set of algorithm for grouping vertices of DAGs
+The aggregation repository contains a set of algorithms for grouping vertices of DAGs
 coming from loop-carried dependencies.
 Load-balance Level Coarsening (LBC) is one of the aggregation algorithms.
 The algorithms in this repository can be used within code generators or libraries.
