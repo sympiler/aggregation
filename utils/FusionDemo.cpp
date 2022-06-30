@@ -33,7 +33,14 @@ namespace sym_lib{
   x_ = new double[n]();
  }
 
-
+ FusionDemo::FusionDemo(int n, int nnz, std::string name) : FusionDemo()
+ {
+   n_ = n;
+   nnz_ = nnz;
+   name_ = name;
+   x_in_ = new double[n]();
+   x_ = new double[n]();
+ }
 
 #ifdef PROFILE
   FusionDemo::FusionDemo(int n, std::string name, PAPIWrapper *pw):FusionDemo(n, name){

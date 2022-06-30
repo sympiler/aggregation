@@ -18,6 +18,7 @@ namespace sym_lib{
 
  protected:
   int n_{};
+  int nnz_{};
   double *correct_x_{};
   double *x_{}, *x_in_{};
   std::string name_{};
@@ -43,6 +44,7 @@ namespace sym_lib{
   virtual void testing();
  public:
   FusionDemo();
+  FusionDemo(int n, int nnz, std::string name);
   explicit  FusionDemo(int, std::string);
   virtual ~FusionDemo();
 

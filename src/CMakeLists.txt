@@ -6,7 +6,7 @@ add_library (lbc STATIC
         ${SPARSE_UTIL_SRC_FILES}
         )
 
-target_include_directories( lbc PRIVATE
+target_include_directories(lbc PRIVATE
         ${LBC_INC}
 )
 

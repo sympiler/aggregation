@@ -91,6 +91,44 @@ void spico_csc_levelset(int n, const int *Lp, const int *Li, double *Lx,
                              int *par_ptr, int *partition,  int *groupPtr, int *groupSet);
 
     void ic0_csc(int n, double *val, int * colPtr, int *rowIdx);
+
+
+
+    ///=============================================================================
+    ///============================= HDAGG SPARSE BLASS ============================
+    ///=============================================================================
+    ///\Description It is a parallel left looking Sparse Triangular Solve which uses wavefronts schedule
+    ///\input n Number of iterations or node
+    ///\input Lp the pointer array in CSC version
+    ///\input Li the index array in CSC version
+    ///\input Lx the value array in CSC version
+    ///\input levels number of levels in the DAg
+    ///\input levelPtr the pointer array in CSC format
+    /// that point to starting and ending point of nodes in a level
+    ///\input LevelSet the array that store nodes sorted based on their level
+    ///\inout x the output
+    void sptrsv_csr_levelset(int n, const int *Lp, const int *Li, const double *Lx,
+                             int levels, const int *levelPtr, const int *levelSet,
+                             double *x);
+
+    /*
+     * It is left looking Sparse Triangular Solve
+     * @param n Number of iterations or node
+     * @param Lp the pointer array in CSC version
+     * @param Li the index array in CSC version
+     * @param Lx the value array in CSC version
+     * @return x the output
+     * @param levels number of levels in the DAg
+     * @param levelPtr the pointer array in CSC format
+     * that point to starting and ending point of nodes in a level
+     * @param LevelSet the array that store nodes sorted based on their level
+     * @param groupPtr the array pointer for groups
+     * @param groupSet the array set for groups. Nodes are sorted based on their group
+     */
+    void sptrsv_csr_group_levelset(int *Lp, int *Li, double *Lx, double *x,
+                                   int level_no, int *level_ptr,
+                                   int *levelSet, int *groupPtr, int *groupSet);
+
 }
 
 

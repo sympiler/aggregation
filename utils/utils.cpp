@@ -7,6 +7,7 @@
 #include <utils.h>
 namespace sym_lib{
 
+
  bool time_cmp(timing_measurement a, timing_measurement b){
   return a.elapsed_time<b.elapsed_time;}
 

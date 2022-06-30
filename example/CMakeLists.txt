@@ -112,3 +112,10 @@ else()
 target_link_libraries(lbc_demo
         lbc)
 endif()
+
+
+################################################################################
+# Testing SpTRSV kernel
+add_executable(Hdagg_SpTRSV SpTRSV_runtime.cpp)
+target_link_libraries(Hdagg_SpTRSV PUBLIC HDagg_dev lbc metis::metis)
+################################################################################

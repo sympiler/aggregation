@@ -953,4 +953,74 @@ namespace sym_lib {
   return (top);                  /* s [top..n-1] contains pattern of L(k,:)*/
  }
 
+
+
+ int build_levelSet_CSC(size_t n, const int *Lp, const int *Li,
+                        int *levelPtr, int *levelSet)
+ {
+   int begin = 0, end = n - 1;
+   int cur_level = 0, cur_levelCol = 0;
+   int *inDegree = new int[n]();
+   bool *visited = new bool[n]();
+   for (int i = 0; i < Lp[n]; ++i)
+   { //O(nnz) -> but not catch efficient. This code should work well
+     // on millions of none zeros to enjoy a gain in the parformance. Maybe we can find another way. Behrooz
+     inDegree[Li[i]]++; // Isn't it the nnz in each row? or the rowptr[x + 1] - rowptr[x] in CSR?
+   }
+   //print_vec("dd\n",0,n,inDegree);
+   while (begin <= end)
+   {
+     for (int i = begin; i <= end; ++i)
+     { //For level cur_level
+       if (inDegree[i] == 1 && !visited[i])
+       { //if no incoming edge
+         visited[i] = true;
+         levelSet[cur_levelCol] = i; //add it to current level
+         cur_levelCol++;				//Adding to level-set - This is a cnt for the current level. Behrooz
+       }
+     }
+     cur_level++; //all nodes_ with zero indegree are processed.
+     //assert(cur_level < n);
+     if (cur_level >= n)
+       return -1; // The input graph has a cycle
+     levelPtr[cur_level] = cur_levelCol; // The levelPtr starts from level 1. Behrooz
+     while (inDegree[begin] == 1) // Why? Behrooz
+     {
+       begin++;
+       if (begin >= n)
+         break;
+     }
+     while (inDegree[end] == 1 && begin <= end) // The same why as above. Behrooz
+       end--;
+     //Updating degrees after removing the nodes_
+     for (int l = levelPtr[cur_level - 1]; l < levelPtr[cur_level]; ++l) // I don't get this part. Behrooz
+     {
+       int cc = levelSet[l];
+       for (int j = Lp[cc]; j < Lp[cc + 1]; ++j)
+       {
+         if (Li[j] != cc)	   //skip diagonals
+           inDegree[Li[j]]--; //removing corresponding edges
+       }
+     }
+     //print_vec("dd\n",0,n,inDegree);
+   }
+   delete[] inDegree;
+   delete[] visited;
+   return cur_level; //return number of levels
+ }
+
+
+
+ timing_measurement computingLevelSet_CSC(int n, const int* DAG_ptr, const int* DAG_set,
+                                          std::vector<int>& LevelPtr, std::vector<int>& LevelSet, int& nlevels){
+   timing_measurement LevelSet_time;
+   LevelSet_time.start_timer();
+   LevelPtr.resize(n + 1);
+   LevelSet.resize(n);
+   nlevels = build_levelSet_CSC(n, DAG_ptr, DAG_set,
+                                LevelPtr.data(), LevelSet.data());
+   LevelSet_time.measure_elapsed_time();
+   return LevelSet_time;
+ }
+
 }

@@ -224,5 +224,36 @@ namespace sym_lib {
             int *s, int *w);
 
 
+
+ ///=============================================================================
+ ///============================== HDAGG Inspector ==============================
+ ///=============================================================================
+ /// @brief  Creates levelset from a CSC matrix that is we now the connection from child to ancestor,
+ /// the matrix should form DAG i.e., no cycle. It returns -1 if
+ /// the input graph has a cycle.
+ /// @param<[in] n Number of Nodes in the DAG
+ /// @param<[in] Lp - The pointer array in CSC format
+ /// @param<[in] Li - The index array in CSC format. It stores the child of each node
+ /// @param<[out] LevelPtr the pointer array in CSC format that store pointers to the nodes inside a level
+ /// @param<[out] LevelSet the nodes are sorted based on level in this array
+ /// @return runtime of the function
+ int build_levelSet_CSC(size_t n, const int *Lp, const int *Li,
+                        int *levelPtr, int *levelSet);
+
+
+ /// @brief Computing the levelset (Wavefronts) using the dependency graph
+ /// @param<[in] n Number of Nodes in the DAG
+ /// @param<[in] DAG_ptr The pointer array in CSC format
+ /// @param<[in] DAG_set The index array in CSC format. It stores the child of each node
+ /// @param<[out] LevelPtr the pointer array in CSC format that store pointers to the nodes inside a level
+ /// @param<[out] LevelSet the nodes are sorted based on level in this array
+ /// @param<[out] Number of Levels
+ /// @return runtime of the function
+ timing_measurement computingLevelSet_CSC(int n, const int *DAG_ptr, const int *DAG_set,
+                                          std::vector<int> &LevelPtr, std::vector<int> &LevelSet, int &nlevels);
+
+
+
+
 }
 #endif //PROJECT_SPARSE_INSPECTOR_H
