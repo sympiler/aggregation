@@ -5,7 +5,7 @@
 #include <utility>
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
-#include "sparse_blas_lib.h"
+#include "sptrsv.h"
 #include <cstdio>
 #include <dirent.h>
 #include <iostream>

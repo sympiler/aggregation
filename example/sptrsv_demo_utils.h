@@ -10,7 +10,7 @@
 #include <lbc.h>
 #include <cstring>
 #include "FusionDemo.h"
-#include "sparse_blas_lib.h"
+#include "sptrsv.h"
 #include "group.h"
 #include "group_utils.h"
 #include <executor.h>

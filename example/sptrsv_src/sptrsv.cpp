@@ -3,7 +3,7 @@
 //
 #include <omp.h>
 
-#include "sparse_blas_lib.h"
+#include "sptrsv.h"
 
 namespace sym_lib {
 

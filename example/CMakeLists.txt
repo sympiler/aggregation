@@ -3,14 +3,16 @@ include_directories(
         ${LBC_INC}
         )
 
+
+
 project(sptrsv_demo)
 
 add_executable(sptrsv_demo
         sptrsv_demo.cpp
-        ${Sparse_BLAS_SRC_FILES}
+        ${Sparse_TRSV_SRC_FILES}
         )
 target_include_directories(sptrsv_demo PRIVATE
-       ${Sparse_BLAS_INC}
+       ${Sparse_TRSV_INC}
 )
 target_link_libraries(sptrsv_demo PRIVATE
         lbc
@@ -116,6 +118,14 @@ endif()
 
 ################################################################################
 # Testing SpTRSV kernel
-add_executable(Hdagg_SpTRSV SpTRSV_runtime.cpp)
-target_link_libraries(Hdagg_SpTRSV PUBLIC HDagg_dev lbc metis::metis)
+add_executable(Hdagg_SpTRSV
+        SpTRSV_runtime.cpp
+        ${Sparse_TRSV_SRC_FILES}
+        )
+target_include_directories(Hdagg_SpTRSV PRIVATE
+        ${Sparse_TRSV_INC}
+        )
+target_link_libraries(Hdagg_SpTRSV PUBLIC
+        aggregation
+        metis::metis)
 ################################################################################

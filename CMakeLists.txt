@@ -34,14 +34,14 @@ add_compile_options(-Wunused-result)
 
 set(SPARSE_UTIL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/utils")
 
-set(Sparse_BLAS_INC "${CMAKE_CURRENT_SOURCE_DIR}/sparse_blas/includes/")
-set(Sparse_BLAS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/sparse_blas/")
-AUX_SOURCE_DIRECTORY(${Sparse_BLAS_SRC} Sparse_BLAS_SRC_FILES)
 
 set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
 
+set(Sparse_TRSV_INC "${CMAKE_CURRENT_SOURCE_DIR}/example/sptrsv_src/include")
+set(Sparse_TRSV_SRC "${CMAKE_CURRENT_SOURCE_DIR}/example/sptrsv_src/")
+AUX_SOURCE_DIRECTORY(${Sparse_TRSV_SRC} Sparse_TRSV_SRC_FILES)
 ################################################################################
 # HDagg
 ################################################################################
@@ -53,80 +53,8 @@ option(HDAGG_WITH_MKL "Add DAGP for benchmarking" OFF)
 file(GLOB HDAGG_SRCFILES
         "src/hdagg/*.cpp"
         "src/Group/*.cpp"
-        ${LBC_SRC}/*.cpp
-        ${Sparse_BLAS_SRC}/*.cpp
         )
 
-add_library(HDagg_dev ${HDAGG_SRCFILES})
-
-target_include_directories(HDagg_dev PUBLIC
-        "src/hdagg/includes"
-        "src/Group/includes"
-        ${LBC_INC}
-        ${Sparse_BLAS_INC}
-        ${SPARSE_UTIL_SRC}
-        )
-
-### Find Intel MKL if available - it works with oneAPI
-if(HDAGG_WITH_MKL)
-    find_package(MKL OPTIONAL_COMPONENTS)
-    if(EXISTS "${MKL_INCLUDE_DIRS}")
-        target_include_directories(HDagg_dev PUBLIC
-                ${MKL_INCLUDE_DIRS}
-                )
-        target_link_libraries(HDagg_dev PUBLIC
-                ${MKL_GNU_THREAD}
-                ${PTHREAD}
-                ${IOMP5}
-                ${MKL_SEQUENTIAL}
-                ${MKL_INTEL_THREAD}
-                ${MKL_CORE}
-                ${M}
-                ${DL}
-                )
-        add_definitions(-DMKL)
-
-    else()
-        message(STATUS "Intel MKL not found, building without MKL.")
-        set(MKL 0)
-    endif()
-endif()
-
-### Check whether DAGP root exists - Relative works
-if(HDAGG_WITH_DAGP)
-    if(EXISTS "$ENV{DAGPROOT}")
-        message(STATUS "The DAGP is found - $ENV{DAGPROOT}.")
-        target_include_directories(HDagg_dev PUBLIC
-                "$ENV{DAGPROOT}/src/recBisection/"
-                "$ENV{DAGPROOT}/src/common/"
-                "${CMAKE_CURRENT_SOURCE_DIR}/utils/external/DAGPInterface/includes"
-                )
-        target_link_libraries(HDagg_dev PUBLIC
-                "$ENV{DAGPROOT}/lib/libdagp.a"
-                "${CMAKE_CURRENT_SOURCE_DIR}/utils/external/DAGPInterface/*.cpp"
-                )
-        add_definitions(-DDAGP)
-    else()
-        message(STATUS "Please defined the DAGP directory using DAGP_ROOT variable")
-    endif()
-endif()
-
-### Check whether SPMP root exists - Relative works
-if(HDAGG_WITH_SPMP)
-    if(EXISTS "$ENV{SPMPROOT}")
-        message(STATUS "Found SpMP - $ENV{SPMPROOT}.")
-        target_include_directories(HDagg_dev PUBLIC
-                $ENV{SPMPROOT}
-                "${CMAKE_CURRENT_SOURCE_DIR}/utils/external/SpMPInterface/includes"
-                )
-        target_link_libraries(HDagg_dev PUBLIC
-                "$ENV{SPMPROOT}/libspmp.a"
-                )
-        add_definitions(-DSPMP)
-    else()
-        message(STATUS "Please defined the SpMP directory using SPMP_ROOT variable - not found")
-    endif()
-endif()
 ################################################################################
 
 find_package(OpenMP)

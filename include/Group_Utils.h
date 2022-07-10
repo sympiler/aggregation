@@ -2,8 +2,8 @@
 // Created by labuser (Bangtian Liu) on 9/15/20.
 //
 
-#ifndef LBC_LIB_UTILS_H
-#define LBC_LIB_UTILS_H
+#ifndef LBC_LIB_GROUP_UTILS_H
+#define LBC_LIB_GROUP_UTILS_H
 
 #include <cstdlib>
 #include <vector>
@@ -72,4 +72,4 @@ namespace sym_lib
 
 
 }
-#endif //LBC_LIB_UTILS_H
+#endif //LBC_LIB_GROUP_UTILS_H

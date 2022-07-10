@@ -7,18 +7,18 @@
 
 
 #include <iomanip>
-#include <sparse_inspector.h>
+#include "sparse_inspector.h"
 #include "lbc_utils.h"
-#include <utils.h>
+#include "utils.h"
 #include <cmath>
 #include <algorithm>
 #include <vector>
 #include <cmath>
 #include <iostream>
-#include <sparse_io.h>
-#include <test_utils.h>
+#include "sparse_io.h"
+#include "test_utils.h"
 #include <omp.h>
-#include <metis_interface.h>
+#include "metis_interface.h"
 
 //#include "sparse_blas_lib.h"
 #include "SuperNodalTools.h"
