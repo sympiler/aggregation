@@ -1,32 +1,38 @@
-
 ![APM](https://badgen.net/github/license/micromatch/micromatch)
 ![example workflow](https://github.com/sympiler/lbc/actions/workflows/cmakeUbuntu.yml/badge.svg)
 ![example workflow](https://github.com/sympiler/lbc/actions/workflows/cmakeMac.yml/badge.svg)
 
-# Load-balance Level Coarsening (LBC)
-Load-balance Level Coarsening is a DAG partitionig/scheduling 
-algorithm used for making sparse matrix loops parallel. 
-It can be used within code generators or libraries. For more information see 
-[Sympiler documents](https://www.sympiler.com/docs/lbc/).
+# Aggregation
+
+The aggregation repository contains a set of algorithms for grouping vertices of DAGs
+coming from loop-carried dependencies.
+Load-balance Level Coarsening (LBC) is one of the aggregation algorithms.
+
+Hybrid Aggregation (HDagg) is another algorithm that can operate on chordal 
+and non-chordal DAGs directly. 
+
+The algorithms in this repository can be used within code generators or libraries.
 
 ## Install
 
 ### Prerequisites
+
 First following items should be installed:
+
 * CMake
 * C++ compiler (GCC, ICC, or CLang)
-* METIS (optional) dependency for running the demo efficiently 
-and is handled by the cmake. If you have installed the package using
-a packet manager (e.g., apt of homebrew), CMake should be able to detect it. 
-Otherwise, it installs METIS from source internally. 
-* OpenMP (optional) for running some parts of the code in parallel. If you 
-use GCC/ICC then OpenMP should be supported natively. If you use Apple CLang,
-you probably need to install OpenMP using `homebrew install libomp`. You can 
+* METIS (optional) dependency for running the demo efficiently
+  and is handled by the cmake. If you have installed the package using
+  a packet manager (e.g., apt of homebrew), CMake should be able to detect it.
+  Otherwise, it installs METIS from source internally.
+* OpenMP (optional) for running some parts of the code in parallel. If you
+  use GCC/ICC then OpenMP should be supported natively. If you use Apple CLang,
+  you probably need to install OpenMP using `homebrew install libomp`. You can
 * also install LLVM usng `brew install llvm` which support OpenMP natively.
 
-
 ### Build
-Then build LBC, using the following:
+
+Then build Aggregation, using the following:
 
 ```bash
 mkdir build
@@ -35,20 +41,13 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 
-
-You can always set `-DCMAKE_CXX_COMPILER=` and `-DCMAKE_C_COMPILER=` to use 
+You can always set `-DCMAKE_CXX_COMPILER=` and `-DCMAKE_C_COMPILER=` to use
 a different compiler. For example:
-`cmake -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/g++-9 
--DCMAKE_C_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/gcc-9 ..`
+`cmake -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/g++-9 -DCMAKE_C_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/gcc-9 ..`
 
-## Profiling
-You can install papi in Ubuntu using `apt install papi-tools` and then you 
-should be able to use profiling utils. You can install papi yourself and 
-passed installtion path using `-DCMAKE_PREFIX_PATH=`.
 
 ## Example
-The example directory shows how to call LBC API and iterate over 
-the created partitioning. For more examples on how LBC is used for
-making loops with sparse dependencies parallel, please check 
-[Sympiler Git repo](https://github.com/sympiler/sympiler).
 
+The example directory shows how to call LBC API and iterate over
+the created partitioning. For more examples on how LBC is used for
+making loops with sparse dependencies parallel.
