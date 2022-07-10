@@ -6,7 +6,7 @@
 #include <lbc.h>
 #include <sparse_inspector.h>
 
-#include <sparse_blas_lib.h>
+#include <sptrsv.h>
 
 namespace sym_lib{
     StatSpMat::

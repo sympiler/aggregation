@@ -6,7 +6,7 @@
 #include <lbc.h>
 #include <sparse_inspector.h>
 
-#include <sparse_blas_lib.h>
+#include <sptrsv.h>
 
 namespace sym_lib{
     StatSpMat_v1::StatSpMat_v1(CSR *L, SpKerType kerType, int num_threads, int *levelPtr, int *partPtr, int *nodePtr, int levelNo, int partNo)

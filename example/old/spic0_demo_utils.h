@@ -7,7 +7,7 @@
 
 #include <lbc.h>
 #include <sparse_utilities.h>
-#include <sparse_blas_lib.h>
+#include <sptrsv.h>
 
 #include "FusionDemo.h"
 #include <sparse_inspector.h>

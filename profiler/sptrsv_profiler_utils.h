@@ -5,7 +5,7 @@
 #ifndef LBC_LIB_SPTRSV_PROFILER_UTILS_H
 #define LBC_LIB_SPTRSV_PROFILER_UTILS_H
 
-#include <sparse_blas_lib.h>
+#include <sptrsv.h>
 #include "Profiler.h"
 
 namespace sym_lib{

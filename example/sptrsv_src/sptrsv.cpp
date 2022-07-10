@@ -3,7 +3,7 @@
 //
 #include <omp.h>
 
-#include "sparse_blas_lib.h"
+#include "sptrsv.h"
 
 namespace sym_lib {
 
@@ -122,7 +122,55 @@ namespace sym_lib {
       }
      };
     }
+    ///=============================================================================
+    ///============================= HDAGG SPARSE BLASS ============================
+    ///=============================================================================
+    //=========================== Left Looking SpTrSv ==========================
+    void sptrsv_csr_levelset(int n, const int *Lp, const int *Li, const double *Lx,
+                             int levels, const int *levelPtr, const int *levelSet,
+                             double *x)
+    {
+#pragma omp parallel
+      {
+        for (int l = 0; l < levels; l++)
+        {
+#pragma omp for schedule(auto)
+          for (int k = levelPtr[l]; k < levelPtr[l + 1]; ++k)
+          {
+            int i = levelSet[k];
+            for (int j = Lp[i]; j < Lp[i + 1] - 1; j++)
+            {
+              x[i] -= Lx[j] * x[Li[j]];//S1
+            }
+            x[i] /= Lx[Lp[i + 1] - 1]; //S2
+          }
+        }
+      }
+    }
 
-
-
+    void sptrsv_csr_group_levelset(int *Lp, int *Li, double *Lx, double *x,
+                                   int level_no, int *level_ptr, int *level_set,
+                                   int *groupPtr, int *groupSet)
+    {
+#pragma omp parallel
+      {
+        for (int i1 = 0; i1 < level_no; ++i1)
+        {
+#pragma omp for schedule(auto)
+          for (int j1 = level_ptr[i1]; j1 < level_ptr[i1 + 1]; ++j1)
+          {
+            int group_idx = level_set[j1];
+            for (int k = groupPtr[group_idx]; k < groupPtr[group_idx + 1]; ++k)
+            {
+              int i = groupSet[k];
+              for (int j = Lp[i]; j < Lp[i + 1] - 1; j++)
+              {
+                x[i] -= Lx[j] * x[Li[j]];
+              }
+              x[i] /= Lx[Lp[i + 1] - 1];
+            }
+          }
+        }
+      }
+    }
 }

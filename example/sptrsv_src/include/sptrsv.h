@@ -59,38 +59,45 @@ namespace sym_lib {
                             int *par_ptr, int *partition);
 
 
- /////////////////////////// ICholesky0
+;
 
- /// Takes the lower part of a SPD matrix and factorize it with incomplete Cholesky0
- /// \param n
- /// \param val
- /// \param rowPtr
- /// \param rowIdx
- void spic0_csr(int n, double *val, int *rowPtr, int *rowIdx);
- void spic0_csr_lbc(int n, double *val, int *rowPtr, int *colIdx,
-                    int level_no, int *level_ptr,
-                    int *par_ptr, int *partition);
 
-void spico_csc_levelset(int n, const int *Lp, const int *Li, double *Lx,
-                            int levels, const int *levelPtr,
-                            const int *levelSet);
 
-    void spico_csc_group_levelset(int n, const int *Lp, const int *Li,  double *Lx,
-                                  int levels, const int *levelPtr,
-                                  const int *levelSet, int *groupPtr, int *groupSet);
+    ///=============================================================================
+    ///============================= HDAGG SPARSE BLASS ============================
+    ///=============================================================================
+    ///\Description It is a parallel left looking Sparse Triangular Solve which uses wavefronts schedule
+    ///\input n Number of iterations or node
+    ///\input Lp the pointer array in CSC version
+    ///\input Li the index array in CSC version
+    ///\input Lx the value array in CSC version
+    ///\input levels number of levels in the DAg
+    ///\input levelPtr the pointer array in CSC format
+    /// that point to starting and ending point of nodes in a level
+    ///\input LevelSet the array that store nodes sorted based on their level
+    ///\inout x the output
+    void sptrsv_csr_levelset(int n, const int *Lp, const int *Li, const double *Lx,
+                             int levels, const int *levelPtr, const int *levelSet,
+                             double *x);
 
-    void spic0_csr_levelset(int n, double *Lx, int *Lp, int *Li,
-                         int level_no, const int *level_ptr,
-                         const int *level_set);
+    /*
+     * It is left looking Sparse Triangular Solve
+     * @param n Number of iterations or node
+     * @param Lp the pointer array in CSC version
+     * @param Li the index array in CSC version
+     * @param Lx the value array in CSC version
+     * @return x the output
+     * @param levels number of levels in the DAg
+     * @param levelPtr the pointer array in CSC format
+     * that point to starting and ending point of nodes in a level
+     * @param LevelSet the array that store nodes sorted based on their level
+     * @param groupPtr the array pointer for groups
+     * @param groupSet the array set for groups. Nodes are sorted based on their group
+     */
+    void sptrsv_csr_group_levelset(int *Lp, int *Li, double *Lx, double *x,
+                                   int level_no, int *level_ptr,
+                                   int *levelSet, int *groupPtr, int *groupSet);
 
- void spico_csc_lbc(int n, double *Lx, int *Lp, int *Li,
-                       int level_no, int *level_ptr,
-                       int *par_ptr, int *partition);
-    void spic0_csc_group_lbc(int n, int *Lp, int *Li, double *Lx,
-                             int level_no, int *level_ptr,
-                             int *par_ptr, int *partition,  int *groupPtr, int *groupSet);
-
-    void ic0_csc(int n, double *val, int * colPtr, int *rowIdx);
 }
 
 

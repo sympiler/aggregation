@@ -34,13 +34,28 @@ add_compile_options(-Wunused-result)
 
 set(SPARSE_UTIL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/utils")
 
-set(Sparse_BLAS_INC "${CMAKE_CURRENT_SOURCE_DIR}/sparse_blas/includes/")
-set(Sparse_BLAS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/sparse_blas/")
-AUX_SOURCE_DIRECTORY(${Sparse_BLAS_SRC} Sparse_BLAS_SRC_FILES)
 
 set(LBC_INC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(LBC_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 AUX_SOURCE_DIRECTORY(${LBC_SRC} LBC_SRC_FILES)
+
+set(Sparse_TRSV_INC "${CMAKE_CURRENT_SOURCE_DIR}/example/sptrsv_src/include")
+set(Sparse_TRSV_SRC "${CMAKE_CURRENT_SOURCE_DIR}/example/sptrsv_src/")
+AUX_SOURCE_DIRECTORY(${Sparse_TRSV_SRC} Sparse_TRSV_SRC_FILES)
+################################################################################
+# HDagg
+################################################################################
+#Project options
+option(HDAGG_WITH_SPMP "Use SpMP library with HDAGG" OFF)
+option(HDAGG_WITH_DAGP "Add DAGP for benchmarking" OFF)
+option(HDAGG_WITH_MKL "Add DAGP for benchmarking" OFF)
+
+file(GLOB HDAGG_SRCFILES
+        "src/hdagg/*.cpp"
+        "src/Group/*.cpp"
+        )
+
+################################################################################
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
@@ -134,6 +149,6 @@ if(LBC_BUILD_EXAMPLES)
     add_subdirectory(example)
 endif()
 
-if(LBC_BUILD_TESTS)
-    add_subdirectory(Catch_tests)
-endif()
+#if(LBC_BUILD_TESTS)
+#    add_subdirectory(Catch_tests)
+#endif()
