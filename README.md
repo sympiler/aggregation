@@ -8,8 +8,8 @@ The aggregation repository contains a set of algorithms for grouping vertices of
 coming from loop-carried dependencies.
 Load-balance Level Coarsening (LBC) is one of the aggregation algorithms.
 
-Hybrid Aggregation (HDagg) is another algorithm that can operate on chordal 
-and non-chordal DAGs directly. 
+Hybrid Aggregation (HDagg) is another algorithm that can operate on chordal
+and non-chordal DAGs directly.
 
 The algorithms in this repository can be used within code generators or libraries.
 
@@ -44,7 +44,6 @@ make
 You can always set `-DCMAKE_CXX_COMPILER=` and `-DCMAKE_C_COMPILER=` to use
 a different compiler. For example:
 `cmake -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/g++-9 -DCMAKE_C_COMPILER=/usr/local/Cellar/gcc\@9/9.3.0_2/bin/gcc-9 ..`
-
 
 ## Example
 

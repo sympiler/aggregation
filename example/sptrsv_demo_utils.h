@@ -11,8 +11,12 @@
 #include <cstring>
 #include "aggregation/FusionDemo.h"
 #include "sptrsv.h"
+
+#ifdef GROUPING_ENABLED
 #include "aggregation/group.h"
 #include "aggregation/group_utils.h"
+#endif
+
 #include <executor.h>
 
 namespace sym_lib {
@@ -378,7 +382,7 @@ namespace sym_lib {
     };
 
 
-
+#ifdef GROUPING_ENABLED
     class SpTrsvCSR_Grouping : public sym_lib::SptrsvSerial{
     protected:
         int *groupSet, *groupPtr, *groupInv, ngroup, nlevels, nthreads;
@@ -724,6 +728,8 @@ namespace sym_lib {
 
 
     };
+
+#endif // grouping enabled
 
 
 } // namespace sym_lib

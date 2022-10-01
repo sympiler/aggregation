@@ -983,27 +983,28 @@ int post_order_spliting(int inSize, int *inTree, double *inCost,
 //                    std::cout<<"The children of: "<<k<<"\n";
          for (int i = inChildPtr[k]; i < inChildPtr[k+1]; ++i) {
           int tmpChild=inChildNo[i];
-          if(!visited[tmpChild])
-           if(nChild[tmpChild]==0){//First add leaves
+          if(!visited[tmpChild]) {
+           if (nChild[tmpChild] == 0) {//First add leaves
             //    stack.insert(stack.begin(),tmpChild);
             //    tmpFront++;
-            if(!visited[k]){
-             int tmpk=k;
-             if(stack.size()>0){
-              while (tmpk!=stack[stack.size()-1]){//Mark all parents upwards, they should be in the partiotion
-               mark[tmpk]=true;//There is at least a children of this node in this partition
-               tmpk=inTree[tmpk];
+            if (!visited[k]) {
+             int tmpk = k;
+             if (stack.size() > 0) {
+              while (tmpk != stack[stack.size() - 1]) {//Mark all parents upwards, they should be in the partiotion
+               mark[tmpk] = true;//There is at least a children of this node in this partition
+               tmpk = inTree[tmpk];
               }
              }
-             mark[tmpk]=true;
+             mark[tmpk] = true;
             }
             parList[curPart].push_back(tmpChild);
-            outCost[curPart]+=inCost[tmpChild];
-            visited[tmpChild]= true;//mark as visited
+            outCost[curPart] += inCost[tmpChild];
+            visited[tmpChild] = true;//mark as visited
             nChild[inTree[tmpChild]]--;//we know inTree[tmpChild] is k
-           }else{
-            stack.insert(stack.begin(),tmpChild);
+           } else {
+            stack.insert(stack.begin(), tmpChild);
            }
+          }
          }
         }//End else
 /*    if(outCost[curPart]>Threshold){
@@ -1208,7 +1209,7 @@ int post_order_spliting(int inSize, int *inTree, double *inCost,
   }
   assert(new_n == cur_col-1);
   c_mat->nnz = cur_nnz;
-  delete is_exist;
+  delete []is_exist;
   return c_mat;
  }
 

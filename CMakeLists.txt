@@ -52,7 +52,6 @@ option(HDAGG_WITH_MKL "Add DAGP for benchmarking" OFF)
 
 file(GLOB HDAGG_SRCFILES
         "src/hdagg/*.cpp"
-        "src/Group/*.cpp"
         )
 
 ################################################################################
