@@ -7,7 +7,7 @@
 #include <climits>
 #include <algorithm>
 #include <iostream>
-#include <lbc_utils.h>
+#include "aggregation/lbc_utils.h"
 
 namespace sym_lib{
 

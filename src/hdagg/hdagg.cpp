@@ -2,9 +2,10 @@
 // Created by behrooz on 2021-07-11.
 //
 
-#include "hdagg.h"
+#include "aggregation/hdagg.h"
 #include <unordered_set>
-#include <sparse_utilities.h>
+#include "aggregation/sparse_utilities.h"
+#include "aggregation/lbc.h"
 #include <list>
 #include <cmath>
 #include <set>
@@ -2526,6 +2527,54 @@ namespace HDAGG
         HDAGG::buildGroupDAG(n, ngroups, group_ptr.data(), group_set.data(),
                              orig_DAG_ptr, orig_DAG_set, DAG_ptr, DAG_set);
     }
+
+
+ int build_coarsened_level_parallel(const int n, const int* Lp, const int* Li,
+                                    const int cores,
+                                    int& coarse_level_no,
+                                    std::vector<int>& coarse_level_ptr,
+                                    std::vector<int>& coarse_part_ptr,
+                                    std::vector<int>& coarse_node_ptr
+ ){
+  int coarsen_factor, num_wparts=cores, i_cut=0;
+  bool bin_pack=false;
+  bool postOrder=false;//set to false manually here
+  sym_lib::lbc_config(n, Lp[n], cores, num_wparts, coarsen_factor, i_cut, bin_pack);
+  if(coarsen_factor > 0){
+   std::vector<int> level_ptr;
+   std::vector<int> level_set, node_to_level, WM;
+   level_ptr.resize(n + 1);
+   level_set.resize(n);
+   node_to_level.resize(n);
+   int n_levels = HDAGG::build_levelSet_CSC(n, Lp, Li, level_ptr.data(), level_set.data(),
+                                            node_to_level.data() );
+   for (int i = 0; i < n_levels;) {
+    WM.push_back(i);
+    i+=coarsen_factor;
+    if(i >= n_levels){
+     WM.push_back(n_levels);
+     break;
+    }
+   }
+   HDAGG::computeSchedule(cores, n, Lp, Li, level_ptr.data(), level_set.data(),
+                          node_to_level.data(), WM, {{0}},
+                          coarse_level_no, coarse_level_ptr, coarse_part_ptr, coarse_node_ptr,
+                          bin_pack, postOrder);
+  } else{ // fall back to basic wavefront for very sparse DAGs
+   std::vector<int> node_to_level;
+   coarse_part_ptr.resize(n + 1);
+   coarse_node_ptr.resize(n);
+   node_to_level.resize(n);
+   coarse_level_no = HDAGG::build_levelSet_CSC(n, Lp, Li, coarse_part_ptr.data(),
+                                               coarse_node_ptr.data(), node_to_level.data());
+   coarse_level_ptr.resize( coarse_level_no + 1);
+   for (int i = 0; i < coarse_level_no+1; ++i) {
+    coarse_level_ptr[i] = i;
+   }
+  }
+  return 1;
+ }
+
 
 #ifdef SPMP
     int levelsetCSRParallel_SpMP(SpMP::CSR* A, int nthreads,

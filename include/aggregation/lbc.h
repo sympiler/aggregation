@@ -97,6 +97,17 @@ namespace sym_lib{
                               int minLevelDist,
                               int divRate,
                               double *nodeCost);
+
+ /// setting coarsening parameters
+ /// \param n number of vertices
+ /// \param nnz number of edges
+ /// \param num_threads number of cores
+ /// \param lp out: number of w-partitions, often number of cores
+ /// \param cp out: coarsening wavefront factor
+ /// \param ic out: initial cut, specific to LBC
+ /// \param b_pack out: packing vertices or not?
+ void lbc_config(int n, int nnz, int num_threads, int &lp, int &cp, int &ic,
+                 bool &b_pack);
 }
 
 #endif //PROJECT_LBC_H

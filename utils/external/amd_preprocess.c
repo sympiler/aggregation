@@ -16,7 +16,7 @@
  * This input condition is NOT checked.  This routine is not user-callable.
  */
 
-#include "amd_internal.h"
+#include "aggregation/amd_internal.h"
 
 /* ========================================================================= */
 /* === AMD_preprocess ====================================================== */

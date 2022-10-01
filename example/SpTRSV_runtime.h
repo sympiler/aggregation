@@ -15,15 +15,15 @@
 
 
 //Lib Codes
-#include "Group.h"
-#include "Group_Utils.h"
-#include "hdagg.h"
-#include <lbc.h>
-#include <sparse_inspector.h>
+#include "aggregation/Group.h"
+#include "aggregation/Group_Utils.h"
+#include "aggregation/hdagg.h"
+#include "aggregation/lbc.h"
+#include "aggregation/sparse_inspector.h"
 #include <sptrsv.h>
-#include <BCSCMatrix.h>
-#include <FusionDemo.h>
-#include <SuperNodalTools.h>
+#include "aggregation/BCSCMatrix.h"
+#include "aggregation/FusionDemo.h"
+#include "aggregation/SuperNodalTools.h"
 
 //Related works
 #ifdef MKL

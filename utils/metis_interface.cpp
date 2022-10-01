@@ -5,10 +5,10 @@
 #include <metis.h>
 #include <cassert>
 #include <functional>
-#include <sparse_io.h>
-#include <def.h>
-#include <sparse_utilities.h>
-#include <metis_interface.h>
+#include "aggregation/sparse_io.h"
+#include "aggregation/def.h"
+#include "aggregation/sparse_utilities.h"
+#include "aggregation/metis_interface.h"
 
 namespace sym_lib {
  // FIXME

@@ -10,11 +10,11 @@
 #include <dirent.h>
 #include <iostream>
 #include <omp.h>
-#include <sparse_inspector.h>
-#include <sparse_io.h>
-#include <sparse_utilities.h>
+#include "aggregation/sparse_inspector.h"
+#include "aggregation/sparse_io.h"
+#include "aggregation/sparse_utilities.h"
 #include <sys/types.h>
-#include <test_utils.h>
+#include "aggregation/test_utils.h"
 
 using namespace sym_lib;
 using namespace std;

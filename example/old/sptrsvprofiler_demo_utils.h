@@ -5,7 +5,7 @@
 #ifndef LBC_LIB_SPTRSVPROFILER_DEMO_UTILS_H
 #define LBC_LIB_SPTRSVPROFILER_DEMO_UTILS_H
 
-#include <Profiler.h>
+#include "aggregation/Profiler.h"
 #include "../example/sptrsvprofiler_demo_utils.h"
 #include "../example/sptrsv_demo_utils.h"
 

@@ -13,7 +13,7 @@
  * printed instead.
  */
 
-#include "amd_internal.h"
+#include "aggregation/amd_internal.h"
 
 GLOBAL void AMD_control
 (

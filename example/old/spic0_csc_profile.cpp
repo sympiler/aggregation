@@ -10,10 +10,10 @@
 #define CSV_LOG
 
 #include <iostream>
-#include <sparse_io.h>
-#include <test_utils.h>
+#include "aggregation/sparse_io.h"
+#include "aggregation/test_utils.h"
 #include <omp.h>
-#include <metis_interface.h>
+#include "aggregation/metis_interface.h"
 #include <StatSpMat_v1.h>
 
 #include "spic0_demo_utils.h"

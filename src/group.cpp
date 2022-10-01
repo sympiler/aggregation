@@ -2,7 +2,7 @@
 // Created by labuser (Bangtian Liu) on 9/16/20.
 //
 
-#include "../include/group.h"
+#include "aggregation/group.h"
 
 namespace sym_lib
 {

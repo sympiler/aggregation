@@ -2,9 +2,9 @@
 // Created by kazem on 2/6/20.
 //
 
-#include <sparse_utilities.h>
-#include <sparse_inspector.h>
-#include <lbc_utils.h>
+#include "aggregation/sparse_utilities.h"
+#include "aggregation/sparse_inspector.h"
+#include "aggregation/lbc_utils.h"
 
 namespace sym_lib {
  int get_coarse_levelSet_tree(size_t n,

@@ -15,7 +15,7 @@
  * checked).
  */
 
-#include "amd_internal.h"
+#include "aggregation/amd_internal.h"
 
 GLOBAL size_t AMD_aat	/* returns nz in A+A' */
 (

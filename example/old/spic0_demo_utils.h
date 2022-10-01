@@ -5,14 +5,14 @@
 #ifndef FUSION_SPIC0_SPTRSV_DEMO_UTILS_H
 #define FUSION_SPIC0_SPTRSV_DEMO_UTILS_H
 
-#include <lbc.h>
-#include <sparse_utilities.h>
+#include "aggregation/lbc.h"
+#include "aggregation/sparse_utilities.h"
 #include <sptrsv.h>
 
-#include "FusionDemo.h"
-#include <sparse_inspector.h>
-#include "../include/group.h"
-#include "../include/group_utils.h"
+#include "aggregation/FusionDemo.h"
+#include "aggregation/sparse_inspector.h"
+#include "aggregation/group.h"
+#include "aggregation/group_utils.h"
 //
 //#ifdef PROFILE
 //#include "Profiler.h"

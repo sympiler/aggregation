@@ -6,7 +6,7 @@
 #include <LevelSchedule.hpp>
 #include <synk/barrier.hpp>
 
-#include "FusionDemo.h"
+#include "aggregation/FusionDemo.h"
 #include "sptrsv.h"
 
 namespace sym_lib

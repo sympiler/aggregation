@@ -1,14 +1,14 @@
-#include "def.h"
-#include "utils.h"
+#include "aggregation/def.h"
+#include "aggregation/utils.h"
 #define DBG_LOG
 #define CSV_LOG
 
 #include <iostream>
-#include <metis_interface.h>
+#include "aggregation/metis_interface.h"
 #include <omp.h>
 #include <regex>
-#include <sparse_io.h>
-#include <test_utils.h>
+#include "aggregation/sparse_io.h"
+#include "aggregation/test_utils.h"
 
 #include "sptrsv_demo_utils.h"
 

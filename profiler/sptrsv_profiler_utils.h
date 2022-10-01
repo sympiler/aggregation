@@ -6,7 +6,7 @@
 #define LBC_LIB_SPTRSV_PROFILER_UTILS_H
 
 #include <sptrsv.h>
-#include "Profiler.h"
+#include "aggregation/Profiler.h"
 
 namespace sym_lib{
 

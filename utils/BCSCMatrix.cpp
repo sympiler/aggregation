@@ -2,7 +2,7 @@
 // Created by george on 2020-02-15.
 //
 
-#include "BCSCMatrix.h"
+#include "aggregation/BCSCMatrix.h"
 namespace sym_lib {
 
  int BCSCMatrix::supernodes(CSC *A, int limit, bool isLower) {

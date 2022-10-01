@@ -2,9 +2,9 @@
 // Created by Kazem on 10/11/19.
 //
 
-#include <sparse_io.h>
+#include "aggregation/sparse_io.h"
 #include <cmath>
-#include <utils.h>
+#include "aggregation/utils.h"
 namespace sym_lib{
 
 

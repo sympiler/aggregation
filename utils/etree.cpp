@@ -2,8 +2,8 @@
 // Created by kazem on 2/7/20.
 //
 
-#include <sparse_inspector.h>
-#include <utils.h>
+#include "aggregation/sparse_inspector.h"
+#include "aggregation/utils.h"
 
 namespace sym_lib{
  void update_etree(

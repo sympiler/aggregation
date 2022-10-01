@@ -33,7 +33,7 @@
  * AMD_OK_BUT_JUMBLED).
  */
 
-#include "amd_internal.h"
+#include "aggregation/amd_internal.h"
 
 GLOBAL Int AMD_valid
 (

@@ -6,13 +6,13 @@
 #define CSV_LOG
 
 #include <iostream>
-#include <sparse_io.h>
-#include <test_utils.h>
-#include <sparse_utilities.h>
-#include <lbc.h>
+#include "aggregation/sparse_io.h"
+#include "aggregation/test_utils.h"
+#include "aggregation/sparse_utilities.h"
+#include "aggregation/lbc.h"
 
 #ifdef METIS
-#include <metis_interface.h>
+#include "aggregation/metis_interface.h"
 #endif
 
 

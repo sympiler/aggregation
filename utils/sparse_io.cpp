@@ -2,9 +2,9 @@
 // Created by Kazem on 10/10/19.
 //
 #include <iostream>
-#include <sparse_io.h>
-#include <def.h>
-#include <mmio.h>
+#include "aggregation/sparse_io.h"
+#include "aggregation/def.h"
+#include "aggregation/mmio.h"
 
 namespace sym_lib {
 

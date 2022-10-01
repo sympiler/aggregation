@@ -5,16 +5,16 @@
 //#define DBG_LOG
 #define CSV_LOG
 #include <iostream>
-#include <sparse_io.h>
-#include <test_utils.h>
-#include <sparse_utilities.h>
+#include "aggregation/sparse_io.h"
+#include "aggregation/test_utils.h"
+#include "aggregation/sparse_utilities.h"
 
 #ifdef ENABLE_OPENMP
 #include "omp.h"
 #endif
 
 #ifdef METIS
-#include <metis_interface.h>
+#include "aggregation/metis_interface.h"
 #endif
 #include "sptrsv_profiler_utils.h"
 

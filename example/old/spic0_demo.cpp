@@ -2,11 +2,11 @@
 // Created by kazem on 2020-04-23.
 //
 #define CSV_LOG
-#include <def.h>
-#include <test_utils.h>
-#include <sparse_io.h>
+#include "aggregation/def.h"
+#include "aggregation/test_utils.h"
+#include "aggregation/sparse_io.h"
 #include <omp.h>
-#include <metis_interface.h>
+#include "aggregation/metis_interface.h"
 #include "spic0_demo_utils.h"
 
 using namespace sym_lib;

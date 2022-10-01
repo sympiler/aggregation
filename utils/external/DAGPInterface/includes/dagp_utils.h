@@ -10,7 +10,7 @@
 //#include <dgraphReader.h>
 //#include <info.h>
 //#include <rvcycle.h>
-#include <sparse_inspector.h>
+#include "aggregation/sparse_inspector.h"
 #include <set>
 
 

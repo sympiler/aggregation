@@ -5,11 +5,11 @@
 #ifndef CROSSKERNEL_LBC_CSC_H
 #define CROSSKERNEL_LBC_CSC_H
 
-#include <sparse_utilities.h>
-#include <sparse_inspector.h>
-#include <lbc.h>
-#include <sparse_io.h>
-#include <lbc_utils.h>
+#include "aggregation/sparse_utilities.h"
+#include "aggregation/sparse_inspector.h"
+#include "aggregation/lbc.h"
+#include "aggregation/sparse_io.h"
+#include "aggregation/lbc_utils.h"
 double elap, elap_trans;
 namespace sym_lib {
  int get_coarse_levelSet_DAG_CSC(size_t n,

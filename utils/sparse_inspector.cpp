@@ -5,10 +5,10 @@
 #include <cstring>
 #include <queue>
 #include <cassert>
-#include "sparse_utilities.h"
-#include <def.h>
-#include <BCSCMatrix.h>
-#include <sparse_inspector.h>
+#include "aggregation/sparse_utilities.h"
+#include "aggregation/def.h"
+#include "aggregation/BCSCMatrix.h"
+#include "aggregation/sparse_inspector.h"
 
 namespace sym_lib {
 

@@ -2,12 +2,12 @@
 // Created by behrooz on 1/17/21.
 //
 
-#include <csv_utils.h>
+#include "aggregation/csv_utils.h"
 #include <iostream>
-#include <metis_interface.h>
+#include "aggregation/metis_interface.h"
 #include <omp.h>
-#include <sparse_io.h>
-#include <test_utils.h>
+#include "aggregation/sparse_io.h"
+#include "aggregation/test_utils.h"
 
 #include "SpTRSV_runtime.h"
 

@@ -2,14 +2,14 @@
 // Created by kazem on 6/11/20.
 //
 
-#include <sparse_utilities.h>
-#include <metis_interface.h>
+#include "aggregation/sparse_utilities.h"
+#include "aggregation/metis_interface.h"
 #include <sys/param.h>
-#include <utils.h>
-#include <sparse_io.h>
-#include "lfactor_creation.h"
-#include "def.h"
-#include "sparse_inspector.h"
+#include "aggregation/utils.h"
+#include "aggregation/sparse_io.h"
+#include "aggregation/lfactor_creation.h"
+#include "aggregation/def.h"
+#include "aggregation/sparse_inspector.h"
 
 
 namespace sym_lib{

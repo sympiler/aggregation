@@ -1,4 +1,4 @@
-#include "SuperNodalTools.h"
+#include "aggregation/SuperNodalTools.h"
 #include <unordered_set>
 
 namespace supernodaltools{

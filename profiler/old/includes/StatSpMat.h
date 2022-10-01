@@ -5,7 +5,7 @@
 #ifndef LBC_LIB_STATSPMAT_H
 #define LBC_LIB_STATSPMAT_H
 
-#include <def.h>
+#include "aggregation/def.h"
 #include "../../include/group.h"
 #include "../../include/group_utils.h"
 #include <omp.h>

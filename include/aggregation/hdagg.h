@@ -423,6 +423,23 @@ namespace HDAGG{
                                 std::vector<int>& DAG_ptr, std::vector<int>& DAG_set);
 
 
+    /// building coarsened levels based on DAG sparsity
+    /// \param n IN dimension
+    /// \param Lp IN pointers to columns
+    /// \param Li IN: row indices
+    /// \param cores IN: number of cores
+    /// \param coarse_level_no OUT
+    /// \param coarse_level_ptr OUT
+    /// \param coarse_part_ptr OUT
+    /// \param coarse_node_ptr OUT
+    /// \return
+    int build_coarsened_level_parallel(const int n, const int* Lp, const int* Li,
+                                    const int cores,
+                                    int& coarse_level_no,
+                                    std::vector<int>& coarse_level_ptr,
+                                    std::vector<int>& coarse_part_ptr,
+                                    std::vector<int>& coarse_node_ptr);
+
 #ifdef SPMP
 
     ///\Description This is a parallel Levelset function which works on

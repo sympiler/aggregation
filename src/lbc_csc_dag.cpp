@@ -2,14 +2,31 @@
 // Created by kazem on 9/25/20.
 //
 
-#include "lbc_utils.h"
+#include "aggregation/lbc_utils.h"
 #include <cstring>
 #include <omp.h>
 #include <ostream>
-#include <sparse_inspector.h>
-#include <sparse_utilities.h>
+#include "aggregation/sparse_inspector.h"
+#include "aggregation/sparse_utilities.h"
 
 namespace sym_lib {
+
+ void lbc_config(int n, int nnz, int num_threads, int &lp, int &cp, int &ic,
+                 bool &b_pack){
+  int ratio = nnz / n;
+  b_pack = false;
+  lp = num_threads;
+  if(ratio < 10){
+   cp = ic = 0;
+  } else if(ratio>=10 && ratio < 100) {
+   cp = 6;
+   ic = cp;
+  } else {
+   cp = ic = 9;
+  }
+ }
+
+
 int parallel_cc(int *lC, int *lR, int dfsLevel, int ubLevel, int *node2Level,
                 int *levelPtr, int *levelSet, int *node2partition,
                 double *outCost, double *nodeCost, int &curLeveledParCost,

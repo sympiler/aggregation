@@ -3,8 +3,8 @@
 //
 
 #include <StatSpMat.h>
-#include <lbc.h>
-#include <sparse_inspector.h>
+#include "aggregation/lbc.h"
+#include "aggregation/sparse_inspector.h"
 
 #include <sptrsv.h>
 

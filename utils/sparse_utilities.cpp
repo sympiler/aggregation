@@ -3,10 +3,10 @@
 //
 
 #include <cstring>
-#include <def.h>
+#include "aggregation/def.h"
 #include <cassert>
 #include <cmath>
-#include "sparse_utilities.h"
+#include "aggregation/sparse_utilities.h"
 
 namespace sym_lib {
     using namespace std;

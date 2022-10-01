@@ -6,13 +6,13 @@
 #define FUSION_SPTRSV_DEMO_UTILS_H
 
 #include <algorithm>
-#include <sparse_inspector.h>
-#include <lbc.h>
+#include "aggregation/sparse_inspector.h"
+#include "aggregation/lbc.h"
 #include <cstring>
-#include "FusionDemo.h"
+#include "aggregation/FusionDemo.h"
 #include "sptrsv.h"
-#include "group.h"
-#include "group_utils.h"
+#include "aggregation/group.h"
+#include "aggregation/group_utils.h"
 #include <executor.h>
 
 namespace sym_lib {

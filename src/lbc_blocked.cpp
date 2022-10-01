@@ -7,9 +7,9 @@
 
 
 
-#include <sparse_utilities.h>
-#include <sparse_inspector.h>
-#include "lbc_utils.h"
+#include "aggregation/sparse_utilities.h"
+#include "aggregation/sparse_inspector.h"
+#include "aggregation/lbc_utils.h"
 
 namespace sym_lib {
  int getCoarseLevelSet_DAG_BCSC02(size_t n,

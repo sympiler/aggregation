@@ -13,7 +13,7 @@
  * AMD_postorder routine.
  */
 
-#include "amd_internal.h"
+#include "aggregation/amd_internal.h"
 
 /* ========================================================================= */
 /* === clear_flag ========================================================== */
