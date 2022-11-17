@@ -14,8 +14,8 @@
 #include <math.h>
 //#define NDEBUG
 #include <assert.h>
-#include "group_utils.h"
-#include "def.h"
+#include "aggregation/group_utils.h"
+#include "aggregation/def.h"
 
 namespace sym_lib
 {

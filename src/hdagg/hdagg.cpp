@@ -2032,8 +2032,14 @@ namespace HDAGG
             std::vector<int> node_to_clique(n);
             #pragma omp parallel
             {
-                int bins = omp_get_num_threads();
-                int tid = omp_get_thread_num();
+
+#ifdef ENABLE_OPENMP
+          int bins = omp_get_num_threads();
+          int tid = omp_get_thread_num();
+#else
+          int bins =1;
+       int tid=1;
+#endif
                 int start_col = (n / bins) * tid;
                 int end_col = (n / bins) * (tid + 1);
                 std::vector<int> clique_ptr_per_thread;

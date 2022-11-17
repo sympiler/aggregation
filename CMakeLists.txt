@@ -56,7 +56,7 @@ file(GLOB HDAGG_SRCFILES
 
 ################################################################################
 
-find_package(OpenMP)
+#find_package(OpenMP)
 if(OpenMP_FOUND)
     if(APPLE) #TODO: there might be a better support
         set(OpenMP_CXX_INCLUDE_DIRS  "/usr/local/include/")

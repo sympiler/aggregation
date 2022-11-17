@@ -1114,8 +1114,13 @@ protected:
     t1.start_timer();
 #pragma omp parallel
     {
-      int nthreads = omp_get_num_threads();
-      int tid = omp_get_thread_num();
+      #ifdef ENABLE_OPENMP
+       int nthreads = omp_get_num_threads();
+       int tid = omp_get_thread_num();
+      #else
+       int nthreads =1;
+       int tid=1;
+      #endif
 
       const int ntasks = schedule.ntasks;
       const short *nparents = schedule.nparentsForward;
@@ -1539,8 +1544,14 @@ protected:
     t1.start_timer();
 #pragma omp parallel
     {
-      int nthreads = omp_get_num_threads();
-      int tid = omp_get_thread_num();
+      #ifdef ENABLE_OPENMP
+       int nthreads = omp_get_num_threads();
+       int tid = omp_get_thread_num();
+      #else
+       int nthreads =1;
+       int tid=1;
+      #endif
+
 
       const int ntasks = schedule.ntasks;
       const short *nparents = schedule.nparentsForward;
