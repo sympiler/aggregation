@@ -196,7 +196,9 @@ int main(int argc, char *argv[]) {
     SpTrsv_LL_Wavefront LL_lvl_obj(Lower_A_CSR, Lower_A_CSC, y_correct,
                                   "LL Levelset ", core);
     timing_measurement LL_lvl_runtime;
-    omp_set_num_threads(core);
+    #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
     LL_lvl_runtime = LL_lvl_obj.evaluate();
     std::cout << "Running LL Levelset Code with #core: " << core
               << " - The runtime:" << LL_lvl_runtime.elapsed_time << std::endl;
@@ -224,7 +226,9 @@ int main(int argc, char *argv[]) {
     SpTrsv_LL_Parallel_Wavefront LL_lvl_obj(CSR_A, Lower_A_CSR, Lower_A_CSC,
                                            y_correct, "LL Levelset ", core);
     timing_measurement LL_lvl_runtime;
-    omp_set_num_threads(core);
+    #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
     LL_lvl_runtime = LL_lvl_obj.evaluate();
     std::cout << "Running LL parallel Levelset Code with #core: " << core
               << " - The runtime:" << LL_lvl_runtime.elapsed_time << std::endl;
@@ -251,7 +255,9 @@ int main(int argc, char *argv[]) {
     SpTrSv_LL_Tree_Wavefront_No_unPACK LL_lvl_obj(
         Lower_A_CSR, Lower_A_CSC, y_correct, "LL Tree Levelset ", core);
     timing_measurement LL_lvl_runtime;
-    omp_set_num_threads(core);
+    #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
     LL_lvl_runtime = LL_lvl_obj.evaluate();
     std::cout << "Running LL Levelset + Tree Code with #core: " << core
               << " - The runtime:" << LL_lvl_runtime.elapsed_time << std::endl;
@@ -278,7 +284,9 @@ int main(int argc, char *argv[]) {
       SpTrSv_LL_HDAGG LL_lvl_obj(Lower_A_CSR, Lower_A_CSC, y_correct,
                                  "LL HDAGG ", core, bin);
       timing_measurement LL_lvl_runtime;
-      omp_set_num_threads(core);
+      #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
       LL_lvl_runtime = LL_lvl_obj.evaluate();
       if (bin) {
         std::cout << "Running LL HDAGG with BIN Code with #core: " << core
@@ -320,7 +328,9 @@ int main(int argc, char *argv[]) {
       SpTrSv_LL_Tree_HDAGG LL_lvl_obj(Lower_A_CSR, Lower_A_CSC, y_correct,
                                       "LL Tree HDAGG ", core, isLfactor, bin);
       timing_measurement LL_lvl_runtime;
-      omp_set_num_threads(core);
+      #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
       LL_lvl_runtime = LL_lvl_obj.evaluate();
       if (bin) {
         std::cout << "Running LL Tree HDAGG with BIN Code with #core: " << core
@@ -361,7 +371,9 @@ int main(int argc, char *argv[]) {
                                           "LL Tree BFS HDAGG ", core, isLfactor,
                                           bin);
       timing_measurement LL_lvl_runtime;
-      omp_set_num_threads(core);
+      #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
       LL_lvl_runtime = LL_lvl_obj.evaluate();
       if (bin) {
         std::cout << "Running LL Tree BFS HDAGG with BIN Code with #core: "
@@ -401,7 +413,9 @@ int main(int argc, char *argv[]) {
   //"********************* LL Tree BFS HDAGG P2P *********************"
   for (auto &core : Cores) {
     for (auto &&bin : {false}) {
-      omp_set_num_threads(core);
+      #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
       SpTrSv_LL_Tree_HDAGG_BFS_P2P LL_lvl_obj(
           Lower_A_CSR, Lower_A_CSC, y_correct, "LL Tree BFS HDAGG P2P ", core,
           isLfactor, bin);
@@ -447,7 +461,9 @@ int main(int argc, char *argv[]) {
     for (auto p3 : P3) {
       SpTrSv_LL_LBC LL_lvl_obj(Lower_A_CSR, Lower_A_CSC, y_correct,
                                "LL LBC_Tree", core);
-      omp_set_num_threads(core);
+      #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
       LL_lvl_obj.setP2_P3(-1, p3);
       auto LL_lvl_runtime = LL_lvl_obj.evaluate();
       std::cout << "Running LL LBC_Tree Code with #core: " << core
@@ -477,7 +493,9 @@ int main(int argc, char *argv[]) {
 #ifdef MKL
   //"********************* MKL *********************"
   for (auto &core : Cores) {
-    omp_set_num_threads(core);
+    #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
     SpTrSv_LL_MKL LL_lvl_obj(Lower_A_CSR, Lower_A_CSC, y_correct, "LL MKL",
                              core);
     timing_measurement LL_lvl_runtime;
@@ -508,7 +526,9 @@ int main(int argc, char *argv[]) {
     for (auto &part : Parts) {
       SpTrSv_LL_DAGP LL_lvl_obj(Lower_A_CSR, Lower_A_CSC, y_correct, "LL DAGP",
                                 part, core);
-      omp_set_num_threads(core);
+      #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
       timing_measurement LL_lvl_runtime;
       LL_lvl_runtime = LL_lvl_obj.evaluate();
       std::cout << "Running LL DAGP Code with #core: " << core
@@ -534,7 +554,9 @@ int main(int argc, char *argv[]) {
 #ifdef SPMP
   //"********************* SpMP *********************"
   for (auto &core : Cores) {
-    omp_set_num_threads(core);
+    #ifdef ENABLE_OPENMP
+ omp_set_num_threads(core);
+#endif
     SpTrsv_LL_SpMP LL_lvl_obj(CSR_A, Lower_A_CSR, Lower_A_CSC, y_correct,
                               "LL SpMP", core); // seq
     auto LL_lvl_runtime = LL_lvl_obj.evaluate();

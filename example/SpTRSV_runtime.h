@@ -175,7 +175,9 @@ public:
     L1_csc_ = L_csc;
     correct_x_ = correct_x;
     this->nthreads = nt;
-    omp_set_num_threads(nt);
+   #ifdef ENABLE_OPENMP
+ omp_set_num_threads(nt);
+#endif
   };
 
   double getSchedulingTime() { return scheduling_time.elapsed_time; };
@@ -1590,7 +1592,9 @@ public:
     L1_csc_ = L_csc;
     correct_x_ = correct_x;
     this->nthreads = nt;
-    omp_set_num_threads(nt);
+   #ifdef ENABLE_OPENMP
+ omp_set_num_threads(nt);
+#endif
   };
 
   double getNumberOfP2P() {

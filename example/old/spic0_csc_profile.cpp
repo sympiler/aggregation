@@ -64,7 +64,9 @@ int sptrsv_csr_profile_demo02(int argc, char *argv[]){
     int option=0;
     if(argc >= 3)
         num_threads=atoi(argv[2]);
-    omp_set_num_threads(num_threads);
+   #ifdef ENABLE_OPENMP
+ omp_set_num_threads(num_threads);
+#endif
     if(argc >= 4)
         option=atoi(argv[3]);
     if(argc >= 5)

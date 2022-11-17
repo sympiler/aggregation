@@ -69,7 +69,9 @@ int sptrsv_csr_profiler_demo02(int argc, char *argv[]){
     if(argc >= 5)
         num_threads = atoi(argv[4]);
 
-    omp_set_num_threads(num_threads);
+   #ifdef ENABLE_OPENMP
+ omp_set_num_threads(num_threads);
+#endif
     /// Re-ordering L matrix
 #ifdef METIS
     //We only reorder L since dependency matters more in l-solve.

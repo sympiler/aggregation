@@ -36,7 +36,6 @@ namespace sym_lib {
 #ifndef ENABLE_OPENMP
 #define omp_get_num_threads() (1)
 #define omp_get_thread_num() (1)
-#define omp_set_num_threads(core) (core)
 #endif
 /// Measuring time of a kernel
 ///

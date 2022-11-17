@@ -2582,7 +2582,9 @@ namespace HDAGG
         int nlevels = 0;
         int *symRowPtr = NULL, *symColIdx = NULL, *symDiagPtr = NULL, *symExtPtr = NULL;
         bool wasSymmetric = getSymmetricNnzPattern(A, &symRowPtr, &symDiagPtr, &symExtPtr, &symColIdx);
-        omp_set_num_threads(nthreads);
+       #ifdef ENABLE_OPENMP
+ omp_set_num_threads(nthreads);
+#endif
         SpMP::LevelSchedule *barrierSchedule = new SpMP::LevelSchedule;
         barrierSchedule->useBarrier = true;
         barrierSchedule->transitiveReduction = false;

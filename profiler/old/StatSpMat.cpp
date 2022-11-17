@@ -13,7 +13,9 @@ namespace sym_lib{
 
     StatSpMat(CSR *L, SpKerType kerType, int num_threads, int blksize)
     {
-     omp_set_num_threads(num_threads);
+    #ifdef ENABLE_OPENMP
+ omp_set_num_threads(num_threads);
+#endif
 
      Setup(L, kerType);
 
@@ -109,7 +111,9 @@ namespace sym_lib{
 
 
     StatSpMat::StatSpMat(CSR *L, std::vector<std::vector<int> > DAG, SpKerType kerType, int num_threads, int blksize) {
-     omp_set_num_threads(num_threads);
+    #ifdef ENABLE_OPENMP
+ omp_set_num_threads(num_threads);
+#endif
 
      Setup(L, kerType);
 
@@ -192,7 +196,9 @@ namespace sym_lib{
     StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads, int *levelPtr, int *partPtr, int *nodePtr, int levelNo, int partNo,
                          int levelSetNo)
     {
-     omp_set_num_threads(num_threads);
+    #ifdef ENABLE_OPENMP
+ omp_set_num_threads(num_threads);
+#endif
 
      Setup(L, kerType);
 
@@ -237,7 +243,9 @@ namespace sym_lib{
     StatSpMat::StatSpMat(CSR *L, SpKerType kerType, int num_threads, int *levelPtr, int *partPtr, int *nodePtr, int *groupPtr, int *groupSet,
                          int levelNo, int partNo, int levelSetNo, int groupNo)
     {
-     omp_set_num_threads(num_threads);
+    #ifdef ENABLE_OPENMP
+ omp_set_num_threads(num_threads);
+#endif
 
      Setup(L, kerType);
 

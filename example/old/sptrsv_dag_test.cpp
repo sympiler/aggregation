@@ -53,7 +53,9 @@ int main(int argc, char *argv[]) {
  if (argc >= 7)
   creation_threads_temp = atoi(argv[6]);
 
+#ifdef ENABLE_OPENMP
  omp_set_num_threads(num_threads);
+#endif
 
  int creation_threads =
   creation_threads_temp == -1 ? num_threads : creation_threads_temp;
