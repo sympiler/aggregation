@@ -62,7 +62,7 @@ namespace sym_lib {
      for (int i = 0; i < nnz; i++)
       rowCnt[A->i[i]]++;
 
-     CSR *B = new CSR(A->n,A->m,A->nnz,A->is_pattern);
+     CSR *B = new CSR(A->m,A->n,A->nnz,A->is_pattern);
      int *rowptr = B->p; //new int[nrow + 1]();
      size_t ncol = B->n;
      size_t nrow = B->m;

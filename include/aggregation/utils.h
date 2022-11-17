@@ -83,5 +83,31 @@ size_t mult_size_t(size_t a, size_t k, int *ok);
   return sum;
  }
 
+
+
+ // trim from start (in place)
+ static inline void ltrim(std::string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+   return !std::isspace(ch);
+  }));
+ }
+
+// trim from end (in place)
+ static inline void rtrim(std::string &s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+   return !std::isspace(ch);
+  }).base(), s.end());
+ }
+
+// trim from both ends (in place)
+ static inline void trim(std::string &s) {
+  ltrim(s);
+  rtrim(s);
+ }
+
+
+ /// find the name of a file from a path
+ std::string strip_name(std::string name);
+
 }
 #endif //PROJECT_UTILS_H

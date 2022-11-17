@@ -163,4 +163,16 @@ namespace sym_lib{
  }
 
 
+
+
+ /// find the name of a file from a path
+ std::string strip_name(std::string name){
+  auto p1 = name.rfind("/");
+  auto p2 = name.rfind(".");
+  std::string slide = name.substr( p1 != std::string::npos ? p1+1 : 0,
+                                   p2 != std::string::npos ? p2-p1-1 : std::string::npos);
+  return slide;
+ }
+
+
 }

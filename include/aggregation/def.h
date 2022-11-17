@@ -119,6 +119,27 @@ namespace sym_lib {
    stype = 0;
   };
 
+  CSC(size_t M, size_t N, size_t NNZ, bool ip, int st) :
+    m(M), n(N), nnz(NNZ), is_pattern(ip) {
+   is_pattern = ip;
+   pre_alloc = false;
+   if (N > 0)
+    p = new int[N + 1]();
+   else
+    p = NULLPNTR;
+   if (NNZ > 0) {
+    i = new int[NNZ]();
+    if (!is_pattern)
+     x = new double[NNZ]();
+    else
+     x = NULLPNTR;
+   } else {
+    i = NULLPNTR;
+    x = NULLPNTR;
+   }
+   stype = st;
+  };
+
   CSC(size_t M, size_t N, size_t NNZ, int *Ap, int *Ai, double *Ax) {
    is_pattern = false;
    pre_alloc = true;
