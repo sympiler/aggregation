@@ -12,7 +12,9 @@
 #include <iostream>
 #include "aggregation/sparse_io.h"
 #include "aggregation/test_utils.h"
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include "aggregation/metis_interface.h"
 #include <StatSpMat_v1.h>
 

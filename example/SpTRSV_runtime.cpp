@@ -5,7 +5,9 @@
 #include "aggregation/csv_utils.h"
 #include <iostream>
 #include "aggregation/metis_interface.h"
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include "aggregation/sparse_io.h"
 #include "aggregation/test_utils.h"
 

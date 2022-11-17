@@ -1,7 +1,9 @@
 //
 // Created by george on 2019-10-09.
 //
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 
 #include "sptrsv.h"
 

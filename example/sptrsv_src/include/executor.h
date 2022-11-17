@@ -5,7 +5,9 @@
 #ifndef LBC_LIB_EXECUTOR_H
 #define LBC_LIB_EXECUTOR_H
 #include <algorithm>
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include <cstring>
 #include <functional>
 

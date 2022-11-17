@@ -8,7 +8,9 @@
 #include "aggregation/def.h"
 #include "../../include/group.h"
 #include "../../include/group_utils.h"
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include <executor.h>
 #include <algorithm>
 #include <numeric>

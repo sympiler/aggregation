@@ -5,7 +5,9 @@
 
 #include <iostream>
 #include "aggregation/metis_interface.h"
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include <regex>
 #include "aggregation/sparse_io.h"
 #include "aggregation/test_utils.h"

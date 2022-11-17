@@ -5,7 +5,9 @@
 #include "aggregation/def.h"
 #include "aggregation/test_utils.h"
 #include "aggregation/sparse_io.h"
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include "aggregation/metis_interface.h"
 #include "spic0_demo_utils.h"
 

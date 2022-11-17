@@ -33,6 +33,11 @@ namespace sym_lib {
 #define CS_MARKED(w, j) (w [j] < 0)
 #define CS_MARK(w, j) { w [j] = CS_FLIP (w [j]) ; }
 
+#ifndef ENABLE_OPENMP
+#define omp_get_num_threads() (1)
+#define omp_get_thread_num() (1)
+#define omp_set_num_threads(core) (core)
+#endif
 /// Measuring time of a kernel
 ///
  struct timing_measurement {

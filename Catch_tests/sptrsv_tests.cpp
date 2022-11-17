@@ -9,7 +9,9 @@
 #include <cstdio>
 #include <dirent.h>
 #include <iostream>
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include "aggregation/sparse_inspector.h"
 #include "aggregation/sparse_io.h"
 #include "aggregation/sparse_utilities.h"

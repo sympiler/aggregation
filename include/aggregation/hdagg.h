@@ -17,7 +17,9 @@
 #include <iostream>
 #include "sparse_io.h"
 #include "test_utils.h"
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include "metis_interface.h"
 
 //#include "sparse_blas_lib.h"

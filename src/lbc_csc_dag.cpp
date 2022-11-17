@@ -4,7 +4,9 @@
 
 #include "aggregation/lbc_utils.h"
 #include <cstring>
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include <ostream>
 #include "aggregation/sparse_inspector.h"
 #include "aggregation/sparse_utilities.h"

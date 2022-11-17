@@ -8,7 +8,9 @@
 #include <iostream>
 #include "aggregation/sparse_io.h"
 #include "aggregation/test_utils.h"
+#ifdef ENABLE_OPENMP
 #include <omp.h>
+#endif
 #include "aggregation/metis_interface.h"
 
 #include "sptrsv_demo_utils.h"
