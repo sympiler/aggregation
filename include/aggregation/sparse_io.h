@@ -109,7 +109,7 @@ namespace sym_lib{
 
 //// NEW IO section. This will replace old read matrix gradually since this is more general.
 
-#define precision  48
+#define print_precision  48
  enum TYPE{
   REAL,INT,COMPLEX,PATTERN
  };
@@ -148,7 +148,7 @@ namespace sym_lib{
   for (auto i = 0; i < n; ++i) {
    for (auto j = Ap[i]; j < Ap[i+1]; ++j) {
     assert(j<nnz);
-    std::cout<<indent<<Ai[j]+1<<" "<<i+1<<" "<<std::setprecision(precision)<<Ax[j];
+    std::cout<<indent<<Ai[j]+1<<" "<<i+1<<" "<<std::setprecision(print_precision)<<Ax[j];
     std::cout<<"\n";
    }
   }
@@ -171,7 +171,7 @@ namespace sym_lib{
   std::cout<<indent<<row_no<<" "<<col_no<<"\n";
   for (int i = 0; i < col_no*row_no; i+=lda) {
    for (int j = 0; j < lda; ++j) {
-    std::cout<<indent<<std::setprecision(precision)<<mat[i+j];
+    std::cout<<indent<<std::setprecision(print_precision)<<mat[i+j];
    }
    std::cout<<"\n";
   }
@@ -188,7 +188,7 @@ namespace sym_lib{
                                            const std::string indent){
   std::streambuf* sb_cout_backup = std::cout.rdbuf();
   std::cout.rdbuf(out);
-  std::cout<<indent<<std::setprecision(precision)<<val<<"\n";
+  std::cout<<indent<<std::setprecision(print_precision)<<val<<"\n";
   std::cout.rdbuf(sb_cout_backup);
  }
 
