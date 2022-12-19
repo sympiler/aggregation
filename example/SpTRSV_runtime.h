@@ -856,7 +856,7 @@ public:
         for (int node_ptr = final_part_ptr[prt_ptr];
              node_ptr < final_part_ptr[prt_ptr + 1]; node_ptr++) {
           int node = final_node_ptr[node_ptr];
-          assert(!isnan(cost[node]));
+          assert(!std::isnan(cost[node]));
           Total_cost += cost[node];
           cost_per_level[lvl] += cost[node];
           part_cost += cost[node];
@@ -905,7 +905,7 @@ public:
         for (int node_ptr = final_part_ptr[prt_ptr];
              node_ptr < final_part_ptr[prt_ptr + 1]; node_ptr++) {
           int node = final_node_ptr[node_ptr];
-          assert(!isnan(cost[node]));
+          assert(!std::isnan(cost[node]));
           Total_cost += cost[node];
           cost_per_level[lvl] += cost[node];
           part_cost += cost[node];
