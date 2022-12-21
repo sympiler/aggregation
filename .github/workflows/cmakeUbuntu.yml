@@ -42,7 +42,7 @@ jobs:
           ${{github.workspace}}/build/example/lbc_demo
           ${{github.workspace}}/build/example/sptrsv_demo
 
-      - name: run test 2
+      - name: run Hdagg_SpTRSV demo with bug
         run: |
           ${{github.workspace}}/build/example/Hdagg_SpTRSV
         continue-on-error: true
@@ -52,7 +52,13 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --target Catch_tests hdagg_tests
 
       - name: run Catch test
-        run: |
-          ${{github.workspace}}/build/Catch_tests/Catch_tests -s
-          ${{github.workspace}}/build/Catch_tests/hdagg_tests -s
+        run: ${{github.workspace}}/build/Catch_tests/Catch_tests -s
+        continue-on-error: true
+
+      - name: show all hdagg test cases
+        run: ${{github.workspace}}/build/Catch_tests/hdagg_tests -s
+        continue-on-error: true
+
+      - name: show failed hdagg test cases
+        run: ${{github.workspace}}/build/Catch_tests/hdagg_tests -r compact
         continue-on-error: true
