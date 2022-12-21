@@ -56,7 +56,10 @@ file(GLOB HDAGG_SRCFILES
 
 ################################################################################
 
-#find_package(OpenMP)
+# https://github.com/sympiler/aggregation/issues/5
+if(LBC_IS_TOPLEVEL)
+    find_package(OpenMP)
+endif()
 if(OpenMP_FOUND)
     if(APPLE) #TODO: there might be a better support
         set(OpenMP_CXX_INCLUDE_DIRS  "/usr/local/include/")
