@@ -356,12 +356,17 @@ namespace sym_lib {
 
 
  void read_triplets_real(std::ifstream &inFile, int nnz,
-                         std::vector<triplet>& triplet_vec, bool zero_indexing=false){
+                         std::vector<triplet>& triplet_vec,
+                         bool read_val=true,
+                         bool zero_indexing=false){
   for (int i = 0; i < nnz; ++i) {
    triplet tmp;
    inFile >> tmp.row;
    inFile >> tmp.col;
-   inFile >> tmp.val;
+    if(read_val)
+      inFile >> tmp.val;
+    else
+      tmp.val = 1.0;
    if(!zero_indexing){
     tmp.col--; tmp.row--;
    }
@@ -403,12 +408,15 @@ namespace sym_lib {
   std::vector<triplet> triplet_vec;
 
   read_header(in_file, m, n, nnz, arith, shape, mtx_format);
-  if(arith != REAL)
+  if(arith != REAL && arith != PATTERN)
    throw mtx_arith_error("REAL", type_str(arith));
-  else if (mtx_format != COORDINATE)
+  if (mtx_format != COORDINATE)
    throw mtx_format_error("COORDINATE", format_str(mtx_format));
+  bool read_val = true;
+  if(arith == PATTERN)
+    read_val = false;
   A = new CSC(m,n,nnz,false, shape2int(shape));
-  read_triplets_real(in_file, nnz, triplet_vec);
+  read_triplets_real(in_file, nnz, triplet_vec, read_val);
   compress_triplets_to_csc(triplet_vec, A, insert_diag);
   A->nnz = A->p[n]; // if insert diag is true, it will be different.
   //print_csc(A->n, A->p, A->i, A->x);

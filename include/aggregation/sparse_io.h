@@ -224,7 +224,9 @@ namespace sym_lib{
 /// \param triplet_vec
 /// \param zero_indexing
  void read_triplets_real(std::ifstream &inFile, int nnz,
-                         std::vector<triplet>& triplet_vec, bool zero_indexing);
+                         std::vector<triplet>& triplet_vec,
+                         bool read_val,
+                         bool zero_indexing);
 
 
 
