@@ -408,7 +408,7 @@ namespace sym_lib {
   std::vector<triplet> triplet_vec;
 
   read_header(in_file, m, n, nnz, arith, shape, mtx_format);
-  if(arith != REAL && arith != PATTERN)
+  if(arith != REAL && arith != INT && arith != PATTERN)
    throw mtx_arith_error("REAL", type_str(arith));
   if (mtx_format != COORDINATE)
    throw mtx_format_error("COORDINATE", format_str(mtx_format));

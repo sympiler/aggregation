@@ -58,7 +58,7 @@ namespace sym_lib {
     CSR* csc_to_csr(CSC* A) {
      // count row entries to generate row ptr
      int nnz = A->p[A->n];
-     int *rowCnt = new int[A->n]();
+     int *rowCnt = new int[A->m]();
      for (int i = 0; i < nnz; i++)
       rowCnt[A->i[i]]++;
 
