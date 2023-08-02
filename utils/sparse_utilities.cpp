@@ -232,7 +232,7 @@ namespace sym_lib {
       return nullptr;
      }
 
-     CSC *Afull = new CSC(A->m, A->n, A->nnz * 2 - A->n);
+     CSC *Afull = new CSC(A->m, A->n, A->nnz * 2 );
      auto ind = new int[A->n]();
 
      for(size_t i = 0; i < A->n; i++) {
@@ -265,7 +265,7 @@ namespace sym_lib {
       }
      }
      delete[]ind;
-
+      Afull->nnz = Afull->p[Afull->n];
      return Afull;
     }
 
