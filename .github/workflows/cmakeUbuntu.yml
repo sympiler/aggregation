@@ -22,25 +22,43 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
+
       - name: Checkout submodules
         shell: bash
         run: |
           git submodule sync --recursive
-          git submodule update --init --recursive 
+          git submodule update --init --recursive
       - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release 
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
 
-          
-          
       - name: Build
       # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --target lbc lbc_demo sptrsv_demo
-    
+        run: cmake --build ${{github.workspace}}/build --target lbc lbc_demo sptrsv_demo Hdagg_SpTRSV
+
       - name: run test 1
         run: |
           ${{github.workspace}}/build/example/lbc_demo
           ${{github.workspace}}/build/example/sptrsv_demo
 
+      - name: run Hdagg_SpTRSV demo with bug
+        run: |
+          ${{github.workspace}}/build/example/Hdagg_SpTRSV
+        continue-on-error: true
+
+      - name: Build Catch tests
+      # Build your program with the given configuration
+        run: cmake --build ${{github.workspace}}/build --target Catch_tests hdagg_tests
+
+      - name: run Catch test
+        run: ${{github.workspace}}/build/Catch_tests/Catch_tests -s
+        continue-on-error: true
+
+      - name: show all hdagg test cases
+        run: ${{github.workspace}}/build/Catch_tests/hdagg_tests -s
+        continue-on-error: true
+
+      - name: show failed hdagg test cases
+        run: ${{github.workspace}}/build/Catch_tests/hdagg_tests -r compact
+        continue-on-error: true

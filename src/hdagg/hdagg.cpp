@@ -794,11 +794,12 @@ namespace HDAGG
                         coarse_level_no, coarse_level_ptr, coarse_part_ptr, coarse_node_ptr,
                         bin_pack, postOrder);
         #ifndef NDEBUG
-            std::cout << "The wm is: " << std::endl;
-            for(auto wm: WM){
-                std::cout << wm << "\t";
-            }
-            std::cout << std::endl;
+            // NOTE: Do not interfere with unit test output
+            // std::cout << "The wm is: " << std::endl;
+            // for(auto wm: WM){
+            //     std::cout << wm << "\t";
+            // }
+            // std::cout << std::endl;
         #endif
         return WM;
 
@@ -1078,11 +1079,11 @@ namespace HDAGG
         coarse_level_no = WM.size() - 1;
 
         #ifndef NDEBUG
-        std::cout << "The wm is: " << std::endl;
-        for(auto wm: WM){
-            std::cout << wm << "\t";
-        }
-        std::cout << std::endl;
+        // std::cout << "The wm is: " << std::endl;
+        // for(auto wm: WM){
+        //     std::cout << wm << "\t";
+        // }
+        // std::cout << std::endl;
         #endif
         return WM;
 

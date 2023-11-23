@@ -27,10 +27,10 @@ int main(int argc, char *argv[]) {
 
   if (argc < 2) {
     PRINT_LOG("Not enough input args, switching to random mode.\n");
-    n = 50;
-    double density = 0.3;
+    n = 200;
+    double density = 0.5;
     matrix_name = "Random_" + std::to_string(n);
-    A = random_square_sparse(n, density);
+    A = random_square_sparse(n, density, 1.0, 2U);
     if (A == NULLPNTR)
       return -1;
     Lower_A_CSC = make_half(A->n, A->p, A->i, A->x);
@@ -78,9 +78,10 @@ int main(int argc, char *argv[]) {
     nthreads = atoi(argv[2]);
   }
 
-  /// Re-ordering matrix A
-  //    std::cout << "METIS IS NOT ACTIVATED" << std::endl;
+// Disable METIS to reveal bug
+#undef METIS  
 #ifdef METIS
+  /// Re-ordering matrix A
   std::cout << "METIS IS ACTIVATED" << std::endl;
   // We only reorder A since dependency matters more in l-solve.
   A = make_full(Lower_A_CSC);
@@ -96,10 +97,11 @@ int main(int argc, char *argv[]) {
   delete A;
   delete[] perm;
 #else
-  CSC *tmp =
+  std::cout << "METIS IS NOT ACTIVATED" << std::endl;
+  CSC *tmp_csc =
       make_half(Lower_A_CSC->n, Lower_A_CSC->p, Lower_A_CSC->i, Lower_A_CSC->x);
   delete Lower_A_CSC;
-  Lower_A_CSC = tmp;
+  Lower_A_CSC = tmp_csc;
   Lower_A_CSR = csc_to_csr(Lower_A_CSC);
 #endif
 
