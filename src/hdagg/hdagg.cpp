@@ -1456,7 +1456,7 @@ namespace HDAGG
         std::vector<int> group_size(n + 1, 0);
         //NOTE: We have to do these stuff so that the resulted DAG will be a lower triangular one
         //Sort Groups and give each group a name based on the minimum of the ids inside a group
-        #pragma parallel for
+        #pragma omp parallel for
         for(int g = 0; g < ngroups; g++){
             //Don't sort right now, it will be ordered at the end of coarsening.
             //std::sort(group_set.data() + group_ptr[g], group_set.data() + group_ptr[g + 1]);
