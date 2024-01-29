@@ -517,7 +517,7 @@ namespace sym_lib {
     }
 
     void copy_from_to(CSR *src, CSR *dst){
-     for (int i = 0; i < src->n; ++i) {
+     for (int i = 0; i < src->m; ++i) {
       dst->p[i] = dst->p[i];
       for (int j = src->p[i]; j < src->p[i + 1]; ++j) {
        dst->i[j] = src->i[j];
