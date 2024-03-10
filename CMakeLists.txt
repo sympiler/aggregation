@@ -16,6 +16,7 @@ set(LBC_EXTERNAL ${CMAKE_CURRENT_LIST_DIR}/external/)
 
 project(LBC_lib CXX C)
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
@@ -96,7 +97,7 @@ endif()
 
 file(GLOB_RECURSE EXT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/utils/external/*.c)
-add_library(sym_amd STATIC
+add_library(sym_amd SHARED
         ${EXT_SRC})
 target_include_directories(sym_amd PRIVATE
         ${LBC_INC}

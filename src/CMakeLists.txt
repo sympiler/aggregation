@@ -6,6 +6,8 @@ add_library (lbc STATIC
         ${SPARSE_UTIL_SRC_FILES}
         )
 
+
+
 target_include_directories(lbc PRIVATE
         ${LBC_INC}
 )
@@ -15,6 +17,18 @@ target_link_libraries(lbc PRIVATE
         metis::metis
         )
 
+add_library (lbcShared SHARED
+        ${LBC_SRC_FILES}
+        ${SPARSE_UTIL_SRC_FILES}
+        )
+target_include_directories(lbcShared PRIVATE
+        ${LBC_INC}
+        )
+
+target_link_libraries(lbcShared PRIVATE
+        sym_amd
+        metis::metis
+        )
 ########## HDAGG
 add_library(aggregation
         ${HDAGG_SRCFILES}
@@ -28,6 +42,18 @@ target_link_libraries(aggregation PRIVATE
         metis::metis
         )
 
+
+add_library(aggregationShared
+        ${HDAGG_SRCFILES}
+        )
+target_include_directories(aggregationShared PRIVATE
+        ${LBC_INC}
+        )
+target_link_libraries(aggregationShared PRIVATE
+        lbcShared
+        sym_amd
+        metis::metis
+        )
 ### Find Intel MKL if available - it works with oneAPI
 if(HDAGG_WITH_MKL)
     find_package(MKL OPTIONAL_COMPONENTS)
